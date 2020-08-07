@@ -1,0 +1,4 @@
+---
+podman::podman_pkg: podman
+podman::podman_docker_pkg: podman-docker
+podman::skopeo_pkg: skopeo
