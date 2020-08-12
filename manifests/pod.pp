@@ -1,8 +1,23 @@
-# podman::pod - Create a podman pod with defined flags
+# @summary Create a podman pod with defined flags
 #
-# All flags for the 'podman pod create' command are supported, using only the
-# long form of the flag name.  The resource name (namevar) will be used as the
-# pod name unless the 'name' flag is included in the hash of flags.
+# === Parameters ===
+#
+# @param ensure [String]
+#   State of the resource.  Valid values are 'present' or 'absent'. (present)
+#
+# @param flags [Hash]
+#   All flags for the 'podman pod create' command are supported, using only the
+#   long form of the flag name.  The resource name (namevar) will be used as the
+#   pod name unless the 'name' flag is included in the hash of flags.
+#
+# @param user String
+#   Optional user for running rootless containers
+#
+# @param homedir String
+#   The `homedir` parameter is required when `user` is defined.  Defining it
+#   this way avoids using an external fact to lookup the home directory of
+#   all users.
+#
 #
 # @example
 #   podman::pod { 'mypod':
@@ -10,7 +25,7 @@
 #              label => 'use=test, app=wordpress',
 #              }
 #   }
-
+#
 define podman::pod (
   String $ensure = 'present',
   Hash $flags    = {},

@@ -1,13 +1,53 @@
-# @summary Manage containers and images with podman
+# @summary Manage containers, pods, volumes, and images with podman without a docker daemon
 #
-# Module installs the 'podman', 'skopeo', and optional 'podman-docker' packages,
-# enabling systems to run OCI-compliant container images without the docker
-# daemon.
+# === Parameters ===
+# @param podman_pkg [String]
+#   The name of the podman package (default 'podman')
 #
-# Defined types for 'pods', 'voluems', 'images', and 'containers' are all
-# implemented in the base class so they they can be easily managed using
-# hiera data. 
-
+# @param skopeo_pkg [String]
+#   The name of the skopeo package (default 'skopeo')
+#
+# @param podman_docker_pkg Optional[String]
+#   The name of the podman-docker package (default 'podman-docker')
+#
+# @param pods [Hash]
+#   A hash of pods to manage using [`podman::pod`](#podmanpod)
+#
+# @param volumes [Hash]
+#   A hash of volumes to manage using [`podman::volume`](#podmanvolume)
+#
+# @param images [Hash]
+#   A hash of images to manage using [`podman::image`](#podmanimage)
+#
+# @param containers [Hash]
+#   A hash of containers to manage using [`podman::container`](#podmancontainer)
+#
+#
+# @example Basic usage
+#   include podman
+#
+# @example A rootless Jenkins deployment using hiera
+#   podman::volumes:
+#     jenkins:
+#       user: jenkins
+#       homedir: /home/jenkins
+#   podman::containers:
+#     jenkins:
+#       user: jenkins
+#       homedir: /home/jenkins
+#       image: 'docker.io/jenkins/jenkins:lts'
+#       flags:
+#         label:
+#           - purpose=test
+#         publish:
+#           - '8080:8080'
+#           - '50000:50000'
+#         volume: 'jenkins:/var/jenkins_home'
+#       service_flags:
+#         timeout: '60'
+#       require:
+#         - Podman::Volume[jenkins]
+#
 class podman (
   String $podman_pkg,
   String $skopeo_pkg,

@@ -1,17 +1,45 @@
 # @summary manage podman container and register as a systemd service
 #
-# All flags for the 'podman container create' command are supported via the
-# 'flags' hash parameter, using only the long form of the flag name.  The
-# container name will be set as the resource name (namevar) unless the 'name'
-# flag is included in the flags hash.
+# === Parameters ===
 #
-# When a container is created, a systemd unit file for the container service is
-# generated using the 'podman generate systemd' command.  All flags for the
-# command are supported using the 'service_flags" hash parameter, again using
-# only the long form of the flag names.
+# @param image String $image,
 #
-# If the 'user' parameter is provided, you must also define the 'homedir'.  This
-# avoids using an external fact for looking up home directories of all users.
+# @param user String
+#   Optional user for running rootless containers
+#
+# @param homedir String
+#   The `homedir` parameter is required when `user` is defined.  Defining it
+#   this way avoids using an external fact to lookup the home directory of
+#   all users.
+#
+# @param flags Hash
+#   All flags for the 'podman container create' command are supported via the
+#   'flags' hash parameter, using only the long form of the flag name.  The
+#   container name will be set as the resource name (namevar) unless the 'name'
+#   flag is included in the flags hash.
+#
+# @param service_flags Hash
+#   When a container is created, a systemd unit file for the container service
+#   is generated using the 'podman generate systemd' command.  All flags for the
+#   command are supported using the 'service_flags" hash parameter, again using
+#   only the long form of the flag names.
+#
+# @param command String
+#   Optional command to be used as the container entry point.
+#
+# @param ensure String
+#   State of the automatically generated systemd service for the container.
+#   Valid values are 'running' or 'stopped'.
+#
+# @param enable Boolean
+#   Status of the automatically generated systemd service for the container.
+#   Default is `true`
+#
+# @param update Boolean
+#   When `true`, the container will be redeployed when a new container image is
+#   detected in the container registry.  This is done by comparing the digest
+#   value of the running container image with the digest of the registry image.
+#   Default is `true`
 #
 # @example
 #   podman::container { 'jenkins':
@@ -27,7 +55,7 @@
 #                      },
 #     service_flags => { timeout => '60' },
 #   }
-
+#
 define podman::container (
   String $image,
   String $user        = '',

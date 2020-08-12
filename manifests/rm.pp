@@ -1,5 +1,15 @@
-# defined type for container removal, typically invoked from "podman::container"
-
+# @summary defined type for container removal, typically invoked from "podman::container"
+#
+# === Parameters ===
+#
+# @param user String
+#   Optional user for running rootless containers
+#
+# @param homedir String
+#   The `homedir` parameter is required when `user` is defined.  Defining it
+#   this way avoids using an external fact to lookup the home directory of
+#   all users.
+#
 define podman::rm (
   String $user    = '',
   String $homedir = '',

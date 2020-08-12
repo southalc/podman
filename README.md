@@ -4,82 +4,76 @@
 
 1. [Description](#description)
 2. [Setup - The basics of getting started with podman](#setup)
-    * [What podman affects](#what-podman-affects)
-    * [Setup requirements](#setup-requirements)
-    * [Beginning with podman](#beginning-with-podman)
 3. [Usage - Configuration options and additional functionality](#usage)
-4. [Limitations - OS compatibility, etc.](#limitations)
-5. [Development - Guide for contributing to the module](#development)
+4. [Reference - Module parameters and defined types](#reference)
+5. [Limitations - OS compatibility, etc.](#limitations)
+6. [Development - Guide for contributing to the module](#development)
 
 ## Description
 
 Podman enables running standard docker containers without the usual docker daemon.  This has some benefits from a security
-perspective, with the major point of fact that you can run containers as an unprivileged user.
-
-The module provides management of q
-This should be a fairly short description helps the user decide if your module is what they want.
+perspective, with one key point of enabling containers as an unprivileged user.  Podman also has the concept of a 'pod',
+which is a shared namespace where multiple containers can be deployed with a common IP address and the ability to
+communicate between containers in the pod over the loopback address of 127.0.0.1
 
 ## Setup
 
-### What podman affects **OPTIONAL**
+The module installs packages including 'podman', 'skopeo', and 'podman-docker'.  The 'podman' package provides core functionality
+for running containers, while 'skopeo' is used to check for container image updates, and 'podman-docker' provides a 'docker'
+command for those that are used to typing 'docker' instead of 'podman' (the 'podman' command is purposefully compatible with 'docker').
 
-If it's obvious what your module touches, you can skip this section. For example, folks can probably figure out that your mysql_instance module affects their MySQL instances.
-
-If there's more that they should know about, though, this is the place to mention:
-
-* Files, packages, services, or operations that the module will alter, impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled, another module, etc.), mention it here.
-
-If your most recent release breaks compatibility or requires particular steps for upgrading, you might want to include an additional "Upgrading" section here.
-
-### Beginning with podman
-
-The very basic steps needed for a user to get the module up and running. This can include setup steps, if necessary, or it can be an example of the most basic use of the module.
+Simply including the module is enough to install the packages.  There is no service associated with podman, so the module just
+installs the packages.  Management of 'pods', 'images', 'volumes', and 'containers' is done using defined types.  The module's
+defined types are all implemented in the main 'podman' class, allowing resources to be declared as hiera hashes.
 
 ## Usage
 
-Include usage examples for common use cases in the **Usage** section. Show your users how to use your module to solve problems, and be sure to include code examples. Include three to five examples of the most important or common tasks a user can accomplish with your module. Show users how to accomplish more complex tasks that involve different types, classes, and functions working in tandem.
-
-## Reference
-
-This section is deprecated. Instead, add reference information to your code as Puppet Strings comments, and then use Strings to generate a REFERENCE.md in your module. For details on how to add code comments and generate documentation with Strings, see the Puppet Strings [documentation](https://puppet.com/docs/puppet/latest/puppet_strings.html) and [style guide](https://puppet.com/docs/puppet/latest/puppet_strings_style.html)
-
-If you aren't ready to use Strings yet, manually create a REFERENCE.md in the root of your module directory and list out each of your module's classes, defined types, facts, functions, Puppet tasks, task plans, and resource types and providers, along with the parameters for each.
-
-For each element (class, defined type, function, and so on), list:
-
-  * The data type, if applicable.
-  * A description of what the element does.
-  * Valid values, if the data type doesn't make it obvious.
-  * Default value, if any.
-
-For example:
-
+Assign the module to node(s):
 ```
-### `pet::cat`
-
-#### Parameters
-
-##### `meow`
-
-Enables vocalization in your cat. Valid options: 'string'.
-
-Default: 'medium-loud'.
+include podman
+```
+With the module assigned you can manage resources using hiera data.  When the
+podman defined types are called with the `user` and `homedir` parameters the
+resources will be owned by the defined user to support rootless containers.
+This example:
+* Creates volume `jenkins`
+* Creates container `jenkins` using the defined image
+* Sets container flags to label the container, publish ports, and attach the volume
+* Set service flags for the systemd service to timeout at 60 seconds
+* The volume and container are both created as user `jenkins`, and the systemd service will run as this same user
+* A systemd service `podman-<user>-<container_name>` is created, enabled, and started
+* The container will be re-deployed any time the image source digest does not match the running container image
+because the default `podman::container::update` value is `true`.
+image
+```
+podman::volumes:
+  jenkins:
+    user: jenkins
+    homedir: /home/jenkins
+podman::containers:
+  jenkins:
+    user: jenkins
+    homedir: /home/jenkins
+    image: 'docker.io/jenkins/jenkins:lts'
+    flags:
+      label:
+        - purpose=test
+      publish:
+        - '8080:8080'
+        - '50000:50000'
+      volume: 'jenkins:/var/jenkins_home'
+    service_flags:
+      timeout: '60'
+    require:
+      - Podman::Volume[jenkins]
 ```
 
 ## Limitations
 
-In the Limitations section, list any incompatibilities, known issues, or other warnings.
+The module was written and tested with RedHat/CentOS, but should work with any
+distribution where the podman and skopeo packages are available.
 
 ## Development
 
-In the Development section, tell other users the ground rules for contributing to your project and how they should submit their work.
+I'd appreciate any feedback.  To contribute to development, fork the source and submit a pull request.
 
-## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should consider using changelog). You can also add any additional sections you feel are necessary or important to include here. Please use the `## ` header.

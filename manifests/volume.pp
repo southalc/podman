@@ -1,10 +1,24 @@
-# podman::volume - Create a podman volume with defined flags
+# @summary Create a podman volume with defined flags
 #
-# All flags for the 'podman volume create' command are supported as part of the
-# 'flags' hash, using only the long form of the flag name.  The value for any
-# defined flag in the 'flags' hash must be entered as a string.
+# === Parameters ===
+#
+# @param ensure [String]
+#   State of the resource.  Valid values are 'present' or 'absent'. (present)
+#
+# @param flags [Hash]
+#   All flags for the 'podman volume create' command are supported as part of the
+#   'flags' hash, using only the long form of the flag name.  The value for any
+#   defined flag in the 'flags' hash must be entered as a string.
+#   Volume names are created based on the resoure title (namevar)
+#
+# @param user String
+#   Optional user for running rootless containers
+#
+# @param homedir String
+#   The `homedir` parameter is required when `user` is defined.  Defining it
+#   this way avoids using an external fact to lookup the home directory of
+#   all users.
 # 
-# Volume names are created based on the resoure title (namevar)
 #
 # @example
 #   podman::volume { 'myvolume':
@@ -12,7 +26,7 @@
 #              label => 'use=test, app=wordpress',
 #              }
 #   }
-
+#
 define podman::volume (
   String $ensure  = 'present',
   Hash $flags     = {},

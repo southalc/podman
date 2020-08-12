@@ -1,7 +1,26 @@
-# @summary pull container images
+# @summary pull or remove container images
 #
-# All flags for the 'podman image pull' command are supported, using only the
-# long form of the flag name.
+# === Parameters ===
+#
+# @param image String
+#   The name of the container image to pull, which should be present in a
+#   configured container registry.
+#
+# @param ensure String
+#   State of the resource, either `present` or `absent`.  (`present`)
+#
+# @param flags Hash
+#   All flags for the 'podman image pull' command are supported, using only the
+#   long form of the flag name.
+#
+# @param user String
+#   Optional user for running rootless containers
+#
+# @param homedir String
+#   The `homedir` parameter is required when `user` is defined.  Defining it
+#   this way avoids using an external fact to lookup the home directory of
+#   all users.
+#
 #
 # @example
 #   podman::image { 'my_container':
@@ -10,7 +29,7 @@
 #              creds => 'USERNAME:PASSWORD',
 #              },
 #   }
-
+#
 define podman::image (
   String $image,
   String $ensure  = 'present',
