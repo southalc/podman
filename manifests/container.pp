@@ -133,10 +133,14 @@ define podman::container (
 
       Exec { "podman_remove_container_${container_name}":
         # Try nicely to stop the container, but then insist
-        command     => @("END"/L),
-                       systemctl stop podman-${container_name} || \
-                         podman container stop --time 60 ${container_name}
+        provider    => 'shell',
+        command     => @("END"/$L),
+                       image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
+                       systemctl stop podman-${container_name} || podman container stop ${container_name}
                        podman container rm --force ${container_name}
+                       status=$?
+                       podman rmi \${image}
+                       exit \${status}
                        |END
         refreshonly => true,
         notify      => Exec["podman_create_${container_name}"],
