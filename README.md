@@ -12,9 +12,9 @@
 ## Description
 
 Podman enables running standard docker containers without the usual docker daemon.  This has some benefits from a security
-perspective, with one key point of enabling containers as an unprivileged user.  Podman also has the concept of a 'pod',
-which is a shared namespace where multiple containers can be deployed with a common IP address and the ability to
-communicate between containers in the pod over the loopback address of 127.0.0.1
+perspective, with the key point of enabling containers to run as an unprivileged user.  Podman also has the concept of a 'pod',
+which is a shared namespace where multiple containers can be deployed and communicate with each other over the loopback
+address of 127.0.0.1
 
 ## Setup
 
@@ -24,7 +24,8 @@ command for those that are used to typing 'docker' instead of 'podman' (the 'pod
 
 Simply including the module is enough to install the packages.  There is no service associated with podman, so the module just
 installs the packages.  Management of 'pods', 'images', 'volumes', and 'containers' is done using defined types.  The module's
-defined types are all implemented in the main 'podman' class, allowing resources to be declared as hiera hashes.
+defined types are all implemented in the main 'podman' class, allowing resources to be declared as hiera hashes.  See the
+[reference](REFERENCE.md) for usage of the defined types.
 
 ## Usage
 
@@ -32,9 +33,8 @@ Assign the module to node(s):
 ```
 include podman
 ```
-With the module assigned you can manage resources using hiera data.  When the
-podman defined types are called with the `user` and `homedir` parameters the
-resources will be owned by the defined user to support rootless containers.
+With the module assigned you can manage resources using hiera data.  When the podman defined types are called with the `user`
+and `homedir` parameters the resources will be owned by the defined user to support rootless containers.
 This example:
 * Creates volume `jenkins`
 * Creates container `jenkins` using the defined image
@@ -69,8 +69,8 @@ podman::containers:
 
 ## Limitations
 
-The module was written and tested with RedHat/CentOS, but should work with any
-distribution where the podman and skopeo packages are available.
+The module was written and tested with RedHat/CentOS, but should work with any distribution where the podman and skopeo
+packages are available.
 
 ## Development
 
