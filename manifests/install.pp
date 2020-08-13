@@ -1,8 +1,6 @@
 # @api private
 # @summary Install podman packages
 #
-# === Parameters ===
-#
 # @param podman_pkg [String]
 #   The name of the podman package (default 'podman')
 # 

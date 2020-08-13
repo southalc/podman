@@ -26,7 +26,7 @@
 
 ### `podman`
 
-=== Parameters ===
+Manage containers, pods, volumes, and images with podman without a docker daemon
 
 #### Examples
 
@@ -120,7 +120,7 @@ Default value: `{}`
 
 ### `podman::container`
 
-=== Parameters ===
+manage podman container and register as a systemd service
 
 #### Examples
 
@@ -239,7 +239,7 @@ Default value: ``true``
 
 ### `podman::image`
 
-=== Parameters ===
+pull or remove container images
 
 #### Examples
 
@@ -307,7 +307,7 @@ Default value: `''`
 
 ### `podman::pod`
 
-=== Parameters ===
+Create a podman pod with defined flags
 
 #### Examples
 
@@ -365,7 +365,7 @@ Default value: `''`
 
 ### `podman::rm`
 
-=== Parameters ===
+defined type for container removal, typically invoked from "podman::container"
 
 #### Parameters
 
@@ -393,7 +393,7 @@ Default value: `''`
 
 ### `podman::volume`
 
-=== Parameters ===
+Create a podman volume with defined flags
 
 #### Examples
 

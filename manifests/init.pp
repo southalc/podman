@@ -1,6 +1,5 @@
 # @summary Manage containers, pods, volumes, and images with podman without a docker daemon
 #
-# === Parameters ===
 # @param podman_pkg [String]
 #   The name of the podman package (default 'podman')
 #

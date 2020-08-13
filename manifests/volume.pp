@@ -1,7 +1,5 @@
 # @summary Create a podman volume with defined flags
 #
-# === Parameters ===
-#
 # @param ensure [String]
 #   State of the resource.  Valid values are 'present' or 'absent'. (present)
 #

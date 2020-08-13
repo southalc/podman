@@ -1,7 +1,5 @@
 # @summary manage podman container and register as a systemd service
 #
-# === Parameters ===
-#
 # @param image String $image,
 #
 # @param user String

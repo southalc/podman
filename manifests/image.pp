@@ -1,7 +1,5 @@
 # @summary pull or remove container images
 #
-# === Parameters ===
-#
 # @param image String
 #   The name of the container image to pull, which should be present in a
 #   configured container registry.

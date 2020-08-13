@@ -5,7 +5,7 @@
 1. [Description](#description)
 2. [Setup - The basics of getting started with podman](#setup)
 3. [Usage - Configuration options and additional functionality](#usage)
-4. [Reference - Module parameters and defined types](#reference)
+4. [Reference - Module parameters and defined types](REFERENCE.md)
 5. [Limitations - OS compatibility, etc.](#limitations)
 6. [Development - Guide for contributing to the module](#development)
 
@@ -43,8 +43,7 @@ This example:
 * The volume and container are both created as user `jenkins`, and the systemd service will run as this same user
 * A systemd service `podman-<user>-<container_name>` is created, enabled, and started
 * The container will be re-deployed any time the image source digest does not match the running container image
-because the default `podman::container::update` value is `true`.
-image
+because the default module setting `podman::container::update` value is `true`.
 ```
 podman::volumes:
   jenkins:

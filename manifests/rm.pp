@@ -1,7 +1,5 @@
 # @summary defined type for container removal, typically invoked from "podman::container"
 #
-# === Parameters ===
-#
 # @param user String
 #   Optional user for running rootless containers
 #
