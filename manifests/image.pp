@@ -5,7 +5,7 @@
 #   configured container registry.
 #
 # @param ensure String
-#   State of the resource, either `present` or `absent`.  (`present`)
+#   State of the resource must be either `present` or `absent`.
 #
 # @param flags Hash
 #   All flags for the 'podman image pull' command are supported, using only the

@@ -31,13 +31,11 @@
 #
 # @param enable Boolean
 #   Status of the automatically generated systemd service for the container.
-#   Default is `true`
 #
 # @param update Boolean
 #   When `true`, the container will be redeployed when a new container image is
 #   detected in the container registry.  This is done by comparing the digest
 #   value of the running container image with the digest of the registry image.
-#   Default is `true`
 #
 # @example
 #   podman::container { 'jenkins':

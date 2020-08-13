@@ -221,7 +221,6 @@ Data type: `Boolean`
 
 Boolean
 Status of the automatically generated systemd service for the container.
-Default is `true`
 
 Default value: ``true``
 
@@ -233,7 +232,6 @@ Boolean
 When `true`, the container will be redeployed when a new container image is
 detected in the container registry.  This is done by comparing the digest
 value of the running container image with the digest of the registry image.
-Default is `true`
 
 Default value: ``true``
 
@@ -271,7 +269,7 @@ configured container registry.
 Data type: `String`
 
 String
-State of the resource, either `present` or `absent`.  (`present`)
+State of the resource must be either `present` or `absent`.
 
 Default value: `'present'`
 
@@ -329,7 +327,7 @@ The following parameters are available in the `podman::pod` defined type.
 
 Data type: `String`
 
-State of the resource.  Valid values are 'present' or 'absent'. (present)
+State of the resource, which must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
@@ -415,7 +413,7 @@ The following parameters are available in the `podman::volume` defined type.
 
 Data type: `String`
 
-State of the resource.  Valid values are 'present' or 'absent'. (present)
+State of the resource must be either 'present' or 'absent'.
 
 Default value: `'present'`
 

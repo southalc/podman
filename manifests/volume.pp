@@ -1,7 +1,7 @@
 # @summary Create a podman volume with defined flags
 #
 # @param ensure [String]
-#   State of the resource.  Valid values are 'present' or 'absent'. (present)
+#   State of the resource must be either 'present' or 'absent'.
 #
 # @param flags [Hash]
 #   All flags for the 'podman volume create' command are supported as part of the

@@ -1,7 +1,7 @@
 # @summary Create a podman pod with defined flags
 #
 # @param ensure [String]
-#   State of the resource.  Valid values are 'present' or 'absent'. (present)
+#   State of the resource, which must be either 'present' or 'absent'.
 #
 # @param flags [Hash]
 #   All flags for the 'podman pod create' command are supported, using only the
