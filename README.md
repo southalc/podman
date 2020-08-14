@@ -49,7 +49,7 @@ This example:
 * The volume and container are both created as user `jenkins`, and the systemd service will run as this same user
 * A systemd service `podman-<user>-<container_name>` is created, enabled, and started
 * The container will be re-deployed any time the image source digest does not match the running container image
-because the default module setting `podman::container::update` value is `true`.
+because the default defined type setting for `podman::container::update` value is `true`.
 ```
 podman::volumes:
   jenkins:
