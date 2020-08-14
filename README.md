@@ -5,7 +5,6 @@
 1. [Description](#description)
 2. [Setup - The basics of getting started with podman](#setup)
 3. [Usage - Configuration options and additional functionality](#usage)
-4. [Reference - Module parameters and defined types](REFERENCE.md)
 5. [Limitations - OS compatibility, etc.](#limitations)
 6. [Development - Guide for contributing to the module](#development)
 
