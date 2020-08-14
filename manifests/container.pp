@@ -14,7 +14,11 @@
 #   All flags for the 'podman container create' command are supported via the
 #   'flags' hash parameter, using only the long form of the flag name.  The
 #   container name will be set as the resource name (namevar) unless the 'name'
-#   flag is included in the flags hash.
+#   flag is included in the flags hash.  If the flags for a container resource
+#   are modified the container will be destroyed and re-deployed during the
+#   next puppet run.  This is achieved by storing the complete set of flags as
+#   a base64 encoded string in a container label named `puppet_resource_flags`
+#   so it can be compared with the assigned resource state.
 #
 # @param service_flags Hash
 #   When a container is created, a systemd unit file for the container service
@@ -93,8 +97,8 @@ define podman::container (
 
   case $ensure {
     'present': {
-      # Detect changes to the defined resource state and re-deploy if needed
-      Exec { "verify_container_state_${container_name}":
+      # Detect changes to the defined podman flags and re-deploy if needed
+      Exec { "verify_container_flags_${container_name}":
         command  => 'true',
         provider => 'shell',
         unless   => @("END"/$L),
@@ -119,16 +123,33 @@ define podman::container (
               then
               image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
               running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
-              latest_digest=\$(skopeo inspect docker://\${image_name} | /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://\${image_name} | /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              test -z "\${latest_digest}" && exit 0                     # Do not attempt to update if unable to get latest digest
+              latest_digest=\$(skopeo inspect docker://\${image_name} | \
+                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://\${image_name} | \
+                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+              test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
               echo "running_digest: \${running_digest}" >/tmp/digest
               echo "latest_digest: \${latest_digest}" >>/tmp/digest
               test "\${running_digest}" = "\${latest_digest}"
             fi
             |END
-          notify   => Exec["podman_remove_container_${container_name}"],
+          notify   => Exec["podman_remove_container_and_image_${container_name}"],
         }
+      }
+
+      Exec { "podman_remove_container_and_image_${container_name}":
+        # Try nicely to stop the container, but then insist
+        provider    => 'shell',
+        command     => @("END"/$L),
+                       image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
+                       systemctl stop podman-${container_name} || podman container stop ${container_name}
+                       podman container rm --force ${container_name}
+                       status=$?
+                       podman rmi --force \${image}
+                       exit \${status}
+                       |END
+        refreshonly => true,
+        notify      => Exec["podman_create_${container_name}"],
       }
 
       Exec { "podman_remove_container_${container_name}":
@@ -138,9 +159,6 @@ define podman::container (
                        image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
                        systemctl stop podman-${container_name} || podman container stop ${container_name}
                        podman container rm --force ${container_name}
-                       status=$?
-                       podman rmi \${image}
-                       exit \${status}
                        |END
         refreshonly => true,
         notify      => Exec["podman_create_${container_name}"],

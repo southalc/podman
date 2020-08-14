@@ -16,6 +16,12 @@ perspective, with the key point of enabling containers to run as an unprivileged
 which is a shared namespace where multiple containers can be deployed and communicate with each other over the loopback
 address of 127.0.0.1
 
+The defined types 'pod', 'image', 'volume', and 'container' are essentially wrappers around the respective podman "create"
+commands (`podman <type> create`).  The defined types support all flags for the command, but require them to be expressed
+using the long form (`--env` instead of `-e`).  Flags that don't have values should set the value to an empty string.  Flags
+that may be used more than once should be expressed as an array.  The Jenkins example configuration below demonstrates some
+of this in the `flags` and `service_flags` hashes.
+
 ## Setup
 
 The module installs packages including 'podman', 'skopeo', and 'podman-docker'.  The 'podman' package provides core functionality

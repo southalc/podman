@@ -180,7 +180,11 @@ Hash
 All flags for the 'podman container create' command are supported via the
 'flags' hash parameter, using only the long form of the flag name.  The
 container name will be set as the resource name (namevar) unless the 'name'
-flag is included in the flags hash.
+flag is included in the flags hash.  If the flags for a container resource
+are modified the container will be destroyed and re-deployed during the
+next puppet run.  This is achieved by storing the complete set of flags as
+a base64 encoded string in a container label named `puppet_resource_flags`
+so it can be compared with the assigned resource state.
 
 Default value: `{}`
 
