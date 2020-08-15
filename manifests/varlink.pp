@@ -4,6 +4,17 @@
 #   State of the resource must be either 'present' or 'absent'.
 #
 # @param socket [String]
+#    Path to where the podman socket should be configured to run
+#
+# @param user [String]
+#    Who should own the socket directory and socket
+#
+# @param group [String]
+#    Which group should own the socket directory and socket
+#
+# @param socket_mode [String]
+#    permissions applied to the socket
+#
 define podman::varlink (
   String $ensure      = 'present',
   String $socket      = '/run/podman/io.podman',
