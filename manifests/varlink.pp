@@ -24,7 +24,7 @@ define podman::varlink (
 ) {
 
   # write temp file config
-  $working_directory = join(split($socket, "/")[0,-1], "/")
+  $working_directory = join(split($socket, "/")[0,-2], "/")
   $contents = "d ${working_directory} ${socket_mode} ${user} ${group}"
   file { "/etc/tmpfiles.d/podman.conf" :
       ensure  => $ensure,
