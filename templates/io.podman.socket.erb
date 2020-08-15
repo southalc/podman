@@ -1,0 +1,12 @@
+[Unit]
+Description=Podman Remote API Socket
+Documentation=man:podman-varlink(1)
+
+[Socket]
+ListenStream=<%= socket %>
+SocketMode=<%= socket_mode %>
+SocketUser=<%= user %>
+SocketGroup=<%= group %>
+
+[Install]
+WantedBy=sockets.target

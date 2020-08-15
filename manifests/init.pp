@@ -55,6 +55,7 @@ class podman (
   Hash $volumes             = {},
   Hash $images              = {},
   Hash $containers          = {},
+  Hash $varlink             = {},
 ){
   include podman::install
 
@@ -63,4 +64,5 @@ class podman (
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
+  Resource['Podman::Varlink'] { "varlink": * => $varlink}
 }
