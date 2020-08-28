@@ -20,6 +20,8 @@
 * [`podman::image`](#podmanimage): pull or remove container images
 * [`podman::pod`](#podmanpod): Create a podman pod with defined flags
 * [`podman::rm`](#podmanrm): defined type for container removal, typically invoked from "podman::container"
+* [`podman::subgid`](#podmansubgid): A short summary of the purpose of this defined type.
+* [`podman::subuid`](#podmansubuid): Manage entries in `/etc/subuid`
 * [`podman::volume`](#podmanvolume): Create a podman volume with defined flags
 
 ## Classes
@@ -113,6 +115,43 @@ Default value: `{}`
 Data type: `Hash`
 
 A hash of containers to manage using [`podman::container`](#podmancontainer)
+
+Default value: `{}`
+
+##### `manage_subuid`
+
+Data type: `Boolean`
+
+Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+
+Default value: ``true``
+
+##### `file_header`
+
+Data type: `String`
+
+Optional header when `manage_subuid` is true.  Ensure you include a leading `#`.
+Default file_header is `# FILE MANAGED BY PUPPET`
+
+Default value: `'# FILE MANAGED BY PUPPET'`
+
+##### `match_subuid_subgid`
+
+Data type: `Boolean`
+
+Enable the `subid` parameter to manage both subuid and subgid entries with the same values.
+This setting requires `manage_subuid` to be `true` or it will have no effect.
+(default is true)
+
+Default value: ``true``
+
+##### `subid`
+
+Data type: `Hash`
+
+A hash of users (or UIDs) with assigned subordinate user ID number and an count.
+Implemented by using the `subuid` and `subgid` defined types with the same data.
+Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 
 Default value: `{}`
 
@@ -392,6 +431,98 @@ this way avoids using an external fact to lookup the home directory of
 all users.
 
 Default value: `''`
+
+### `podman::subgid`
+
+A description of what this defined type does
+
+#### Examples
+
+##### 
+
+```puppet
+podman::subgid { 'namevar':
+  subgid => 1000000
+  count  => 65535
+}
+```
+
+#### Parameters
+
+The following parameters are available in the `podman::subgid` defined type.
+
+##### `ensure`
+
+Boolean
+State of the resource, present or absent. Default is 'present'
+
+##### `subgid`
+
+Data type: `Integer`
+
+Integer
+Numerical subordinate user ID
+
+##### `count`
+
+Data type: `Integer`
+
+Integer
+Numerical subordinate user ID count
+
+##### `order`
+
+Data type: `Integer`
+
+
+
+Default value: `10`
+
+### `podman::subuid`
+
+A description of what this defined type does
+
+#### Examples
+
+##### 
+
+```puppet
+podman::subuid { 'namevar':
+  subuid => 1000000
+  count  => 65535
+}
+```
+
+#### Parameters
+
+The following parameters are available in the `podman::subuid` defined type.
+
+##### `ensure`
+
+Boolean
+State of the resource, present or absent. Default is 'present'
+
+##### `subuid`
+
+Data type: `Integer`
+
+Integer
+Numerical subordinate user ID
+
+##### `count`
+
+Data type: `Integer`
+
+Integer
+Numerical subordinate user ID count
+
+##### `order`
+
+Data type: `Integer`
+
+
+
+Default value: `10`
 
 ### `podman::volume`
 

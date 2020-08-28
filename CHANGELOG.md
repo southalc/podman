@@ -1,11 +1,10 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## Release 0.1.2
+
+### New features
+* Added the ability to manage subuid/subgid files.
 
 ## Release 0.1.0
 
-**Features**
-
-**Bugfixes**
-
-**Known Issues**
+* Initial Release

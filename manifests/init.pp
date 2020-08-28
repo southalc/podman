@@ -21,6 +21,22 @@
 # @param containers [Hash]
 #   A hash of containers to manage using [`podman::container`](#podmancontainer)
 #
+# @param manage_subuid [Boolean]
+#   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+#
+# @param file_header [String]
+#   Optional header when `manage_subuid` is true.  Ensure you include a leading `#`.
+#   Default file_header is `# FILE MANAGED BY PUPPET`
+#
+# @param match_subuid_subgid [Boolean]
+#   Enable the `subid` parameter to manage both subuid and subgid entries with the same values.
+#   This setting requires `manage_subuid` to be `true` or it will have no effect.
+#   (default is true)
+#
+# @param subid [Hash]
+#   A hash of users (or UIDs) with assigned subordinate user ID number and an count.
+#   Implemented by using the `subuid` and `subgid` defined types with the same data.
+#   Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 #
 # @example Basic usage
 #   include podman
@@ -51,16 +67,59 @@ class podman (
   String $podman_pkg,
   String $skopeo_pkg,
   Optional[String] $podman_docker_pkg,
-  Hash $pods                = {},
-  Hash $volumes             = {},
-  Hash $images              = {},
-  Hash $containers          = {},
+  Boolean $manage_subuid       = true,
+  Boolean $match_subuid_subgid = true,
+  String $file_header          = '# FILE MANAGED BY PUPPET',
+  Hash $subid                  = {},
+  Hash $pods                   = {},
+  Hash $volumes                = {},
+  Hash $images                 = {},
+  Hash $containers             = {},
 ){
   include podman::install
+
+  if $manage_subuid {
+    Concat { '/etc/subuid':
+      owner          => 'root',
+      group          => 'root',
+      mode           => '0644',
+      order          => 'alpha',
+      ensure_newline => true,
+    }
+
+    concat_fragment { 'subuid_header':
+      target  => '/etc/subuid',
+      order   => 1,
+      content => $file_header,
+    }
+
+    Concat { '/etc/subgid':
+      owner          => 'root',
+      group          => 'root',
+      mode           => '0644',
+      order          => 'alpha',
+      ensure_newline => true,
+    }
+
+    concat_fragment { 'subgid_header':
+      target  => '/etc/subgid',
+      order   => 1,
+      content => $file_header,
+    }
+
+    if $match_subuid_subgid {
+      $subid.each |$name, $properties| {
+        Resource['Podman::Subuid'] { $name: * => $properties }
+        $subgid = { subgid => $properties['subuid'], count => $properties['count'] }
+        Resource['Podman::Subgid'] { $name: * => $subgid }
+      }
+    }
+  }
 
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
+
 }
