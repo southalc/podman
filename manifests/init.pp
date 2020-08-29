@@ -23,6 +23,9 @@
 #
 # @param manage_subuid [Boolean]
 #   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+#   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
+#   out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
+#   with another method.
 #
 # @param file_header [String]
 #   Optional header when `manage_subuid` is true.  Ensure you include a leading `#`.
@@ -114,6 +117,11 @@ class podman (
         Resource['Podman::Subgid'] { $name: * => $subgid }
       }
     }
+  }
+
+  selboolean { 'container_manage_cgroup':
+    persistent => true,
+    value      => on,
   }
 
   # Create resources from parameter hashes
