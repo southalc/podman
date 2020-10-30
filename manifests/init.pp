@@ -41,6 +41,10 @@
 #   Implemented by using the `subuid` and `subgid` defined types with the same data.
 #   Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 #
+# @param nodocker [Enum]
+#   Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
+#   Values should be either 'file' or 'absent'. (default is 'absent')
+#
 # @example Basic usage
 #   include podman
 #
@@ -70,14 +74,15 @@ class podman (
   String $podman_pkg,
   String $skopeo_pkg,
   Optional[String] $podman_docker_pkg,
-  Boolean $manage_subuid       = true,
-  Boolean $match_subuid_subgid = true,
-  String $file_header          = '# FILE MANAGED BY PUPPET',
-  Hash $subid                  = {},
-  Hash $pods                   = {},
-  Hash $volumes                = {},
-  Hash $images                 = {},
-  Hash $containers             = {},
+  Boolean $manage_subuid           = true,
+  Boolean $match_subuid_subgid     = true,
+  String $file_header              = '# FILE MANAGED BY PUPPET',
+  Enum['absent', 'file'] $nodocker = 'absent',
+  Hash $subid                      = {},
+  Hash $pods                       = {},
+  Hash $volumes                    = {},
+  Hash $images                     = {},
+  Hash $containers                 = {},
 ){
   include podman::install
 
