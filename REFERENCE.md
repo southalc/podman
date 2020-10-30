@@ -20,7 +20,7 @@
 * [`podman::image`](#podmanimage): pull or remove container images
 * [`podman::pod`](#podmanpod): Create a podman pod with defined flags
 * [`podman::rm`](#podmanrm): defined type for container removal, typically invoked from "podman::container"
-* [`podman::subgid`](#podmansubgid): A short summary of the purpose of this defined type.
+* [`podman::subgid`](#podmansubgid): Define an entry in the `/etc/subgid` file.
 * [`podman::subuid`](#podmansubuid): Manage entries in `/etc/subuid`
 * [`podman::volume`](#podmanvolume): Create a podman volume with defined flags
 
@@ -123,6 +123,9 @@ Default value: `{}`
 Data type: `Boolean`
 
 Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
+out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
+with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.
 
 Default value: ``true``
 
@@ -154,6 +157,15 @@ Implemented by using the `subuid` and `subgid` defined types with the same data.
 Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 
 Default value: `{}`
+
+##### `nodocker`
+
+Data type: `Enum['absent', 'file']`
+
+Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
+Values should be either 'file' or 'absent'. (default is 'absent')
+
+Default value: `'absent'`
 
 ## Defined types
 
@@ -434,14 +446,14 @@ Default value: `''`
 
 ### `podman::subgid`
 
-A description of what this defined type does
+Define an entry in the `/etc/subgid` file.
 
 #### Examples
 
 ##### 
 
 ```puppet
-podman::subgid { 'namevar':
+podman::subgid { 'myuser':
   subgid => 1000000
   count  => 65535
 }
@@ -451,43 +463,39 @@ podman::subgid { 'namevar':
 
 The following parameters are available in the `podman::subgid` defined type.
 
-##### `ensure`
-
-Boolean
-State of the resource, present or absent. Default is 'present'
-
 ##### `subgid`
 
 Data type: `Integer`
 
 Integer
-Numerical subordinate user ID
+Numerical subordinate group ID
 
 ##### `count`
 
 Data type: `Integer`
 
 Integer
-Numerical subordinate user ID count
+Numerical subordinate group ID count
 
 ##### `order`
 
 Data type: `Integer`
 
-
+Integer
+Fragment order for /etc/subgid entries
 
 Default value: `10`
 
 ### `podman::subuid`
 
-A description of what this defined type does
+Manage entries in `/etc/subuid`
 
 #### Examples
 
 ##### 
 
 ```puppet
-podman::subuid { 'namevar':
+podman::subuid { 'myuser':
   subuid => 1000000
   count  => 65535
 }
@@ -496,11 +504,6 @@ podman::subuid { 'namevar':
 #### Parameters
 
 The following parameters are available in the `podman::subuid` defined type.
-
-##### `ensure`
-
-Boolean
-State of the resource, present or absent. Default is 'present'
 
 ##### `subuid`
 
@@ -520,7 +523,8 @@ Numerical subordinate user ID count
 
 Data type: `Integer`
 
-
+Integer
+Fragment order for /etc/subuid entries
 
 Default value: `10`
 

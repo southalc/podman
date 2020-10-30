@@ -1,18 +1,16 @@
-# @summary A short summary of the purpose of this defined type.
-#
-# @param ensure Boolean
-#   State of the resource, present or absent. Default is 'present'
+# @summary Define an entry in the `/etc/subgid` file.
 #
 # @param subgid Integer
-#   Numerical subordinate user ID
+#   Numerical subordinate group ID
 #
 # @param count Integer
-#   Numerical subordinate user ID count
+#   Numerical subordinate group ID count
 #
-# A description of what this defined type does
+# @param order  Integer
+#   Fragment order for /etc/subgid entries
 #
 # @example
-#   podman::subgid { 'namevar':
+#   podman::subgid { 'myuser':
 #     subgid => 1000000
 #     count  => 65535
 #   }

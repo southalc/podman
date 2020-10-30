@@ -1,18 +1,16 @@
 # @summary Manage entries in `/etc/subuid`
 #
-# @param ensure Boolean
-#   State of the resource, present or absent. Default is 'present'
-#
 # @param subuid Integer
 #   Numerical subordinate user ID
 #
 # @param count Integer
 #   Numerical subordinate user ID count
 #
-# A description of what this defined type does
+# @param order  Integer
+#   Fragment order for /etc/subuid entries
 #
 # @example
-#   podman::subuid { 'namevar':
+#   podman::subuid { 'myuser':
 #     subuid => 1000000
 #     count  => 65535
 #   }
@@ -20,7 +18,7 @@
 define podman::subuid (
   Integer $subuid,
   Integer $count,
-  Integer $order                    = 10,
+  Integer $order   = 10,
 ) {
 
   Concat::Fragment { "subuid_fragment_${title}":

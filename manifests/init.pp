@@ -25,7 +25,7 @@
 #   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
 #   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
 #   out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
-#   with another method.
+#   with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.
 #
 # @param file_header [String]
 #   Optional header when `manage_subuid` is true.  Ensure you include a leading `#`.
@@ -85,49 +85,6 @@ class podman (
   Hash $containers                 = {},
 ){
   include podman::install
-
-  if $manage_subuid {
-    Concat { '/etc/subuid':
-      owner          => 'root',
-      group          => 'root',
-      mode           => '0644',
-      order          => 'alpha',
-      ensure_newline => true,
-    }
-
-    concat_fragment { 'subuid_header':
-      target  => '/etc/subuid',
-      order   => 1,
-      content => $file_header,
-    }
-
-    Concat { '/etc/subgid':
-      owner          => 'root',
-      group          => 'root',
-      mode           => '0644',
-      order          => 'alpha',
-      ensure_newline => true,
-    }
-
-    concat_fragment { 'subgid_header':
-      target  => '/etc/subgid',
-      order   => 1,
-      content => $file_header,
-    }
-
-    if $match_subuid_subgid {
-      $subid.each |$name, $properties| {
-        Resource['Podman::Subuid'] { $name: * => $properties }
-        $subgid = { subgid => $properties['subuid'], count => $properties['count'] }
-        Resource['Podman::Subgid'] { $name: * => $subgid }
-      }
-    }
-  }
-
-  selboolean { 'container_manage_cgroup':
-    persistent => true,
-    value      => on,
-  }
 
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
