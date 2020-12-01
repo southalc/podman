@@ -19,7 +19,7 @@
 * [`podman::container`](#podmancontainer): manage podman container and register as a systemd service
 * [`podman::image`](#podmanimage): pull or remove container images
 * [`podman::pod`](#podmanpod): Create a podman pod with defined flags
-* [`podman::rm`](#podmanrm): defined type for container removal, typically invoked from "podman::container"
+* [`podman::rootless`](#podmanrootless): Enable rootless podman containers to run as a systemd user service.
 * [`podman::subgid`](#podmansubgid): Define an entry in the `/etc/subgid` file.
 * [`podman::subuid`](#podmansubuid): Manage entries in `/etc/subuid`
 * [`podman::volume`](#podmanvolume): Create a podman volume with defined flags
@@ -41,14 +41,16 @@ include podman
 ##### A rootless Jenkins deployment using hiera
 
 ```puppet
+podman::subid:
+  jenkins:
+    subuid: 2000000
+    count: 65535
 podman::volumes:
   jenkins:
     user: jenkins
-    homedir: /home/jenkins
 podman::containers:
   jenkins:
     user: jenkins
-    homedir: /home/jenkins
     image: 'docker.io/jenkins/jenkins:lts'
     flags:
       label:
@@ -127,7 +129,7 @@ The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fra
 out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
 with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.
 
-Default value: ``true``
+Default value: ``false``
 
 ##### `file_header`
 
@@ -181,7 +183,6 @@ manage podman container and register as a systemd service
 podman::container { 'jenkins':
   image         => 'docker.io/jenkins/jenkins',
   user          => 'jenkins',
-  homedir       => '/home/jenkins',
   flags         => {
                    publish => [
                               '8080:8080',
@@ -202,24 +203,19 @@ The following parameters are available in the `podman::container` defined type.
 Data type: `String`
 
 String $image,
+Container registry source of the image being deployed.  Required when
+`ensure` is `present` but optional when `ensure` is set to `absent`.
+
+Default value: `''`
 
 ##### `user`
 
 Data type: `String`
 
 String
-Optional user for running rootless containers
-
-Default value: `''`
-
-##### `homedir`
-
-Data type: `String`
-
-String
-The `homedir` parameter is required when `user` is defined.  Defining it
-this way avoids using an external fact to lookup the home directory of
-all users.
+Optional user for running rootless containers.  For rootless containers,
+the user must also be defined as a puppet resource that includes at least
+'uid', 'gid', and 'home' attributes.
 
 Default value: `''`
 
@@ -343,18 +339,9 @@ Default value: `{}`
 Data type: `String`
 
 String
-Optional user for running rootless containers
-
-Default value: `''`
-
-##### `homedir`
-
-Data type: `String`
-
-String
-The `homedir` parameter is required when `user` is defined.  Defining it
-this way avoids using an external fact to lookup the home directory of
-all users.
+Optional user for running rootless containers.  When using this parameter,
+the user must also be defined as a Puppet resource and must include the
+'uid', 'gid', and 'home'
 
 Default value: `''`
 
@@ -401,48 +388,15 @@ Default value: `{}`
 Data type: `String`
 
 String
-Optional user for running rootless containers
+Optional user for running rootless containers.  When using this parameter,
+the user must also be defined as a Puppet resource and must include the
+'uid', 'gid', and 'home'
 
 Default value: `''`
 
-##### `homedir`
+### `podman::rootless`
 
-Data type: `String`
-
-String
-The `homedir` parameter is required when `user` is defined.  Defining it
-this way avoids using an external fact to lookup the home directory of
-all users.
-
-Default value: `''`
-
-### `podman::rm`
-
-defined type for container removal, typically invoked from "podman::container"
-
-#### Parameters
-
-The following parameters are available in the `podman::rm` defined type.
-
-##### `user`
-
-Data type: `String`
-
-String
-Optional user for running rootless containers
-
-Default value: `''`
-
-##### `homedir`
-
-Data type: `String`
-
-String
-The `homedir` parameter is required when `user` is defined.  Defining it
-this way avoids using an external fact to lookup the home directory of
-all users.
-
-Default value: `''`
+Enable rootless podman containers to run as a systemd user service.
 
 ### `podman::subgid`
 
@@ -482,7 +436,7 @@ Numerical subordinate group ID count
 Data type: `Integer`
 
 Integer
-Fragment order for /etc/subgid entries
+Sequence number for concat fragments#
 
 Default value: `10`
 
@@ -495,7 +449,7 @@ Manage entries in `/etc/subuid`
 ##### 
 
 ```puppet
-podman::subuid { 'myuser':
+podman::subuid { 'namevar':
   subuid => 1000000
   count  => 65535
 }
@@ -524,7 +478,7 @@ Numerical subordinate user ID count
 Data type: `Integer`
 
 Integer
-Fragment order for /etc/subuid entries
+Sequence number for concat fragments
 
 Default value: `10`
 
@@ -539,8 +493,8 @@ Create a podman volume with defined flags
 ```puppet
 podman::volume { 'myvolume':
   flags => {
-           label => 'use=test, app=wordpress',
-           }
+    label => 'use=test, app=wordpress',
+  }
 }
 ```
 
@@ -572,18 +526,9 @@ Default value: `{}`
 Data type: `String`
 
 String
-Optional user for running rootless containers
-
-Default value: `''`
-
-##### `homedir`
-
-Data type: `String`
-
-String
-The `homedir` parameter is required when `user` is defined.  Defining it
-this way avoids using an external fact to lookup the home directory of
-all users.
+Optional user for running rootless containers.  When using this parameter,
+the user must also be defined as a Puppet resource and must include the
+'uid', 'gid', and 'home'
 
 Default value: `''`
 

@@ -1,14 +1,13 @@
 # @summary manage podman container and register as a systemd service
 #
 # @param image String $image,
+#   Container registry source of the image being deployed.  Required when
+#   `ensure` is `present` but optional when `ensure` is set to `absent`.
 #
 # @param user String
-#   Optional user for running rootless containers
-#
-# @param homedir String
-#   The `homedir` parameter is required when `user` is defined.  Defining it
-#   this way avoids using an external fact to lookup the home directory of
-#   all users.
+#   Optional user for running rootless containers.  For rootless containers,
+#   the user must also be defined as a puppet resource that includes at least
+#   'uid', 'gid', and 'home' attributes.
 #
 # @param flags Hash
 #   All flags for the 'podman container create' command are supported via the
@@ -45,7 +44,6 @@
 #   podman::container { 'jenkins':
 #     image         => 'docker.io/jenkins/jenkins',
 #     user          => 'jenkins',
-#     homedir       => '/home/jenkins',
 #     flags         => {
 #                      publish => [
 #                                 '8080:8080',
@@ -57,9 +55,8 @@
 #   }
 #
 define podman::container (
-  String $image,
+  String $image       = '',
   String $user        = '',
-  String $homedir     = '',
   Hash $flags         = {},
   Hash $service_flags = {},
   String $command     = '',
@@ -67,6 +64,7 @@ define podman::container (
   Boolean $enable     = true,
   Boolean $update     = true,
 ){
+
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
   $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %>')).chomp()
@@ -80,42 +78,89 @@ define podman::container (
     $no_label = $flags
   }
 
-  # A rootless container will run as the defined user
-  if $user == '' {
-    $merged_flags = merge({ name => $title, label => $label}, $no_label )
-    Exec { path => '/sbin:/usr/sbin:/bin:/usr/bin' }
-  } else {
-    $merged_flags = merge({ name => "${user}_${title}", label => $label}, $no_label )
-    Exec {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-      user        => $user,
-      environment => [ "HOME=${homedir}", ],
-    }
-  }
+  # If a container name is not set, use the Puppet resource name
+  $merged_flags = merge({ name => $title, label => $label}, $no_label )
   $container_name = $merged_flags['name']
 
+  # A rootless container will run as the defined user
+  if $user != '' {
+    ensure_resource('podman::rootless', $user, {})
+    $systemctl = 'systemctl --user '
+
+    # The handle is used to ensure resources have unique names
+    $handle = "${user}-${container_name}"
+
+    # Set default execution environment for the rootless user
+    $exec_defaults = {
+      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      environment => [
+        "HOME=${User[$user]['home']}",
+        "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+      ],
+      cwd         => User[$user]['home'],
+      user        => $user,
+      require  => [
+        Podman::Rootless[$user],
+        Service['systemd-logind'],
+      ],
+    }
+    $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+
+    # Reload systemd when service files are updated
+    ensure_resource('Exec', "podman_systemd_${user}_reload", {
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+        command     => 'systemctl --user daemon-reload',
+        refreshonly => true,
+        environment => [
+          "HOME=${User[$user]['home']}",
+          "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+        ],
+        cwd         => User[$user]['home'],
+        provider    => 'shell',
+        user        => $user,
+      }
+    )
+  } else {
+    $systemctl = 'systemctl '
+    $handle = $container_name
+    $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
+    $exec_defaults = {
+      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+    }
+
+    # Reload systemd when service files are updated
+    ensure_resource('Exec', 'podman_systemd_reload', {
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+        command     => 'systemctl daemon-reload',
+        refreshonly => true,
+      }
+    )
+  }
 
   case $ensure {
     'present': {
+      if $image == '' { fail('A source image is required') }
+
       # Detect changes to the defined podman flags and re-deploy if needed
-      Exec { "verify_container_flags_${container_name}":
+      Exec { "verify_container_flags_${handle}":
         command  => 'true',
         provider => 'shell',
         unless   => @("END"/$L),
-          if podman container exists ${container_name}
-            then
-            saved_resource_flags="\$(podman container inspect ${container_name} \
-              --format '{{.Config.Labels.puppet_resource_flags}}' | tr -d '\n')"
-            current_resource_flags="\$(echo '${flags_base64}' | tr -d '\n')"
-            test "\${saved_resource_flags}" = "\${current_resource_flags}"
-          fi
-          |END
-        notify   => Exec["podman_remove_container_${container_name}"],
+                   if podman container exists ${container_name}
+                     then
+                     saved_resource_flags="\$(podman container inspect ${container_name} \
+                       --format '{{.Config.Labels.puppet_resource_flags}}' | tr -d '\n')"
+                     current_resource_flags="\$(echo '${flags_base64}' | tr -d '\n')"
+                     test "\${saved_resource_flags}" = "\${current_resource_flags}"
+                   fi
+                   |END
+        notify   => Exec["podman_remove_container_${handle}"],
+        *        => $exec_defaults,
       }
 
-      # Re-deploy when the container image has been updated
+      # Re-deploy if the container image has been updated and $update is true
       if $update {
-        Exec { "verify_container_image_${container_name}":
+        Exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
           unless   => @("END"/$L),
@@ -133,35 +178,38 @@ define podman::container (
               test "\${running_digest}" = "\${latest_digest}"
             fi
             |END
-          notify   => Exec["podman_remove_container_and_image_${container_name}"],
+          notify   => Exec["podman_remove_container_and_image_${handle}"],
+          *        => $exec_defaults,
         }
       }
 
-      Exec { "podman_remove_container_and_image_${container_name}":
+      Exec { "podman_remove_container_and_image_${handle}":
         # Try nicely to stop the container, but then insist
         provider    => 'shell',
         command     => @("END"/$L),
                        image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
-                       systemctl stop podman-${container_name} || podman container stop ${container_name}
+                       ${systemctl} stop podman-${container_name} || podman container stop ${container_name}
                        podman container rm --force ${container_name}
                        status=$?
                        podman rmi --force \${image}
                        exit \${status}
                        |END
         refreshonly => true,
-        notify      => Exec["podman_create_${container_name}"],
+        notify      => Exec["podman_create_${handle}"],
+        *           => $exec_defaults,
       }
 
-      Exec { "podman_remove_container_${container_name}":
+      Exec { "podman_remove_container_${handle}":
         # Try nicely to stop the container, but then insist
         provider    => 'shell',
         command     => @("END"/$L),
                        image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
-                       systemctl stop podman-${container_name} || podman container stop ${container_name}
+                       ${systemctl} stop podman-${container_name} || podman container stop ${container_name}
                        podman container rm --force ${container_name}
                        |END
         refreshonly => true,
-        notify      => Exec["podman_create_${container_name}"],
+        notify      => Exec["podman_create_${handle}"],
+        *           => $exec_defaults,
       }
 
       # Convert $merged_flags hash to usable command arguments
@@ -181,94 +229,70 @@ define podman::container (
         "${mem} --${flag[0]} \"${flag[1]}\""
       }
 
-
-      if $user != '' {
-        ensure_resource('Exec', "tmpfies_clean_${user}", {
-            command  => "echo \"# FILE MANAGED BY PUPPET\nR! /tmp/run-\$(id -u ${user})\" >\"/etc/tmpfiles.d/${user}-podman.conf\"",
-            provider => 'shell',
-            user     => 'root',
-            creates  => "/etc/tmpfiles.d/${user}-podman.conf",
-          }
-        )
-
-        Exec { "podman_create_${container_name}":
-          command => "podman container create ${_flags} ${image} ${command}",
-          unless  => "podman container exists ${container_name}",
-          notify  => Exec["podman_tmp_${container_name}_service"],
-        }
-
-        Exec { "podman_tmp_${container_name}_service":
-          command     => @("END"/L),
-                         podman generate systemd ${_service_flags} ${container_name} \
-                          > "/var/tmp/podman-${container_name}.service"
-                         |END
-          refreshonly => true,
-          notify      => Exec["podman_${container_name}_service"],
-        }
-
-        Exec { "podman_${container_name}_service":
-          command     => @("END"/L),
-                         cp "/var/tmp/podman-${container_name}.service" \
-                           "/etc/systemd/system/podman-${container_name}.service" && \
-                         rm "/var/tmp/podman-${container_name}.service"
-                         |END
-          refreshonly => true,
-          notify      => Ini_setting["podman_${container_name}_service"],
-          user        => 'root',
-        }
-
-        Ini_setting { "podman_${container_name}_service":
-          ensure  => 'present',
-          path    => "/etc/systemd/system/podman-${container_name}.service",
-          section => 'Service',
-          setting => 'User',
-          value   => $user,
-          notify  => [
-            Exec['podman_systemd_reload'],
-            Service["podman-${container_name}"],
-          ],
-        }
-      } else {
-        Exec { "podman_create_${container_name}":
-          command => "podman container create ${_flags} ${image} ${command}",
-          unless  => "podman container exists ${container_name}",
-          notify  => Exec["podman_${container_name}_service"],
-        }
-
-        Exec { "podman_${container_name}_service":
-          command     => @("END"/L),
-                         podman generate systemd ${_service_flags} ${container_name} \
-                          > "/etc/systemd/system/podman-${container_name}.service"
-                         |END
-          refreshonly => true,
-          notify      => [
-            Exec['podman_systemd_reload'],
-            Service["podman-${container_name}"],
-          ],
-        }
+      Exec { "podman_create_${handle}":
+        command => "podman container create ${_flags} ${image} ${command}",
+        unless  => "podman container exists ${container_name}",
+        notify  => Exec["podman_generate_service_${handle}"],
+        *       => $exec_defaults,
       }
 
-      # Configure the container service per parameters
-      if $enable { $running = 'running' } else { $running = 'stopped' }
-      Service { "podman-${container_name}":
-        ensure  => $running,
-        enable  => $enable,
-        require => Exec['podman_systemd_reload'],
+      if $user != '' {
+        Exec { "podman_generate_service_${handle}":
+          command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
+          refreshonly => true,
+          notify      => Exec["service_podman_${handle}"],
+          *           => $exec_defaults,
+        }
+
+        # Work-around for managing user systemd services
+        if $enable { $action = 'start'; $startup = 'enable' }
+          else { $action = 'stop'; $startup = 'disable'
+        }
+        Exec { "service_podman_${handle}":
+          command => @("END"/L),
+                     ${systemctl} ${startup} podman-${container_name}.service
+                     ${systemctl} ${action} podman-${container_name}.service
+                     |END
+          unless  => @("END"/L),
+                     ${systemctl} is-active podman-${container_name}.service && \
+                       ${systemctl} is-enabled podman-${container_name}.service
+                     |END
+          *       => $exec_defaults,
+        }
+        Exec["podman_systemd_${user}_reload"] -> Exec["service_podman_${handle}"]
+      }
+      else {
+        Exec { "podman_generate_service_${container_name}":
+          path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+          command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
+          refreshonly => true,
+          notify      => Service["podman-${container_name}"],
+        }
+
+        # Configure the container service per parameters
+        if $enable { $state = 'running'; $startup = 'true' }
+          else { $state = 'stopped'; $startup = 'false'
+        }
+        Service { "podman-${container_name}":
+          ensure => $state,
+          enable => $startup,
+        }
       }
     }
 
     'absent': {
-      Exec { "podman_remove_container_${container_name}":
+      Exec { "podman_remove_container_${handle}":
         # Try nicely to stop the container, but then insist
         command => @("END"/L),
-                   systemctl stop podman-${container_name} || \
-                   podman container stop --time 60 ${container_name}
+                   ${systemctl} stop podman-${container_name} || \
+                     podman container stop --time 60 ${container_name}
                    podman container rm --force ${container_name}
                    |END
         unless  => "podman container exists ${container_name}; test $? -eq 1",
+        *       => $exec_defaults,
       }
 
-      File { "/etc/systemd/system/podman-${container_name}.service":
+      File { $service_unit_file:
         ensure => absent,
         notify => Exec['podman_systemd_reload'],
       }
@@ -278,11 +302,5 @@ define podman::container (
       fail('"ensure" must be "present" or "absent"')
     }
   }
-
-  # Reload systemd when service files are updated
-  ensure_resource('Exec', 'podman_systemd_reload', {
-      command     => 'systemctl daemon-reload',
-      refreshonly => true,
-    }
-  )
 }
+

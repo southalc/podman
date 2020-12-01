@@ -9,13 +9,9 @@
 #   pod name unless the 'name' flag is included in the hash of flags.
 #
 # @param user String
-#   Optional user for running rootless containers
-#
-# @param homedir String
-#   The `homedir` parameter is required when `user` is defined.  Defining it
-#   this way avoids using an external fact to lookup the home directory of
-#   all users.
-#
+#   Optional user for running rootless containers.  When using this parameter,
+#   the user must also be defined as a Puppet resource and must include the
+#   'uid', 'gid', and 'home'
 #
 # @example
 #   podman::pod { 'mypod':
@@ -28,7 +24,6 @@ define podman::pod (
   String $ensure = 'present',
   Hash $flags    = {},
   String $user    = '',
-  String $homedir = '',
 ) {
   # The resource name will be the pod name by default
   $name_flags = merge({ name => $title }, $flags )
@@ -40,14 +35,28 @@ define podman::pod (
   }
 
   if $user != '' {
-    if $homedir == '' { fail("Running as user ${user} requires 'homedir' parameter") }
-    Exec {
-      path    => '/sbin:/usr/sbin:/bin:/usr/bin',
+    ensure_resource('podman::rootless', $user, {})
+
+    # Set execution environment for the rootless user
+    $exec_defaults = {
+      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      environment => [
+        "HOME=${User[$user]['home']}",
+        "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+      ],
+      cwd         => User[$user]['home'],
+      provider    => 'shell',
       user        => $user,
-      environment => [ "HOME=${homedir}", ],
+      require     => [
+        Podman::Rootless[$user],
+        Service['systemd-logind'],
+      ],
     }
   } else {
-    Exec { path => '/sbin:/usr/sbin:/bin:/usr/bin', }
+    $exec_defaults = {
+      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      provider    => 'shell',
+    }
   }
 
   case $ensure {
@@ -55,12 +64,14 @@ define podman::pod (
       Exec { "create_pod_${pod_name}":
         command => "podman pod create ${_flags}",
         unless  => "podman pod exists ${pod_name}",
+        *       => $exec_defaults,
       }
     }
     'absent': {
       Exec { "remove_pod_${pod_name}":
         command => "podman pod rm ${pod_name}",
         unless  => "podman pod exists ${pod_name}; test $? -eq 1",
+        *       => $exec_defaults,
       }
     }
     default: {

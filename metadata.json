@@ -1,6 +1,6 @@
 {
   "name": "southalc-podman",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "author": "Chris Southall",
   "summary": "Manage podman containers with puppet",
   "license": "Apache-2.0",
@@ -8,26 +8,38 @@
   "project_page": "https://github.com/southalc/podman",
   "issues_url": "https://github.com/southalc/podman/issues",
   "dependencies": [
-    { "name": "puppetlabs/stdlib", "version_requirement": ">= 4.1.0 <= 7.0.0" },
-    { "name": "puppetlabs/concat", "version_requirement": ">= 2.1.0 <= 7.0.0" },
-    { "name": "puppetlabs/selinux_core", "version_requirement": ">= 1.0.0 <= 2.0.0" }
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.1.0 <= 7.0.0"
+    },
+    {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 2.1.0 <= 7.0.0"
+    },
+    {
+      "name": "puppetlabs/selinux_core",
+      "version_requirement": ">= 1.0.0 <= 2.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "7"
+        "7",
+        "8"
       ]
     },
     {
       "operatingsystem": "OracleLinux",
       "operatingsystemrelease": [
-        "7"
+        "7",
+        "8"
       ]
     },
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
+        "7",
         "8"
       ]
     },
@@ -40,17 +52,21 @@
     {
       "operatingsystem": "Fedora",
       "operatingsystemrelease": [
-        "29"
+        "29",
+        "30",
+        "31",
+        "32",
+        "33"
       ]
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 4.10.0 < 7.0.0"
+      "version_requirement": ">= 4.10.0 < 8.0.0"
     }
   ],
-  "pdk-version": "1.14.1",
-  "template-url": "pdk-default#1.14.1",
-  "template-ref": "1.14.1-0-g0b5b39b"
+  "pdk-version": "1.18.1",
+  "template-url": "pdk-default#1.18.1",
+  "template-ref": "tags/1.18.1-0-g3d2e75c"
 }

@@ -6,8 +6,8 @@
 # @param count Integer
 #   Numerical subordinate group ID count
 #
-# @param order  Integer
-#   Fragment order for /etc/subgid entries
+# @param order Integer
+#   Sequence number for concat fragments#
 #
 # @example
 #   podman::subgid { 'myuser':

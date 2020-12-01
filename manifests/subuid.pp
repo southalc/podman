@@ -6,11 +6,11 @@
 # @param count Integer
 #   Numerical subordinate user ID count
 #
-# @param order  Integer
-#   Fragment order for /etc/subuid entries
+# @param order Integer
+#   Sequence number for concat fragments
 #
 # @example
-#   podman::subuid { 'myuser':
+#   podman::subuid { 'namevar':
 #     subuid => 1000000
 #     count  => 65535
 #   }
@@ -18,7 +18,7 @@
 define podman::subuid (
   Integer $subuid,
   Integer $count,
-  Integer $order   = 10,
+  Integer $order  = 10,
 ) {
 
   Concat::Fragment { "subuid_fragment_${title}":

@@ -41,7 +41,7 @@
 #   Implemented by using the `subuid` and `subgid` defined types with the same data.
 #   Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 #
-# @param nodocker [Enum]
+# @param nodocker [Enum['absent', 'file']]
 #   Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
 #   Values should be either 'file' or 'absent'. (default is 'absent')
 #
@@ -49,14 +49,16 @@
 #   include podman
 #
 # @example A rootless Jenkins deployment using hiera
+#   podman::subid:
+#     jenkins:
+#       subuid: 2000000
+#       count: 65535
 #   podman::volumes:
 #     jenkins:
 #       user: jenkins
-#       homedir: /home/jenkins
 #   podman::containers:
 #     jenkins:
 #       user: jenkins
-#       homedir: /home/jenkins
 #       image: 'docker.io/jenkins/jenkins:lts'
 #       flags:
 #         label:
@@ -74,7 +76,7 @@ class podman (
   String $podman_pkg,
   String $skopeo_pkg,
   Optional[String] $podman_docker_pkg,
-  Boolean $manage_subuid           = true,
+  Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',
   Enum['absent', 'file'] $nodocker = 'absent',

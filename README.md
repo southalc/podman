@@ -13,13 +13,15 @@
 Podman enables running standard docker containers without the usual docker daemon.  This has some benefits from a security
 perspective, with the key point of enabling containers to run as an unprivileged user.  Podman also has the concept of a 'pod',
 which is a shared namespace where multiple containers can be deployed and communicate with each other over the loopback
-address of 127.0.0.1
+address of '127.0.0.1'.  Be aware when running rootless containers that published ports are not automatically added to the
+host firewall.  Use another module [firewalld](https://forge.puppet.com/modules/puppet/firewalld) to open ports on the host
+to external connections and the inbound traffic will reach the rootless container.
 
 The defined types 'pod', 'image', 'volume', and 'container' are essentially wrappers around the respective podman "create"
 commands (`podman <type> create`).  The defined types support all flags for the command, but require them to be expressed
-using the long form (`--env` instead of `-e`).  Flags that don't have values should set the value to an empty string.  Flags
-that may be used more than once should be expressed as an array.  The Jenkins example configuration below demonstrates some
-of this in the `flags` and `service_flags` hashes.
+using the long form (`--env` instead of `-e`).  Flags that are used without values should set the value to an empty string.
+Flags that may be used more than once should be expressed as an array.  The Jenkins example configuration below demonstrates
+some of this in the `flags` and `service_flags` hashes.
 
 ## Setup
 
@@ -38,30 +40,79 @@ Assign the module to node(s):
 ```
 include podman
 ```
-With the module assigned you can manage resources using hiera data.  When the podman defined types are called with the `user`
-and `homedir` parameters the resources will be owned by the defined user to support rootless containers.
-This example:
-* Creates volume `jenkins`
-* Creates container `jenkins` using the defined image
-* Sets container flags to label the container, publish ports, and attach the volume
+With the module assigned you can manage resources using hiera data.  When podman defined types are used with the `user`
+parameter the resources will be owned by the defined user to support rootless containers.  Using rootless containers this
+way also enables 'loginctl enable-linger' on the user so rootless containers can start automatically when the system boots.
+The following example is a hiera-based role that leverages the [types](https://forge.puppet.com/modules/southalc/types) module
+to manage some dependent resources and this module to deploy a rootless Jenkins container (the environment uses hiera lookup
+for class assignments).
+The example will perform the following configuration:
+* Create the `jenkins` user, group, and home directory using the [types](https://forge.puppet.com/modules/southalc/types) module
+* Manage the `/etc/subuid` and `/etc/subgid` files, creating entries for the `jenkins` user
+* Use `loginctl` to `enable-linger` on the 'jenkins' user, enabling the user containers to run as a systemd user service
+* Creates volume `jenkins` owned by user `jenkins`
+* Creates container `jenkins` from the defined image source
+* Sets container flags to label the container, publish ports, and attach the previously created `jenkins` volume
 * Set service flags for the systemd service to timeout at 60 seconds
 * The volume and container are both created as user `jenkins`, and the systemd service will run as this same user
-* A systemd service `podman-<user>-<container_name>` is created, enabled, and started
+* A systemd service `podman-<container_name>` is created, enabled, and started that runs as a user service
 * The container will be re-deployed any time the image source digest does not match the running container image
-because the default defined type setting for `podman::container::update` value is `true`.
+because the default defined type parameter `podman::container::update` is set to `true`.
+* Create a firewall rule on the container host to enable connections to port 8080, which is published by the container.  The
+firewall rule also used the [types](https://forge.puppet.com/modules/southalc/types) module
 ```
+---
+# Hiera based role for Jenkins container deployment
+
+classes:
+  - types
+  - podman
+  - firewalld
+
+types::types:
+  - firewalld_port
+
+types::user:
+  jenkins:
+    ensure: present
+    forcelocal: true
+    uid:  222001
+    gid:  222001
+    password: '!!'
+    home: /home/jenkins
+    
+types::group:
+  jenkins:
+    ensure: present
+    forcelocal: true
+    gid:  222001
+
+types::file:
+  /home/jenkins:
+    ensure: directory
+    owner: 222001
+    group: 222001
+    mode: '0700'
+    require: 'User[jenkins]'
+
+
+podman::manage_subuid: true
+podman::subid:
+  '222001':
+    subuid: 12300000
+    count: 65535
+
 podman::volumes:
   jenkins:
     user: jenkins
-    homedir: /home/jenkins
+
 podman::containers:
   jenkins:
     user: jenkins
-    homedir: /home/jenkins
     image: 'docker.io/jenkins/jenkins:lts'
     flags:
       label:
-        - purpose=test
+        - purpose=dev
       publish:
         - '8080:8080'
         - '50000:50000'
@@ -70,12 +121,19 @@ podman::containers:
       timeout: '60'
     require:
       - Podman::Volume[jenkins]
+
+types::firewalld_port:
+  podman_jenkins:
+    ensure: present
+    zone: public
+    port: 8080
+    protocol: tcp
 ```
 
 ## Limitations
 
-The module was written and tested with RedHat/CentOS, but should work with any distribution where the podman and skopeo
-packages are available.
+The module was written and tested with RedHat/CentOS, but should work with any distribution that uses systemd and includes
+the podman and skopeo packages
 
 ## Development
 
