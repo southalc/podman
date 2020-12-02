@@ -1,4 +1,17 @@
 ---
+# Set hiera lookup defaults
+lookup_options:
+  podman::containers:
+    merge: deep
+  podman::images:
+    merge: deep
+  podman::pods:
+    merge: deep
+  podman::subid:
+    merge: deep
+  podman::volumes:
+    merge: deep
+
 podman::podman_pkg: podman
 podman::podman_docker_pkg: podman-docker
 podman::skopeo_pkg: skopeo

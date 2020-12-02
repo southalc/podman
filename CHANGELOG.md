@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.2.1
+
+* Updated default hiera lookup to use a deep merge for all hash parameters in the main `podman` class
+
 ## Release 0.2.0
 
 * Changes to fix rootless containers.  Using the defined types with the `user` parameter now requires a

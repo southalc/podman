@@ -44,8 +44,8 @@ With the module assigned you can manage resources using hiera data.  When podman
 parameter the resources will be owned by the defined user to support rootless containers.  Using rootless containers this
 way also enables 'loginctl enable-linger' on the user so rootless containers can start automatically when the system boots.
 The following example is a hiera-based role that leverages the [types](https://forge.puppet.com/modules/southalc/types) module
-to manage some dependent resources and this module to deploy a rootless Jenkins container (the environment uses hiera lookup
-for class assignments).
+to manage some dependent resources and this module to deploy a rootless Jenkins container (the environment here is using hiera
+lookup for class assignments).
 The example will perform the following configuration:
 * Create the `jenkins` user, group, and home directory using the [types](https://forge.puppet.com/modules/southalc/types) module
 * Manage the `/etc/subuid` and `/etc/subgid` files, creating entries for the `jenkins` user
@@ -58,8 +58,8 @@ The example will perform the following configuration:
 * A systemd service `podman-<container_name>` is created, enabled, and started that runs as a user service
 * The container will be re-deployed any time the image source digest does not match the running container image
 because the default defined type parameter `podman::container::update` is set to `true`.
-* Create a firewall rule on the container host to enable connections to port 8080, which is published by the container.  The
-firewall rule also used the [types](https://forge.puppet.com/modules/southalc/types) module
+* Create a firewall rule on the host to enable connections to port 8080, which is published by the container.  The
+firewall rule is also implemented using the [types](https://forge.puppet.com/modules/southalc/types) module.
 ```
 ---
 # Hiera based role for Jenkins container deployment
