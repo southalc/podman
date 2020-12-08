@@ -40,9 +40,27 @@ Assign the module to node(s):
 ```
 include podman
 ```
-With the module assigned you can manage resources using hiera data.  When podman defined types are used with the `user`
+With the module assigned you can manage podman resources using hiera data.  When podman defined types are used with the `user`
 parameter the resources will be owned by the defined user to support rootless containers.  Using rootless containers this
-way also enables 'loginctl enable-linger' on the user so rootless containers can start automatically when the system boots.
+way also enables 'loginctl enable-linger' on the user so rootless containers can start and run automatically under the assigned
+user account when the system boots.
+
+Be aware of how to work with podman and systemd user services when running rootless containers.  First, you'll need to "su" to
+the assigned user work with the user's containers and services.  The systemd and podman commands rely on the 'XDG_RUNTIME_DIR'
+environment variable, so set it in the shell as follows:
+```
+su - <container_user>
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+```
+Systemd user services use the same 'systemctl' commands, but with the `--user` flag.  As the container user with the environment
+set, you an run podman and 'systemctl' commands.
+```
+podman container list [-a]
+
+systemctl --user status podman-<container_name>
+```
+
+## Examples
 The following example is a hiera-based role that leverages the [types](https://forge.puppet.com/modules/southalc/types) module
 to manage some dependent resources and this module to deploy a rootless Jenkins container (the environment here is using hiera
 lookup for class assignments).
@@ -129,6 +147,9 @@ types::firewalld_port:
     port: 8080
     protocol: tcp
 ```
+Several additional examples are in a separate [github project](https://github.com/southalc/r10k/tree/production/data/containers), including
+a Traefik container configuration that enables SSL termination and proxy access to other containers running on the host, with a dynamic
+configuration directory enabling updates to proxy rules as new containers are added and/or removed.
 
 ## Limitations
 

@@ -2,29 +2,16 @@
 #   Enable rootless podman containers to run as a systemd user service.
 #
 define podman::rootless {
-  $uid  = User[$title]['uid']
-  $gid  = User[$title]['gid']
+  $uid  = User[$name]['uid']
+  $gid  = User[$name]['gid']
 
-  $command = @("END"/$)
-    if [[ \$(loginctl show-user ${title} --property=Linger) != 'Linger=yes' ]]
-      then
-      loginctl enable-linger ${title}
-    fi
-    if [[ -d /run/user/${uid} ]]
-      then
-      mkdir -m 700 -p /run/user/${uid}
-      chown ${uid}:${gid} /run/user/${uid}
-    fi
-    |END
-
-  Exec { "loginctl_linguer_${title}":
+  Exec { "loginctl_linger_${name}":
     path     => '/sbin:/usr/sbin:/bin:/usr/bin',
-    command  => $command,
+    command  => "loginctl enable-linger ${name}",
     provider => 'shell',
-    unless   => "test $(loginctl show-user ${title} --property=Linger) == 'Linger=yes'",
-    require  => User[$title],
+    unless   => "test $(loginctl show-user ${name} --property=Linger) == 'Linger=yes'",
+    require  => User[$name],
   }
-
   ensure_resource('Service', 'systemd-logind', { ensure => 'running', enable => true } )
 
   # Ensure the systemd directory tree exists for user services
@@ -33,11 +20,11 @@ define podman::rootless {
     "${User[$name]['home']}/.config/systemd",
     "${User[$name]['home']}/.config/systemd/user"
     ], {
-    ensure  => directory,
-    owner   => "${User[$name]['uid']}",
-    group   => "${User[$name]['gid']}",
-    mode    => '0750',
-    require => File["${User[$name]['home']}"],
+      ensure  => directory,
+      owner   => "${User[$name]['uid']}",
+      group   => "${User[$name]['gid']}",
+      mode    => '0700',
+      require => File["${User[$name]['home']}"],
     }
   )
 }

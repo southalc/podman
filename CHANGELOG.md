@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.2.2
+
+* Only configure selinux on systems where it is enabled - Contributed by optiz0r
+* Clean-up in 'podman::rootless'
+
 ## Release 0.2.1
 
 * Updated default hiera lookup to use a deep merge for all hash parameters in the main `podman` class
