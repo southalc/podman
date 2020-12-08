@@ -57,9 +57,11 @@ class podman::install (
     }
   }
 
-  selboolean { 'container_manage_cgroup':
-    persistent => true,
-    value      => on,
+  if $::selinux or $facts['os']['selinux']['enabled'] {
+    selboolean { 'container_manage_cgroup':
+      persistent => true,
+      value      => on,
+    }
   }
 
   file { '/etc/containers/nodocker':
