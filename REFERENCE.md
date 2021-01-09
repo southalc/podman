@@ -233,6 +233,9 @@ next puppet run.  This is achieved by storing the complete set of flags as
 a base64 encoded string in a container label named `puppet_resource_flags`
 so it can be compared with the assigned resource state.
 
+For flags which take no arguments, set the hash value to be undef. In the
+YAML representation you can use `~` or `null` as the value.
+
 Default value: `{}`
 
 ##### `service_flags`

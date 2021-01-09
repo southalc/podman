@@ -216,6 +216,8 @@ define podman::container (
       $_flags = $merged_flags.reduce('') |$mem, $flag| {
         if $flag[1] =~ String {
           "${mem} --${flag[0]} '${flag[1]}'"
+        } elsif $flag[1] =~ Undef {
+          "${mem} --${flag[0]}"
         } else {
           $dup = $flag[1].reduce('') |$mem2, $value| {
             "${mem2} --${flag[0]} '${value}'"
