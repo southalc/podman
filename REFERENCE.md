@@ -85,7 +85,6 @@ The name of the skopeo package (default 'skopeo')
 
 Data type: `Optional[String]`
 
-Optional[String]
 The name of the podman-docker package (default 'podman-docker')
 
 ##### `pods`
@@ -202,7 +201,6 @@ The following parameters are available in the `podman::container` defined type.
 
 Data type: `String`
 
-String $image,
 Container registry source of the image being deployed.  Required when
 `ensure` is `present` but optional when `ensure` is set to `absent`.
 
@@ -212,7 +210,6 @@ Default value: `''`
 
 Data type: `String`
 
-String
 Optional user for running rootless containers.  For rootless containers,
 the user must also be defined as a puppet resource that includes at least
 'uid', 'gid', and 'home' attributes.
@@ -223,7 +220,6 @@ Default value: `''`
 
 Data type: `Hash`
 
-Hash
 All flags for the 'podman container create' command are supported via the
 'flags' hash parameter, using only the long form of the flag name.  The
 container name will be set as the resource name (namevar) unless the 'name'
@@ -232,8 +228,8 @@ are modified the container will be destroyed and re-deployed during the
 next puppet run.  This is achieved by storing the complete set of flags as
 a base64 encoded string in a container label named `puppet_resource_flags`
 so it can be compared with the assigned resource state.
-
-For flags which take no arguments, set the hash value to be undef. In the
+Flags that can be used more than once should be expressed as an array.  For
+flags which take no arguments, set the hash value to be undef. In the
 YAML representation you can use `~` or `null` as the value.
 
 Default value: `{}`
@@ -242,7 +238,6 @@ Default value: `{}`
 
 Data type: `Hash`
 
-Hash
 When a container is created, a systemd unit file for the container service
 is generated using the 'podman generate systemd' command.  All flags for the
 command are supported using the 'service_flags" hash parameter, again using
@@ -254,7 +249,6 @@ Default value: `{}`
 
 Data type: `String`
 
-String
 Optional command to be used as the container entry point.
 
 Default value: `''`
@@ -263,7 +257,6 @@ Default value: `''`
 
 Data type: `String`
 
-String
 State of the automatically generated systemd service for the container.
 Valid values are 'running' or 'stopped'.
 
@@ -273,7 +266,6 @@ Default value: `'present'`
 
 Data type: `Boolean`
 
-Boolean
 Status of the automatically generated systemd service for the container.
 
 Default value: ``true``
@@ -282,7 +274,6 @@ Default value: ``true``
 
 Data type: `Boolean`
 
-Boolean
 When `true`, the container will be redeployed when a new container image is
 detected in the container registry.  This is done by comparing the digest
 value of the running container image with the digest of the registry image.
@@ -314,7 +305,6 @@ The following parameters are available in the `podman::image` defined type.
 
 Data type: `String`
 
-String
 The name of the container image to pull, which should be present in a
 configured container registry.
 
@@ -322,7 +312,6 @@ configured container registry.
 
 Data type: `String`
 
-String
 State of the resource must be either `present` or `absent`.
 
 Default value: `'present'`
@@ -331,7 +320,6 @@ Default value: `'present'`
 
 Data type: `Hash`
 
-Hash
 All flags for the 'podman image pull' command are supported, using only the
 long form of the flag name.
 
@@ -341,7 +329,6 @@ Default value: `{}`
 
 Data type: `String`
 
-String
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'
@@ -390,7 +377,6 @@ Default value: `{}`
 
 Data type: `String`
 
-String
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'
@@ -424,21 +410,18 @@ The following parameters are available in the `podman::subgid` defined type.
 
 Data type: `Integer`
 
-Integer
 Numerical subordinate group ID
 
 ##### `count`
 
 Data type: `Integer`
 
-Integer
 Numerical subordinate group ID count
 
 ##### `order`
 
 Data type: `Integer`
 
-Integer
 Sequence number for concat fragments#
 
 Default value: `10`
@@ -466,21 +449,18 @@ The following parameters are available in the `podman::subuid` defined type.
 
 Data type: `Integer`
 
-Integer
 Numerical subordinate user ID
 
 ##### `count`
 
 Data type: `Integer`
 
-Integer
 Numerical subordinate user ID count
 
 ##### `order`
 
 Data type: `Integer`
 
-Integer
 Sequence number for concat fragments
 
 Default value: `10`
@@ -528,7 +508,6 @@ Default value: `{}`
 
 Data type: `String`
 
-String
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'

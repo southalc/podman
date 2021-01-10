@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.2.3
+
+- Fix for flags that don't require values - Contributed by jtopper
+
 ## Release 0.2.2
 
 * Only configure selinux on systems where it is enabled - Contributed by optiz0r
