@@ -1,15 +1,15 @@
 # @summary manage podman container and register as a systemd service
 #
-# @param image String $image,
+# @param image
 #   Container registry source of the image being deployed.  Required when
 #   `ensure` is `present` but optional when `ensure` is set to `absent`.
 #
-# @param user String
+# @param user
 #   Optional user for running rootless containers.  For rootless containers,
 #   the user must also be defined as a puppet resource that includes at least
 #   'uid', 'gid', and 'home' attributes.
 #
-# @param flags Hash
+# @param flags
 #   All flags for the 'podman container create' command are supported via the
 #   'flags' hash parameter, using only the long form of the flag name.  The
 #   container name will be set as the resource name (namevar) unless the 'name'
@@ -18,24 +18,27 @@
 #   next puppet run.  This is achieved by storing the complete set of flags as
 #   a base64 encoded string in a container label named `puppet_resource_flags`
 #   so it can be compared with the assigned resource state.
+#   Flags that can be used more than once should be expressed as an array.  For
+#   flags which take no arguments, set the hash value to be undef. In the
+#   YAML representation you can use `~` or `null` as the value.
 #
-# @param service_flags Hash
+# @param service_flags
 #   When a container is created, a systemd unit file for the container service
 #   is generated using the 'podman generate systemd' command.  All flags for the
 #   command are supported using the 'service_flags" hash parameter, again using
 #   only the long form of the flag names.
 #
-# @param command String
+# @param command
 #   Optional command to be used as the container entry point.
 #
-# @param ensure String
+# @param ensure
 #   State of the automatically generated systemd service for the container.
 #   Valid values are 'running' or 'stopped'.
 #
-# @param enable Boolean
+# @param enable
 #   Status of the automatically generated systemd service for the container.
 #
-# @param update Boolean
+# @param update
 #   When `true`, the container will be redeployed when a new container image is
 #   detected in the container registry.  This is done by comparing the digest
 #   value of the running container image with the digest of the registry image.
@@ -228,7 +231,7 @@ define podman::container (
 
       # Convert $service_flags hash to command arguments
       $_service_flags = $service_flags.reduce('') |$mem, $flag| {
-        "${mem} --${flag[0]} \"${flag[1]}\""
+        "${mem} --${flag[0]} '${flag[1]}'"
       }
 
       Exec { "podman_create_${handle}":

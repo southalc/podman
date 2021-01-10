@@ -1,14 +1,14 @@
 # @summary Create a podman pod with defined flags
 #
-# @param ensure [String]
+# @param ensure
 #   State of the resource, which must be either 'present' or 'absent'.
 #
-# @param flags [Hash]
+# @param flags
 #   All flags for the 'podman pod create' command are supported, using only the
 #   long form of the flag name.  The resource name (namevar) will be used as the
 #   pod name unless the 'name' flag is included in the hash of flags.
 #
-# @param user String
+# @param user
 #   Optional user for running rootless containers.  When using this parameter,
 #   the user must also be defined as a Puppet resource and must include the
 #   'uid', 'gid', and 'home'
@@ -31,7 +31,7 @@ define podman::pod (
 
   # Convert $flags hash to command arguments
   $_flags = $name_flags.reduce('') |$mem, $flag| {
-    "${mem} --${flag[0]} \"${flag[1]}\""
+    "${mem} --${flag[0]} '${flag[1]}'"
   }
 
   if $user != '' {

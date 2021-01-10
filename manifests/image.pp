@@ -1,17 +1,17 @@
 # @summary pull or remove container images
 #
-# @param image String
+# @param image
 #   The name of the container image to pull, which should be present in a
 #   configured container registry.
 #
-# @param ensure String
+# @param ensure
 #   State of the resource must be either `present` or `absent`.
 #
-# @param flags Hash
+# @param flags
 #   All flags for the 'podman image pull' command are supported, using only the
 #   long form of the flag name.
 #
-# @param user String
+# @param user
 #   Optional user for running rootless containers.  When using this parameter,
 #   the user must also be defined as a Puppet resource and must include the
 #   'uid', 'gid', and 'home'
@@ -32,7 +32,7 @@ define podman::image (
 ){
   # Convert $flags hash to command arguments
   $_flags = $flags.reduce('') |$mem, $flag| {
-    "${mem} --${flag[0]} \"${flag[1]}\""
+    "${mem} --${flag[0]} '${flag[1]}'"
   }
 
   if $user != '' {
