@@ -1,12 +1,12 @@
 # @summary Manage entries in `/etc/subuid`
 #
-# @param subuid Integer
+# @param subuid
 #   Numerical subordinate user ID
 #
-# @param count Integer
+# @param count
 #   Numerical subordinate user ID count
 #
-# @param order Integer
+# @param order
 #   Sequence number for concat fragments
 #
 # @example

@@ -1,12 +1,12 @@
 # @summary Define an entry in the `/etc/subgid` file.
 #
-# @param subgid Integer
+# @param subgid
 #   Numerical subordinate group ID
 #
-# @param count Integer
+# @param count
 #   Numerical subordinate group ID count
 #
-# @param order Integer
+# @param order
 #   Sequence number for concat fragments#
 #
 # @example

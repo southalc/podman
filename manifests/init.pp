@@ -1,47 +1,47 @@
 # @summary Manage containers, pods, volumes, and images with podman without a docker daemon
 #
-# @param podman_pkg [String]
+# @param podman_pkg
 #   The name of the podman package (default 'podman')
 #
-# @param skopeo_pkg [String]
+# @param skopeo_pkg
 #   The name of the skopeo package (default 'skopeo')
 #
-# @param podman_docker_pkg Optional[String]
+# @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker')
 #
-# @param pods [Hash]
+# @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
 #
-# @param volumes [Hash]
+# @param volumes
 #   A hash of volumes to manage using [`podman::volume`](#podmanvolume)
 #
-# @param images [Hash]
+# @param images
 #   A hash of images to manage using [`podman::image`](#podmanimage)
 #
-# @param containers [Hash]
+# @param containers
 #   A hash of containers to manage using [`podman::container`](#podmancontainer)
 #
-# @param manage_subuid [Boolean]
+# @param manage_subuid
 #   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
 #   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
 #   out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
 #   with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.
 #
-# @param file_header [String]
+# @param file_header
 #   Optional header when `manage_subuid` is true.  Ensure you include a leading `#`.
 #   Default file_header is `# FILE MANAGED BY PUPPET`
 #
-# @param match_subuid_subgid [Boolean]
+# @param match_subuid_subgid
 #   Enable the `subid` parameter to manage both subuid and subgid entries with the same values.
 #   This setting requires `manage_subuid` to be `true` or it will have no effect.
 #   (default is true)
 #
-# @param subid [Hash]
+# @param subid
 #   A hash of users (or UIDs) with assigned subordinate user ID number and an count.
 #   Implemented by using the `subuid` and `subgid` defined types with the same data.
 #   Hash key `subuid` is the subordinate UID, and `count` is the number of subordinate UIDs
 #
-# @param nodocker [Enum['absent', 'file']]
+# @param nodocker
 #   Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
 #   Values should be either 'file' or 'absent'. (default is 'absent')
 #

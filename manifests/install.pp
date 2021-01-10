@@ -1,13 +1,13 @@
 # @api private
 # @summary Install podman packages
 #
-# @param podman_pkg [String]
+# @param podman_pkg
 #   The name of the podman package (default 'podman')
 #
-# @param skopeo_pkg [String]
+# @param skopeo_pkg
 #   The name of the skopeo package (default 'skopeo')
 #
-# @param podman_docker_pkg Optional[String]
+# @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker')
 #
 class podman::install (
