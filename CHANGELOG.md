@@ -3,6 +3,7 @@
 ## Release 0.2.3
 
 - Fix for flags that don't require values - Contributed by jtopper
+- Add dependency for the podman::install class to defined types
 
 ## Release 0.2.2
 

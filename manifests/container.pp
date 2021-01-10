@@ -67,6 +67,7 @@ define podman::container (
   Boolean $enable     = true,
   Boolean $update     = true,
 ){
+  require podman::install
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed

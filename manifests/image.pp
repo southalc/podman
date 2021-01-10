@@ -30,6 +30,8 @@ define podman::image (
   Hash $flags     = {},
   String $user    = '',
 ){
+  require podman::install
+
   # Convert $flags hash to command arguments
   $_flags = $flags.reduce('') |$mem, $flag| {
     if $flag[1] =~ String {
