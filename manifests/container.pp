@@ -264,21 +264,20 @@ define podman::container (
           require => $requires,
           *       => $exec_defaults,
         }
-        Exec["podman_systemd_${user}_reload"] -> Exec["service_podman_${handle}"]
       }
       else {
-        Exec { "podman_generate_service_${container_name}":
+        Exec { "podman_generate_service_${handle}":
           path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
-          notify      => Service["podman-${container_name}"],
+          notify      => Service["podman-${handle}"],
         }
 
         # Configure the container service per parameters
         if $enable { $state = 'running'; $startup = 'true' }
           else { $state = 'stopped'; $startup = 'false'
         }
-        Service { "podman-${container_name}":
+        Service { "podman-${handle}":
           ensure => $state,
           enable => $startup,
         }
@@ -293,7 +292,7 @@ define podman::container (
                      podman container stop --time 60 ${container_name}
                    podman container rm --force ${container_name}
                    |END
-        unless  => "podman container exists ${container_name}; test $? -eq 1",
+        unless  => "podman container exists ${handle}; test $? -eq 1",
         require => $requires,
         *       => $exec_defaults,
       }
