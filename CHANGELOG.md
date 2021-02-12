@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.2.4
+
+- Fix "Container fails to restart when resource notified" reported by toreanderson
+
 ## Release 0.2.3
 
 - Fix for flags that don't require values - Contributed by jtopper

@@ -103,11 +103,11 @@ define podman::container (
       ],
       cwd         => User[$user]['home'],
       user        => $user,
-      require  => [
-        Podman::Rootless[$user],
-        Service['systemd-logind'],
-      ],
     }
+    $requires = [
+      Podman::Rootless[$user],
+      Service['systemd-logind'],
+    ]
     $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
 
     # Reload systemd when service files are updated
@@ -159,6 +159,7 @@ define podman::container (
                    fi
                    |END
         notify   => Exec["podman_remove_container_${handle}"],
+        require  => $requires,
         *        => $exec_defaults,
       }
 
@@ -182,37 +183,32 @@ define podman::container (
               test "\${running_digest}" = "\${latest_digest}"
             fi
             |END
-          notify   => Exec["podman_remove_container_and_image_${handle}"],
+          notify   => [
+            Exec["podman_remove_image_${handle}"],
+            Exec["podman_remove_container_${handle}"],
+          ],
+          require  => $requires,
           *        => $exec_defaults,
         }
       }
 
-      Exec { "podman_remove_container_and_image_${handle}":
+      Exec { "podman_remove_image_${handle}":
         # Try nicely to stop the container, but then insist
         provider    => 'shell',
-        command     => @("END"/$L),
-                       image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
-                       ${systemctl} stop podman-${container_name} || podman container stop ${container_name}
-                       podman container rm --force ${container_name}
-                       status=$?
-                       podman rmi --force \${image}
-                       exit \${status}
-                       |END
+        command     => "podman rmi --force ${image}",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
+        require     => [ $requires, Exec["podman_remove_container_${handle}"]],
         *           => $exec_defaults,
       }
 
       Exec { "podman_remove_container_${handle}":
         # Try nicely to stop the container, but then insist
         provider    => 'shell',
-        command     => @("END"/$L),
-                       image=\$(podman container inspect ${container_name} --format '{{.ImageName}}') 
-                       ${systemctl} stop podman-${container_name} || podman container stop ${container_name}
-                       podman container rm --force ${container_name}
-                       |END
+        command     => "${systemctl} stop podman-${container_name} || podman container stop ${container_name}",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
+        require     => $requires,
         *           => $exec_defaults,
       }
 
@@ -239,6 +235,7 @@ define podman::container (
         command => "podman container create ${_flags} ${image} ${command}",
         unless  => "podman container exists ${container_name}",
         notify  => Exec["podman_generate_service_${handle}"],
+        require => $requires,
         *       => $exec_defaults,
       }
 
@@ -247,6 +244,7 @@ define podman::container (
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
           notify      => Exec["service_podman_${handle}"],
+          require     => $requires,
           *           => $exec_defaults,
         }
 
@@ -263,6 +261,7 @@ define podman::container (
                      ${systemctl} is-active podman-${container_name}.service && \
                        ${systemctl} is-enabled podman-${container_name}.service
                      |END
+          require => $requires,
           *       => $exec_defaults,
         }
         Exec["podman_systemd_${user}_reload"] -> Exec["service_podman_${handle}"]
@@ -295,12 +294,14 @@ define podman::container (
                    podman container rm --force ${container_name}
                    |END
         unless  => "podman container exists ${container_name}; test $? -eq 1",
+        require => $requires,
         *       => $exec_defaults,
       }
 
       File { $service_unit_file:
-        ensure => absent,
-        notify => Exec['podman_systemd_reload'],
+        ensure  => absent,
+        require => $requires,
+        notify  => Exec['podman_systemd_reload'],
       }
     }
 
