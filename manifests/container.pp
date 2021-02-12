@@ -178,8 +178,6 @@ define podman::container (
               [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://\${image_name} | \
                 /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
-              echo "running_digest: \${running_digest}" >/tmp/digest
-              echo "latest_digest: \${latest_digest}" >>/tmp/digest
               test "\${running_digest}" = "\${latest_digest}"
             fi
             |END
