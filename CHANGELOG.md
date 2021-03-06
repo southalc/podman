@@ -1,5 +1,14 @@
 # Changelog
 
+## Release 0.2.5
+
+- Fix container removal when set to 'absent'
+- Fix to re-deploy container when the defined resource image is changed.  Previously, a container would
+  not be re-deployed when the $update parameter was set to false, even when the image declared in the
+  resource definition had changed as reported by 'lukashartl'.  This change enables leaving the $update
+  parameter set to false and 'pinning' the container image to a specific version, updating only when
+  specified from puppet.
+
 ## Release 0.2.4
 
 - Fix "Container fails to restart when resource notified" reported by toreanderson
