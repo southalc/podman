@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.2.6
+
+- Fix for container image removal when $update is true.  Can't reference a container image after the
+  container has been deleted...
+
 ## Release 0.2.5
 
 - Fix container removal when set to 'absent'

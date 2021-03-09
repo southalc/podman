@@ -69,7 +69,7 @@ define podman::container (
   Boolean $enable     = true,
   Boolean $update     = true,
 ){
-  require podman::install
+  #require podman::install
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
@@ -221,10 +221,7 @@ define podman::container (
       Exec { "podman_remove_image_${handle}":
         # Try to remove the image, but exit with success regardless
         provider    => 'shell',
-        command     => @("END"/$L),
-          running_image=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
-          podman rmi \${running_image} || exit 0
-          |END
+        command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => [ $requires, Exec["podman_remove_container_${handle}"]],
