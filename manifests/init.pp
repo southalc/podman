@@ -9,6 +9,9 @@
 # @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker')
 #
+# @param manage_podman_docker
+#   Set whether podmand-docker should be managed
+#
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
 #
@@ -75,7 +78,8 @@
 class podman (
   String $podman_pkg,
   String $skopeo_pkg,
-  Optional[String] $podman_docker_pkg,
+  String $podman_docker_pkg,
+  Boolean $manage_podman_docker    = true,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',
