@@ -178,9 +178,9 @@ define podman::container (
               then
               image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
               running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
-              latest_digest=\$(skopeo inspect docker://\${image_name} | \
+              latest_digest=\$(skopeo inspect docker://${image} | \
                 /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://\${image_name} | \
+              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
                 /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
               test "\${running_digest}" = "\${latest_digest}"
