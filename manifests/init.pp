@@ -9,6 +9,9 @@
 # @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker')
 #
+# @param podman_docker_pkg_ensure
+#   The ensure value for the podman docker package (default 'installed')
+#
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
 #
@@ -76,6 +79,7 @@ class podman (
   String $podman_pkg,
   String $skopeo_pkg,
   Optional[String] $podman_docker_pkg,
+  Enum['absent', 'installed'] $podman_docker_pkg_ensure,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',

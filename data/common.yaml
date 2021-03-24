@@ -14,4 +14,5 @@ lookup_options:
 
 podman::podman_pkg: podman
 podman::podman_docker_pkg: podman-docker
+podman::podman_docker_pkg_ensure: installed
 podman::skopeo_pkg: skopeo

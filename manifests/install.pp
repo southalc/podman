@@ -10,14 +10,18 @@
 # @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker')
 #
+# @param podman_docker_pkg_ensure
+#   The ensure value for the podman docker package (default 'installed')
+#
 class podman::install (
-  String $podman_pkg                  = $podman::podman_pkg,
-  String $skopeo_pkg                  = $podman::skopeo_pkg,
-  Optional[String] $podman_docker_pkg = $podman::podman_docker_pkg,
+  String $podman_pkg                                    = $podman::podman_pkg,
+  String $skopeo_pkg                                    = $podman::skopeo_pkg,
+  Optional[String] $podman_docker_pkg                   = $podman::podman_docker_pkg,
+  Enum['absent', 'installed'] $podman_docker_pkg_ensure = $podman::podman_docker_pkg_ensure,
 ){
   ensure_resource('Package', $podman_pkg, { 'ensure' => 'installed' })
   ensure_resource('Package', $skopeo_pkg, { 'ensure' => 'installed' })
-  if $podman_docker_pkg { ensure_resource('Package', $podman_docker_pkg, { 'ensure' => 'installed' }) }
+  if $podman_docker_pkg { ensure_resource('Package', $podman_docker_pkg, { 'ensure' => $podman_docker_pkg_ensure }) }
 
   if $podman::manage_subuid {
     Concat { '/etc/subuid':
