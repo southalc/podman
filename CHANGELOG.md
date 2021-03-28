@@ -1,5 +1,11 @@
 # Changelog
 
+## Release 0.2.7
+
+- Added basic unit tests
+- Fixed regression to update container when image digest differs from repo and update is true.
+  Identified by lukashartl
+
 ## Release 0.2.6
 
 - Fix for container image removal when $update is true.  Can't reference a container image after the

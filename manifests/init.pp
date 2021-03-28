@@ -7,7 +7,8 @@
 #   The name of the skopeo package (default 'skopeo')
 #
 # @param podman_docker_pkg
-#   The name of the podman-docker package (default 'podman-docker')
+#   The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
+#   component, define `podman::podman_docker_pkg` in hiera with a value of ~
 #
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)

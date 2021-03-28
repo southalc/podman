@@ -25,9 +25,10 @@ below demonstrates some of this in the `flags` and `service_flags` hashes.
 
 ## Setup
 
-The module installs packages including 'podman', 'skopeo', and 'podman-docker'.  The 'podman' package provides core functionality
-for running containers, while 'skopeo' is used to check for container image updates, and 'podman-docker' provides a 'docker'
-command for those that are used to typing 'docker' instead of 'podman' (the 'podman' command is purposefully compatible with 'docker').
+The module installs packages including 'podman', 'skopeo', and optionally 'podman-docker'.  The 'podman' package provides
+core functionality for running containers, while 'skopeo' is used to check for container image updates. The 'podman-docker'
+package provides a 'docker' command for those that are used to typing 'docker' instead of 'podman' (the 'podman' command is
+purposefully compatible with 'docker').
 
 Simply including the module is enough to install the packages.  There is no service associated with podman, so the module just
 installs the packages.  Management of 'pods', 'images', 'volumes', and 'containers' is done using defined types.  The module's

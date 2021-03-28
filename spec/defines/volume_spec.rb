@@ -1,10 +1,11 @@
 require 'spec_helper'
 
-describe 'podman::container' do
-  let(:title) { 'namevar' }
+describe 'podman::volume' do
+  let(:title) { 'testvol' }
   let(:params) do
     {
-      image: 'registry:latest',
+      ensure: 'present',
+      user: '',
     }
   end
 
@@ -30,7 +31,7 @@ describe 'podman::container' do
     context "on #{os}" do
       let(:facts) { os_facts }
 
-      it { is_expected.to compile.with_all_deps }
+      it { is_expected.to compile }
     end
   end
 end

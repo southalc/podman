@@ -85,7 +85,8 @@ The name of the skopeo package (default 'skopeo')
 
 Data type: `Optional[String]`
 
-The name of the podman-docker package (default 'podman-docker')
+The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
+component, define `podman::podman_docker_pkg` in hiera with a value of ~
 
 ##### `pods`
 
@@ -257,8 +258,7 @@ Default value: `''`
 
 Data type: `String`
 
-State of the automatically generated systemd service for the container.
-Valid values are 'running' or 'stopped'.
+Valid values are 'present' or 'absent'
 
 Default value: `'present'`
 
@@ -267,6 +267,7 @@ Default value: `'present'`
 Data type: `Boolean`
 
 Status of the automatically generated systemd service for the container.
+Valid values are 'running' or 'stopped'.
 
 Default value: ``true``
 
@@ -277,6 +278,8 @@ Data type: `Boolean`
 When `true`, the container will be redeployed when a new container image is
 detected in the container registry.  This is done by comparing the digest
 value of the running container image with the digest of the registry image.
+When `false`, the container will only be redeployed when the declared state
+of the puppet resource is changed.
 
 Default value: ``true``
 

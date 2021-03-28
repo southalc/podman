@@ -8,18 +8,36 @@
 #   The name of the skopeo package (default 'skopeo')
 #
 # @param podman_docker_pkg
-#   The name of the podman-docker package (default 'podman-docker')
+#   The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
+#   component, define it as undef (use a tilde `~` in hiera).
+#
+# @param file_header
+#   The name of the file header to use with managed files (default '$podman::file_header')
+#
+# @param manage_subuid
+#   Should the class manage the system subuid/subgid files? (default '$podman::manage_subuid')
+#
+# @param subid
+#   A hash of sub uid/gid entries for each managed user (default '$podman::subid')
+#
+# @param nodocker
+#   The state of the '/etc/nodocker' file, either 'absent' or 'file'. (default '$podman::nodocker')
 #
 class podman::install (
   String $podman_pkg                  = $podman::podman_pkg,
   String $skopeo_pkg                  = $podman::skopeo_pkg,
   Optional[String] $podman_docker_pkg = $podman::podman_docker_pkg,
+  String $file_header                 = $podman::file_header,
+  Boolean $manage_subuid              = $podman::manage_subuid,
+  Boolean $match_subuid_subgid        = $podman::match_subuid_subgid,
+  Hash $subid                         = $podman::subid,
+  Enum['absent', 'file'] $nodocker    = $podman::nodocker,
 ){
   ensure_resource('Package', $podman_pkg, { 'ensure' => 'installed' })
   ensure_resource('Package', $skopeo_pkg, { 'ensure' => 'installed' })
   if $podman_docker_pkg { ensure_resource('Package', $podman_docker_pkg, { 'ensure' => 'installed' }) }
 
-  if $podman::manage_subuid {
+  if $manage_subuid {
     Concat { '/etc/subuid':
       owner          => 'root',
       group          => 'root',
@@ -31,7 +49,7 @@ class podman::install (
     concat_fragment { 'subuid_header':
       target  => '/etc/subuid',
       order   => 1,
-      content => $podman::file_header,
+      content => $file_header,
     }
 
     Concat { '/etc/subgid':
@@ -45,11 +63,11 @@ class podman::install (
     concat_fragment { 'subgid_header':
       target  => '/etc/subgid',
       order   => 1,
-      content => $podman::file_header,
+      content => $file_header,
     }
 
-    if $podman::match_subuid_subgid {
-      $podman::subid.each |$name, $properties| {
+    if $match_subuid_subgid {
+      $subid.each |$name, $properties| {
         Resource['Podman::Subuid'] { $name: * => $properties }
         $subgid = { subgid => $properties['subuid'], count => $properties['count'] }
         Resource['Podman::Subgid'] { $name: * => $subgid }
@@ -65,7 +83,7 @@ class podman::install (
   }
 
   file { '/etc/containers/nodocker':
-    ensure  => $podman::nodocker,
+    ensure  => $nodocker,
     group   => 'root',
     owner   => 'root',
     mode    => '0644',

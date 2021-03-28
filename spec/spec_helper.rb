@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Specify the mocking framework - https://tickets.puppetlabs.com/browse/PDK-916
+RSpec.configure do |c|
+  c.mock_with :rspec
+end
+
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'rspec-puppet-facts'
 
