@@ -6,3 +6,10 @@ ipaddress: "172.16.254.254"
 ipaddress6: "FE80:0000:0000:0000:AAAA:AAAA:AAAA"
 is_pe: false
 macaddress: "AA:AA:AA:AA:AA:AA"
+
+podman::podman_pkg: podman
+podman::skopeo_pkg: skopeo
+podman::podman_docker_pkg: podman-docker
+podman::podman_docker_pkg_ensure: installed
+podman::buildah_pkg: buildah
+podman::buildah_pkg_ensure: absent

@@ -81,12 +81,30 @@ Data type: `String`
 
 The name of the skopeo package (default 'skopeo')
 
+##### `buildah_pkg`
+
+Data type: `Optional[String]`
+
+The name of the buildah package (default 'buildah')
+
+##### `buildah_pkg_ensure`
+
+Data type: `Enum['absent', 'installed']`
+
+The ensure value for the buildah package (default 'absent')
+
 ##### `podman_docker_pkg`
 
 Data type: `Optional[String]`
 
 The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
 component, define `podman::podman_docker_pkg` in hiera with a value of ~
+
+##### `podman_docker_pkg_ensure`
+
+Data type: `Enum['absent', 'installed']`
+
+The ensure value for the podman docker package (default 'installed')
 
 ##### `pods`
 

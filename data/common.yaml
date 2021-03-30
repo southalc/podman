@@ -13,6 +13,8 @@ lookup_options:
     merge: deep
 
 podman::podman_pkg: podman
-podman::podman_docker_pkg: podman-docker
 podman::skopeo_pkg: skopeo
+podman::podman_docker_pkg: podman-docker
+podman::podman_docker_pkg_ensure: installed
 podman::buildah_pkg: buildah
+podman::buildah_pkg_ensure: absent

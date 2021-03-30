@@ -9,9 +9,14 @@
 # @param buildah_pkg
 #   The name of the buildah package (default 'buildah')
 #
+# @param buildah_pkg_ensure
+#   The ensure value for the buildah package (default 'absent')
+#
 # @param podman_docker_pkg
-#   The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
-#   component, define `podman::podman_docker_pkg` in hiera with a value of ~
+#   The name of the podman-docker package (default 'podman-docker').
+#
+# @param podman_docker_pkg_ensure
+#   The ensure value for the podman docker package (default 'installed')
 #
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
@@ -79,8 +84,10 @@
 class podman (
   String $podman_pkg,
   String $skopeo_pkg,
-  String $buildah_pkg,
+  Optional[String] $buildah_pkg,
+  Enum['absent', 'installed'] $buildah_pkg_ensure,
   Optional[String] $podman_docker_pkg,
+  Enum['absent', 'installed'] $podman_docker_pkg_ensure,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',
