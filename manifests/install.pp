@@ -7,6 +7,9 @@
 # @param skopeo_pkg
 #   The name of the skopeo package (default 'skopeo')
 #
+# @param buildah_pkg
+#   The name of the buildah package (default 'buildah')
+#
 # @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
 #   component, define it as undef (use a tilde `~` in hiera).
@@ -26,6 +29,7 @@
 class podman::install (
   String $podman_pkg                  = $podman::podman_pkg,
   String $skopeo_pkg                  = $podman::skopeo_pkg,
+  String $buildah_pkg                 = $podman::buildah_pkg,
   Optional[String] $podman_docker_pkg = $podman::podman_docker_pkg,
   String $file_header                 = $podman::file_header,
   Boolean $manage_subuid              = $podman::manage_subuid,
@@ -35,6 +39,7 @@ class podman::install (
 ){
   ensure_resource('Package', $podman_pkg, { 'ensure' => 'installed' })
   ensure_resource('Package', $skopeo_pkg, { 'ensure' => 'installed' })
+  ensure_resource('Package', $buildah_pkg, { 'ensure' => 'installed' })
   if $podman_docker_pkg { ensure_resource('Package', $podman_docker_pkg, { 'ensure' => 'installed' }) }
 
   if $manage_subuid {

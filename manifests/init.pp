@@ -6,6 +6,9 @@
 # @param skopeo_pkg
 #   The name of the skopeo package (default 'skopeo')
 #
+# @param buildah_pkg
+#   The name of the buildah package (default 'buildah')
+#
 # @param podman_docker_pkg
 #   The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
 #   component, define `podman::podman_docker_pkg` in hiera with a value of ~
@@ -76,6 +79,7 @@
 class podman (
   String $podman_pkg,
   String $skopeo_pkg,
+  String $buildah_pkg,
   Optional[String] $podman_docker_pkg,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
