@@ -26,9 +26,10 @@
 #
 define podman::image (
   String $image,
-  String $ensure  = 'present',
-  Hash $flags     = {},
-  String $user    = '',
+  String $ensure    = 'present',
+  Hash $flags       = {},
+  String $user      = '',
+  Hash $exec_extras = {},
 ){
   require podman::install
 
@@ -69,20 +70,20 @@ define podman::image (
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
     }
   }
-
+  $full_exec = $exec_defaults + $exec_extras
   case $ensure {
     'present': {
       Exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman image exists ${image}",
-        *       => $exec_defaults,
+        *       => $full_exec,
       }
     }
     'absent': {
       Exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman rmi ${image}",
-        *       => $exec_defaults,
+        *       => $full_exec,
       }
     }
     default: {
