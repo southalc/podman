@@ -18,6 +18,9 @@
 # @param podman_docker_pkg_ensure
 #   The ensure value for the podman docker package (default 'installed')
 #
+# @param storage_options
+#   A hash containing any storage options you wish to set in /etc/containers/storage.conf
+#
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
 #
@@ -88,6 +91,7 @@ class podman (
   Enum['absent', 'installed'] $buildah_pkg_ensure,
   Optional[String] $podman_docker_pkg,
   Enum['absent', 'installed'] $podman_docker_pkg_ensure,
+  Optional[Hash] $storage_options,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',
@@ -99,6 +103,7 @@ class podman (
   Hash $containers                 = {},
 ){
   include podman::install
+  include podman::options
 
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }

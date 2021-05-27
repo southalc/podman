@@ -5,6 +5,7 @@
 1. [Description](#description)
 2. [Setup - Getting started with podman](#setup)
 3. [Usage - Configuration options and additional functionality](#usage)
+4. [Examples - Example configurations](#examples)
 5. [Limitations - OS compatibility, etc.](#limitations)
 6. [Development - Guide for contributing to the module](#development)
 
@@ -38,32 +39,51 @@ defined types are all implemented in the main 'podman' class, allowing resources
 ## Usage
 
 Assign the module to node(s):
-```
+
+```puppet
 include podman
 ```
+
 With the module assigned you can manage podman resources using hiera data.  When podman defined types are used with the `user`
 parameter the resources will be owned by the defined user to support rootless containers.  Using rootless containers this
 way also enables 'loginctl enable-linger' on the user so rootless containers can start and run automatically under the assigned
 user account when the system boots.
 
-#### General podman and systemd notes
+### General podman and systemd notes
 
 Be aware of how to work with podman and systemd user services when running rootless containers.  First, you'll need to "su" to
 the assigned user work with the user's containers and services.  The systemd and podman commands rely on the 'XDG_RUNTIME_DIR'
 environment variable, so set it in the shell as follows:
-```
+
+```sh
 su - <container_user>
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 ```
+
 Systemd user services use the same 'systemctl' commands, but with the `--user` flag.  As the container user with the environment
 set, you an run podman and 'systemctl' commands.
-```
+
+```sh
 podman container list [-a]
 
 systemctl --user status podman-<container_name>
 ```
 
+### containerd configuration
+
+This module also contains minimal support for editing the `containerd` configuration files that control some of the lower level
+settings for how containers are created. Currently, the only supported configuration file is `/etc/containers/storage.conf`. You should be able to set any of the settings with that file using the `$podman::storage_options` parameter. For example (if using Hiera):
+
+```yaml
+podman::storage_options:
+  storage:
+    rootless_storage_path: '"/tmp/containers-user-$UID/storage"'
+```
+
+**Note the use of double quotes inside single quotes above.** This is due to the way the [puppetlabs/inifile](https://github.com/puppetlabs/puppetlabs-inifile/) module works currently.
+
 ## Examples
+
 The following example is a hiera-based role that leverages the [types](https://forge.puppet.com/modules/southalc/types) module
 to manage some dependent resources, then uses this module to deploy a rootless Jenkins container.  Note that the environment
 here is using hiera lookup for class assignments.  The example will perform the following configuration:
@@ -81,7 +101,8 @@ because the default defined type parameter `podman::container::update` defaults 
 * Creates a firewall rule on the host to allow connections to port 8080, which is published by the container.  The rule
 is created with the `firewalld_port` type from the [firewalld module](https://forge.puppet.com/modules/puppet/firewalld),
 using the [types module](https://forge.puppet.com/modules/southalc/types) again so it can be defined entirely in hiera.
-```
+
+```yaml
 ---
 # Hiera based role for Jenkins container deployment
 
@@ -101,7 +122,7 @@ types::user:
     gid:  222001
     password: '!!'
     home: /home/jenkins
-    
+
 types::group:
   jenkins:
     ensure: present
@@ -115,7 +136,6 @@ types::file:
     group: 222001
     mode: '0700'
     require: 'User[jenkins]'
-
 
 podman::manage_subuid: true
 podman::subid:
@@ -150,6 +170,7 @@ types::firewalld_port:
     port: 8080
     protocol: tcp
 ```
+
 Several additional examples are in a separate [github project](https://github.com/southalc/r10k/tree/production/data/containers), including
 a Traefik container configuration that enables SSL termination and proxy access to other containers running on the host, with a dynamic
 configuration directory enabling updates to proxy rules as new containers are added and/or removed.
@@ -162,4 +183,3 @@ the podman and skopeo packages
 ## Development
 
 I'd appreciate any feedback.  To contribute to development, fork the source and submit a pull request.
-

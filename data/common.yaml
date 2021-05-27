@@ -14,6 +14,7 @@ lookup_options:
 
 podman::podman_pkg: podman
 podman::skopeo_pkg: skopeo
+podman::storage_options: ~
 podman::podman_docker_pkg: podman-docker
 podman::podman_docker_pkg_ensure: installed
 podman::buildah_pkg: buildah
