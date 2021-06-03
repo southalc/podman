@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.3.0
+
+- Add the ability to manage host system configuration of container storage in '/etc/containers/storage.conf'.
+  Contrubuted by coreone
+
 ## Release 0.2.7
 
 - Added basic unit tests
