@@ -6,6 +6,12 @@ describe 'podman' do
       let(:facts) { os_facts }
       let(:params) do
         {
+          podman_pkg: 'podman',
+          skopeo_pkg: 'skopeo',
+          buildah_pkg: 'buildah',
+          buildah_pkg_ensure: 'installed',
+          podman_docker_pkg: 'podman-docker',
+          podman_docker_pkg_ensure: 'installed',
           manage_subuid: true,
         }
       end

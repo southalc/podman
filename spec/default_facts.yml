@@ -6,39 +6,3 @@ ipaddress: "172.16.254.254"
 ipaddress6: "FE80:0000:0000:0000:AAAA:AAAA:AAAA"
 is_pe: false
 macaddress: "AA:AA:AA:AA:AA:AA"
-
-podman::podman_pkg: podman
-podman::skopeo_pkg: skopeo
-podman::podman_docker_pkg: podman-docker
-podman::podman_docker_pkg_ensure: installed
-podman::buildah_pkg: buildah
-podman::buildah_pkg_ensure: absent
-
-podman::subid:
-  user1:
-    subuid: 2000000
-    count: 65535
-  user2:
-    subuid: 2100000
-    count: 65535
-podman::volumes:
-  vol1:
-    user: user1
-  vol2:
-    user: user2
-  vol3: {}
-podman::containers:
-  test1:
-    user: user1
-    image: 'bogus.local/images/test1:latest'
-    flags:
-      label:
-        - purpose=test
-      publish:
-        - '8080:8080'
-      volume: 'vol1:/var/test'
-    service_flags:
-      timeout: '60'
-    require:
-      - Podman::Volume[vol1]
-

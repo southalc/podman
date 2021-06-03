@@ -3,8 +3,7 @@
 ## Release 0.2.7
 
 - Added basic unit tests
-- Fixed regression to update container when image digest differs from repo and update is true.
-  Identified by lukashartl
+- Fixed regression to update container when image digest differs from repo and update is true.  Identified by lukashartl
 
 ## Release 0.2.6
 
