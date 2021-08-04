@@ -9,10 +9,12 @@
 #### Public Classes
 
 * [`podman`](#podman): Manage containers, pods, volumes, and images with podman without a docker daemon
+* [`podman::options`](#podmanoptions): edit container options in /etc/containers
 
 #### Private Classes
 
 * `podman::install`: Install podman packages
+* `podman::service`: Manage the podman.socket service
 
 ### Defined types
 
@@ -26,7 +28,7 @@
 
 ## Classes
 
-### `podman`
+### <a name="podman"></a>`podman`
 
 Manage containers, pods, volumes, and images with podman without a docker daemon
 
@@ -67,46 +69,82 @@ podman::containers:
 
 #### Parameters
 
-The following parameters are available in the `podman` class.
+The following parameters are available in the `podman` class:
 
-##### `podman_pkg`
+* [`podman_pkg`](#podman_pkg)
+* [`skopeo_pkg`](#skopeo_pkg)
+* [`buildah_pkg`](#buildah_pkg)
+* [`buildah_pkg_ensure`](#buildah_pkg_ensure)
+* [`podman_docker_pkg`](#podman_docker_pkg)
+* [`podman_docker_pkg_ensure`](#podman_docker_pkg_ensure)
+* [`storage_options`](#storage_options)
+* [`rootless_users`](#rootless_users)
+* [`enable_api_socket`](#enable_api_socket)
+* [`pods`](#pods)
+* [`volumes`](#volumes)
+* [`images`](#images)
+* [`containers`](#containers)
+* [`manage_subuid`](#manage_subuid)
+* [`file_header`](#file_header)
+* [`match_subuid_subgid`](#match_subuid_subgid)
+* [`subid`](#subid)
+* [`nodocker`](#nodocker)
+
+##### <a name="podman_pkg"></a>`podman_pkg`
 
 Data type: `String`
 
 The name of the podman package (default 'podman')
 
-##### `skopeo_pkg`
+##### <a name="skopeo_pkg"></a>`skopeo_pkg`
 
 Data type: `String`
 
 The name of the skopeo package (default 'skopeo')
 
-##### `buildah_pkg`
+##### <a name="buildah_pkg"></a>`buildah_pkg`
 
 Data type: `Optional[String]`
 
 The name of the buildah package (default 'buildah')
 
-##### `buildah_pkg_ensure`
+##### <a name="buildah_pkg_ensure"></a>`buildah_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
 The ensure value for the buildah package (default 'absent')
 
-##### `podman_docker_pkg`
+##### <a name="podman_docker_pkg"></a>`podman_docker_pkg`
 
 Data type: `Optional[String]`
 
-The name of the podman-docker package (default 'podman-docker').  To avoid installing this optional
-component, define `podman::podman_docker_pkg` in hiera with a value of ~
+The name of the podman-docker package (default 'podman-docker').
 
-##### `podman_docker_pkg_ensure`
+##### <a name="podman_docker_pkg_ensure"></a>`podman_docker_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
 The ensure value for the podman docker package (default 'installed')
 
-##### `pods`
+##### <a name="storage_options"></a>`storage_options`
+
+Data type: `Optional[Hash]`
+
+A hash containing any storage options you wish to set in /etc/containers/storage.conf
+
+##### <a name="rootless_users"></a>`rootless_users`
+
+Data type: `Array`
+
+An array of users to manage using [`podman::rootless`](#podmanrootless)
+
+##### <a name="enable_api_socket"></a>`enable_api_socket`
+
+Data type: `Boolean`
+
+The enable value of the API socket (default `false`)
+
+##### <a name="pods"></a>`pods`
 
 Data type: `Hash`
 
@@ -114,7 +152,7 @@ A hash of pods to manage using [`podman::pod`](#podmanpod)
 
 Default value: `{}`
 
-##### `volumes`
+##### <a name="volumes"></a>`volumes`
 
 Data type: `Hash`
 
@@ -122,7 +160,7 @@ A hash of volumes to manage using [`podman::volume`](#podmanvolume)
 
 Default value: `{}`
 
-##### `images`
+##### <a name="images"></a>`images`
 
 Data type: `Hash`
 
@@ -130,7 +168,7 @@ A hash of images to manage using [`podman::image`](#podmanimage)
 
 Default value: `{}`
 
-##### `containers`
+##### <a name="containers"></a>`containers`
 
 Data type: `Hash`
 
@@ -138,7 +176,7 @@ A hash of containers to manage using [`podman::container`](#podmancontainer)
 
 Default value: `{}`
 
-##### `manage_subuid`
+##### <a name="manage_subuid"></a>`manage_subuid`
 
 Data type: `Boolean`
 
@@ -149,7 +187,7 @@ with another method.  You cannot use the `subuid` and `subgid` defined types unl
 
 Default value: ``false``
 
-##### `file_header`
+##### <a name="file_header"></a>`file_header`
 
 Data type: `String`
 
@@ -158,7 +196,7 @@ Default file_header is `# FILE MANAGED BY PUPPET`
 
 Default value: `'# FILE MANAGED BY PUPPET'`
 
-##### `match_subuid_subgid`
+##### <a name="match_subuid_subgid"></a>`match_subuid_subgid`
 
 Data type: `Boolean`
 
@@ -168,7 +206,7 @@ This setting requires `manage_subuid` to be `true` or it will have no effect.
 
 Default value: ``true``
 
-##### `subid`
+##### <a name="subid"></a>`subid`
 
 Data type: `Hash`
 
@@ -178,7 +216,7 @@ Hash key `subuid` is the subordinate UID, and `count` is the number of subordina
 
 Default value: `{}`
 
-##### `nodocker`
+##### <a name="nodocker"></a>`nodocker`
 
 Data type: `Enum['absent', 'file']`
 
@@ -187,9 +225,32 @@ Values should be either 'file' or 'absent'. (default is 'absent')
 
 Default value: `'absent'`
 
+### <a name="podmanoptions"></a>`podman::options`
+
+edit container options in /etc/containers
+
+#### Parameters
+
+The following parameters are available in the `podman::options` class:
+
+* [`storage`](#storage)
+* [`storage_options`](#storage_options)
+
+##### <a name="storage"></a>`storage`
+
+A hash containing any storage options you wish to set in /etc/containers/storage.conf
+
+##### <a name="storage_options"></a>`storage_options`
+
+Data type: `Optional[Hash]`
+
+
+
+Default value: `$podman::storage_options`
+
 ## Defined types
 
-### `podman::container`
+### <a name="podmancontainer"></a>`podman::container`
 
 manage podman container and register as a systemd service
 
@@ -214,9 +275,18 @@ podman::container { 'jenkins':
 
 #### Parameters
 
-The following parameters are available in the `podman::container` defined type.
+The following parameters are available in the `podman::container` defined type:
 
-##### `image`
+* [`image`](#image)
+* [`user`](#user)
+* [`flags`](#flags)
+* [`service_flags`](#service_flags)
+* [`command`](#command)
+* [`ensure`](#ensure)
+* [`enable`](#enable)
+* [`update`](#update)
+
+##### <a name="image"></a>`image`
 
 Data type: `String`
 
@@ -225,7 +295,7 @@ Container registry source of the image being deployed.  Required when
 
 Default value: `''`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -235,7 +305,7 @@ the user must also be defined as a puppet resource that includes at least
 
 Default value: `''`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -253,7 +323,7 @@ YAML representation you can use `~` or `null` as the value.
 
 Default value: `{}`
 
-##### `service_flags`
+##### <a name="service_flags"></a>`service_flags`
 
 Data type: `Hash`
 
@@ -264,7 +334,7 @@ only the long form of the flag names.
 
 Default value: `{}`
 
-##### `command`
+##### <a name="command"></a>`command`
 
 Data type: `String`
 
@@ -272,7 +342,7 @@ Optional command to be used as the container entry point.
 
 Default value: `''`
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -280,7 +350,7 @@ Valid values are 'present' or 'absent'
 
 Default value: `'present'`
 
-##### `enable`
+##### <a name="enable"></a>`enable`
 
 Data type: `Boolean`
 
@@ -289,7 +359,7 @@ Valid values are 'running' or 'stopped'.
 
 Default value: ``true``
 
-##### `update`
+##### <a name="update"></a>`update`
 
 Data type: `Boolean`
 
@@ -301,7 +371,7 @@ of the puppet resource is changed.
 
 Default value: ``true``
 
-### `podman::image`
+### <a name="podmanimage"></a>`podman::image`
 
 pull or remove container images
 
@@ -320,16 +390,21 @@ podman::image { 'my_container':
 
 #### Parameters
 
-The following parameters are available in the `podman::image` defined type.
+The following parameters are available in the `podman::image` defined type:
 
-##### `image`
+* [`image`](#image)
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+
+##### <a name="image"></a>`image`
 
 Data type: `String`
 
 The name of the container image to pull, which should be present in a
 configured container registry.
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -337,7 +412,7 @@ State of the resource must be either `present` or `absent`.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -346,7 +421,7 @@ long form of the flag name.
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -356,7 +431,7 @@ the user must also be defined as a Puppet resource and must include the
 
 Default value: `''`
 
-### `podman::pod`
+### <a name="podmanpod"></a>`podman::pod`
 
 Create a podman pod with defined flags
 
@@ -374,9 +449,13 @@ podman::pod { 'mypod':
 
 #### Parameters
 
-The following parameters are available in the `podman::pod` defined type.
+The following parameters are available in the `podman::pod` defined type:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -384,7 +463,7 @@ State of the resource, which must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -394,7 +473,7 @@ pod name unless the 'name' flag is included in the hash of flags.
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -404,11 +483,11 @@ the user must also be defined as a Puppet resource and must include the
 
 Default value: `''`
 
-### `podman::rootless`
+### <a name="podmanrootless"></a>`podman::rootless`
 
 Enable rootless podman containers to run as a systemd user service.
 
-### `podman::subgid`
+### <a name="podmansubgid"></a>`podman::subgid`
 
 Define an entry in the `/etc/subgid` file.
 
@@ -425,21 +504,25 @@ podman::subgid { 'myuser':
 
 #### Parameters
 
-The following parameters are available in the `podman::subgid` defined type.
+The following parameters are available in the `podman::subgid` defined type:
 
-##### `subgid`
+* [`subgid`](#subgid)
+* [`count`](#count)
+* [`order`](#order)
+
+##### <a name="subgid"></a>`subgid`
 
 Data type: `Integer`
 
 Numerical subordinate group ID
 
-##### `count`
+##### <a name="count"></a>`count`
 
 Data type: `Integer`
 
 Numerical subordinate group ID count
 
-##### `order`
+##### <a name="order"></a>`order`
 
 Data type: `Integer`
 
@@ -447,7 +530,7 @@ Sequence number for concat fragments#
 
 Default value: `10`
 
-### `podman::subuid`
+### <a name="podmansubuid"></a>`podman::subuid`
 
 Manage entries in `/etc/subuid`
 
@@ -464,21 +547,25 @@ podman::subuid { 'namevar':
 
 #### Parameters
 
-The following parameters are available in the `podman::subuid` defined type.
+The following parameters are available in the `podman::subuid` defined type:
 
-##### `subuid`
+* [`subuid`](#subuid)
+* [`count`](#count)
+* [`order`](#order)
+
+##### <a name="subuid"></a>`subuid`
 
 Data type: `Integer`
 
 Numerical subordinate user ID
 
-##### `count`
+##### <a name="count"></a>`count`
 
 Data type: `Integer`
 
 Numerical subordinate user ID count
 
-##### `order`
+##### <a name="order"></a>`order`
 
 Data type: `Integer`
 
@@ -486,7 +573,7 @@ Sequence number for concat fragments
 
 Default value: `10`
 
-### `podman::volume`
+### <a name="podmanvolume"></a>`podman::volume`
 
 Create a podman volume with defined flags
 
@@ -504,9 +591,13 @@ podman::volume { 'myvolume':
 
 #### Parameters
 
-The following parameters are available in the `podman::volume` defined type.
+The following parameters are available in the `podman::volume` defined type:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -514,7 +605,7 @@ State of the resource must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -525,7 +616,7 @@ Volume names are created based on the resoure title (namevar)
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
