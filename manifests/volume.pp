@@ -77,7 +77,7 @@ define podman::volume (
     'absent': {
       Exec { "podman_remove_volume_${title}":
         command => "podman volume rm ${title}",
-        unless  => "test ! $(podman volume inspect ${title})",
+        unless  => "podman volume inspect ${title}; test $? -ne 0",
         *       => $exec_defaults,
       }
     }
