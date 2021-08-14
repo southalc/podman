@@ -28,8 +28,35 @@ describe 'podman' do
         }'
       end
 
-      it { is_expected.to contain_class('podman::install') }
       it { is_expected.to compile }
+      it { is_expected.to contain_class('podman::install') }
+      it { is_expected.to contain_class('podman::service') }
+
+      it do
+        is_expected.to contain_service('podman.socket').with(
+          'ensure' => 'stopped',
+          'enable' => false,
+        )
+      end
+    end
+
+    context "on #{os} with API socket enabled" do
+      let(:facts) { os_facts }
+      let(:params) do
+        {
+          'enable_api_socket' => true,
+        }
+      end
+
+      it { is_expected.to compile }
+      it { is_expected.to contain_class('podman::service') }
+
+      it do
+        is_expected.to contain_service('podman.socket').with(
+          'ensure' => 'running',
+          'enable' => true,
+        )
+      end
     end
   end
 end

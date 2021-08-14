@@ -2,8 +2,7 @@
 #   Enable rootless podman containers to run as a systemd user service.
 #
 define podman::rootless {
-  $uid  = User[$name]['uid']
-  $gid  = User[$name]['gid']
+  include podman
 
   Exec { "loginctl_linger_${name}":
     path     => '/sbin:/usr/sbin:/bin:/usr/bin',
@@ -21,11 +20,19 @@ define podman::rootless {
     "${User[$name]['home']}/.config/systemd/user"
     ], {
       ensure  => directory,
-      owner   => "${User[$name]['uid']}",
+      owner   => $name,
       group   => "${User[$name]['gid']}",
       mode    => '0700',
       require => File["${User[$name]['home']}"],
     }
   )
-}
 
+  if $podman::enable_api_socket {
+    exec { "/bin/bash -c 'XDG_RUNTIME_DIR=/run/user/$( id -u ) systemctl --user enable --now podman.socket'":
+      path    => '/bin:/usr/bin',
+      user    => $name,
+      unless  => "/bin/bash -c 'XDG_RUNTIME_DIR=/run/user/$( id -u ) systemctl --user status podman.socket'",
+      require => Exec["loginctl_linger_${name}"],
+    }
+  }
+}
