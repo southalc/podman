@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.4.0
+
+- Add management of the API socket. - Contributed by silug
+
 ## Release 0.3.0
 
 - Add the ability to manage host system configuration of container storage in '/etc/containers/storage.conf'.
