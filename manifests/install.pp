@@ -92,6 +92,7 @@ class podman::install (
     selboolean { 'container_manage_cgroup':
       persistent => true,
       value      => on,
+      require    => Package[$podman_pkg],
     }
   }
 
