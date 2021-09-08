@@ -18,6 +18,15 @@
 # @param podman_docker_pkg_ensure
 #   The ensure value for the podman docker package (default 'installed')
 #
+# @param storage_options
+#   A hash containing any storage options you wish to set in /etc/containers/storage.conf
+#
+# @param rootless_users
+#   An array of users to manage using [`podman::rootless`](#podmanrootless)
+#
+# @param enable_api_socket
+#   The enable value of the API socket (default `false`)
+#
 # @param pods
 #   A hash of pods to manage using [`podman::pod`](#podmanpod)
 #
@@ -88,6 +97,9 @@ class podman (
   Enum['absent', 'installed'] $buildah_pkg_ensure,
   Optional[String] $podman_docker_pkg,
   Enum['absent', 'installed'] $podman_docker_pkg_ensure,
+  Optional[Hash] $storage_options,
+  Array $rootless_users,
+  Boolean $enable_api_socket,
   Boolean $manage_subuid           = false,
   Boolean $match_subuid_subgid     = true,
   String $file_header              = '# FILE MANAGED BY PUPPET',
@@ -99,6 +111,8 @@ class podman (
   Hash $containers                 = {},
 ){
   include podman::install
+  include podman::options
+  include podman::service
 
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
@@ -106,4 +120,13 @@ class podman (
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
 
+  $rootless_users.each |$user| {
+    unless defined(Podman::Rootless[$user]) {
+      podman::rootless { $user: }
+    }
+  }
+
+  Class['podman::install'] -> Class['podman::options'] -> Class['podman::service']
+
+  User <| |> -> Podman::Rootless <| |>
 }

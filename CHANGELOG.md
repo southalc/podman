@@ -1,10 +1,18 @@
 # Changelog
 
+## Release 0.4.0
+
+- Add management of the API socket. - Contributed by silug
+
+## Release 0.3.0
+
+- Add the ability to manage host system configuration of container storage in '/etc/containers/storage.conf'.
+  Contrubuted by coreone
+
 ## Release 0.2.7
 
 - Added basic unit tests
-- Fixed regression to update container when image digest differs from repo and update is true.
-  Identified by lukashartl
+- Fixed regression to update container when image digest differs from repo and update is true.  Identified by lukashartl
 
 ## Release 0.2.6
 

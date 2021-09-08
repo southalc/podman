@@ -6,9 +6,12 @@ describe 'podman::install' do
       let(:facts) { os_facts }
       let(:params) do
         {
-          # podman_pkg: 'podman',
-          # skopeo_pkg: 'skopeo',
-          # podman_docker_pkg: 'podman-docker',
+          podman_pkg: 'podman',
+          skopeo_pkg: 'skopeo',
+          buildah_pkg: 'buildah',
+          buildah_pkg_ensure: 'installed',
+          podman_docker_pkg_ensure: 'installed',
+          podman_docker_pkg: 'podman-docker',
           manage_subuid: true,
           file_header: '# FILE MANAGED BY PUPPET',
           match_subuid_subgid: true,
