@@ -39,6 +39,9 @@
 # @param containers
 #   A hash of containers to manage using [`podman::container`](#podmancontainer)
 #
+# @param networks
+#   A hash of networks to manage using [`podman::network`](#podmannetwork)
+#
 # @param manage_subuid
 #   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
 #   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
@@ -109,6 +112,7 @@ class podman (
   Hash $volumes                    = {},
   Hash $images                     = {},
   Hash $containers                 = {},
+  Hash $networks                   = {},
 ){
   include podman::install
   include podman::options
@@ -119,6 +123,7 @@ class podman (
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
+  $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
 
   $rootless_users.each |$user| {
     unless defined(Podman::Rootless[$user]) {

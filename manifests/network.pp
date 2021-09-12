@@ -102,7 +102,10 @@ define podman::network (
   case $ensure {
     'present': {
       exec { "podman_create_network_${title}":
-        command => "podman network create ${title} --driver ${driver} ${_opts} ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}",
+        command => @("END"/L),
+                   podman network create ${title} --driver ${driver} ${_opts} \
+                    ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}"
+                   |END
         unless  => "podman network exists ${title}",
         path    => ['/usr/bin', '/bin']
       }
