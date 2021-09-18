@@ -16,6 +16,11 @@
 #   the user must also be defined as a Puppet resource and must include the
 #   'uid', 'gid', and 'home'
 #
+# @param exec_env
+#   Optional array of environment variables used when the container image is
+#   pulled.  Useful for defining a proxy for downloads. For example:
+#   ["HTTP_PROXY=http://${proxy_fqdn}:3128", "HTTPS_PROXY=http://${proxy_fqdn}:3128"]
+#
 # @example
 #   podman::image { 'my_container':
 #     image => 'my_container:tag',
@@ -26,9 +31,10 @@
 #
 define podman::image (
   String $image,
-  String $ensure  = 'present',
-  Hash $flags     = {},
-  String $user    = '',
+  String $ensure = 'present',
+  Hash $flags    = {},
+  String $user   = '',
+  Array $exec_env = [],
 ){
   require podman::install
 
@@ -53,9 +59,9 @@ define podman::image (
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
       environment => [
-        "HOME=${User[$user]['home']}",
-        "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
-      ],
+          "HOME=${User[$user]['home']}",
+          "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+        ] + $exec_env,
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
@@ -67,6 +73,7 @@ define podman::image (
   } else {
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      environment => $exec_env,
     }
   }
 
