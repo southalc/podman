@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.5.0
+
+- Add 'extra_env' as a parameter for the 'podman::image' class.  Enables proxy support for image pull. Contributed by Kotty666
+- Add 'podman::network' defined type to manage podman networks.  Contributed by optiz0r
+
 ## Release 0.4.0
 
 - Add management of the API socket. - Contributed by silug
