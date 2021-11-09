@@ -203,10 +203,11 @@ define podman::container (
               then
               running=\$(podman container inspect ${container_name} --format '{{.ImageName}}' | awk -F/ '{print \$NF}')
               declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
+              test "\${running}" = "\${declared}" && exit 0
               available=\$(skopeo inspect docker://${image} | \
                 /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
               test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
-              test "\${running}" = "\${declared}"
+              exit 1
             fi
             |END
           notify   => [
