@@ -8,7 +8,7 @@ define podman::rootless {
     path     => '/sbin:/usr/sbin:/bin:/usr/bin',
     command  => "loginctl enable-linger ${name}",
     provider => 'shell',
-    unless   => "test $(loginctl show-user ${name} --property=Linger) == 'Linger=yes'",
+    unless   => "test $(loginctl show-user ${name} --property=Linger) = 'Linger=yes'",
     require  => User[$name],
   }
   ensure_resource('Service', 'systemd-logind', { ensure => 'running', enable => true } )
