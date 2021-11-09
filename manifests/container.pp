@@ -168,6 +168,12 @@ define podman::container (
         *        => $exec_defaults,
       }
 
+      if $facts["ruby"]["sitedir"] =~ /^\/opt\/puppetlabs/ {
+        $ruby = '/opt/puppetlabs/puppet/bin/ruby'
+      } else {
+        $ruby = '/usr/bin/ruby'  # TODO: Is there a better choice for this?
+      }
+
       # Re-deploy when $update is true and the container image has been updated
       if $update {
         Exec { "verify_container_image_${handle}":
@@ -179,9 +185,9 @@ define podman::container (
               image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
               running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
               latest_digest=\$(skopeo inspect docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
               test "\${running_digest}" = "\${latest_digest}"
             fi
@@ -205,7 +211,7 @@ define podman::container (
               declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
               test "\${running}" = "\${declared}" && exit 0
               available=\$(skopeo inspect docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
               test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
               exit 1
             fi
