@@ -45,6 +45,11 @@
 #   When `false`, the container will only be redeployed when the declared state
 #   of the puppet resource is changed.
 #
+# @param ruby
+#   The absolute path to the ruby binary to use in scripts. The default path is
+#   '/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
+#   '/usr/bin/ruby' for all others. 
+#
 # @example
 #   podman::container { 'jenkins':
 #     image         => 'docker.io/jenkins/jenkins',
@@ -60,14 +65,18 @@
 #   }
 #
 define podman::container (
-  String $image       = '',
-  String $user        = '',
-  Hash $flags         = {},
-  Hash $service_flags = {},
-  String $command     = '',
-  String $ensure      = 'present',
-  Boolean $enable     = true,
-  Boolean $update     = true,
+  String $image          = '',
+  String $user           = '',
+  Hash $flags            = {},
+  Hash $service_flags    = {},
+  String $command        = '',
+  String $ensure         = 'present',
+  Boolean $enable        = true,
+  Boolean $update        = true,
+  Stdlib::Unixpath $ruby = $facts['ruby']['sitedir'] ? {
+    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
+    default                => '/usr/bin/ruby',
+  },
 ){
   require podman::install
 
@@ -179,9 +188,9 @@ define podman::container (
               image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
               running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
               latest_digest=\$(skopeo inspect docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
               test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
               test "\${running_digest}" = "\${latest_digest}"
             fi
@@ -205,7 +214,7 @@ define podman::container (
               declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
               test "\${running}" = "\${declared}" && exit 0
               available=\$(skopeo inspect docker://${image} | \
-                /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
+                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
               test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
               exit 1
             fi
