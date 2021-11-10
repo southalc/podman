@@ -45,6 +45,11 @@
 #   When `false`, the container will only be redeployed when the declared state
 #   of the puppet resource is changed.
 #
+# @param ruby
+#   The absolute path to the ruby binary to use in scripts. The default path is
+#   '/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
+#   '/usr/bin/ruby' for all others. 
+#
 # @example
 #   podman::container { 'jenkins':
 #     image         => 'docker.io/jenkins/jenkins',
@@ -60,14 +65,18 @@
 #   }
 #
 define podman::container (
-  String $image       = '',
-  String $user        = '',
-  Hash $flags         = {},
-  Hash $service_flags = {},
-  String $command     = '',
-  String $ensure      = 'present',
-  Boolean $enable     = true,
-  Boolean $update     = true,
+  String $image          = '',
+  String $user           = '',
+  Hash $flags            = {},
+  Hash $service_flags    = {},
+  String $command        = '',
+  String $ensure         = 'present',
+  Boolean $enable        = true,
+  Boolean $update        = true,
+  Stdlib::Unixpath $ruby = $facts['ruby']['sitedir'] ? {
+    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
+    default                => '/usr/bin/ruby',
+  },
 ){
   require podman::install
 
@@ -166,12 +175,6 @@ define podman::container (
         notify   => Exec["podman_remove_container_${handle}"],
         require  => $requires,
         *        => $exec_defaults,
-      }
-
-      if $facts["ruby"]["sitedir"] =~ /^\/opt\/puppetlabs/ {
-        $ruby = '/opt/puppetlabs/puppet/bin/ruby'
-      } else {
-        $ruby = '/usr/bin/ruby'  # TODO: Is there a better choice for this?
       }
 
       # Re-deploy when $update is true and the container image has been updated
