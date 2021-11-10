@@ -1,5 +1,13 @@
 # Changelog
 
+## Release 0.5.1
+
+- In the container defined type, skip the upstream image check when the running container image matches the
+  declared resource and $update is false.  This reduces hits against the image registry.  Contributed by jaevans
+- Fix operator syntax used by 'loginctl show-user' command to work with strict POSIX shells.  Identified by drebs
+- Add a $ruby parameter to the container defined type.  This enables open source puppet agents where the ruby
+  binary is not in the under /opt/puppetlabs.  Contributed by jaevans
+
 ## Release 0.5.0
 
 - Add 'extra_env' as a parameter for the 'podman::image' class.  Enables proxy support for image pull. Contributed by Kotty666

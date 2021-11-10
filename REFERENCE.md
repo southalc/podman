@@ -349,6 +349,16 @@ of the puppet resource is changed.
 
 Default value: ``true``
 
+##### `ruby`
+
+Data type: `Stdlib::Unixpath`
+
+The absolute path to the ruby binary to use in scripts. The default path is
+'/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
+'/usr/bin/ruby' for all others.
+
+Default value: `$facts['ruby']['sitedir']`
+
 ### `podman::image`
 
 pull or remove container images
