@@ -104,7 +104,7 @@ define podman::network (
       exec { "podman_create_network_${title}":
         command => @("END"/L),
                    podman network create ${title} --driver ${driver} ${_opts} \
-                    ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}"
+                    ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}
                    |END
         unless  => "podman network exists ${title}",
         path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin']
