@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.5.2
+
+- Minor fixes to the 'podman::network' defined type.  Contributed by optizor
+
 ## Release 0.5.1
 
 - In the container defined type, skip the upstream image check when the running container image matches the
