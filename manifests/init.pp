@@ -100,6 +100,8 @@ class podman (
   Enum['absent', 'installed'] $buildah_pkg_ensure,
   Optional[String] $podman_docker_pkg,
   Enum['absent', 'installed'] $podman_docker_pkg_ensure,
+  Optional[String] $compose_pkg,
+  Enum['absent', 'installed'] $compose_pkg_ensure,
   Optional[Hash] $storage_options,
   Array $rootless_users,
   Boolean $enable_api_socket,
