@@ -39,6 +39,8 @@ class podman::install (
   Enum['absent', 'installed'] $buildah_pkg_ensure       = $podman::buildah_pkg_ensure,
   Optional[String] $podman_docker_pkg                   = $podman::podman_docker_pkg,
   Enum['absent', 'installed'] $podman_docker_pkg_ensure = $podman::podman_docker_pkg_ensure,
+  Optional[String] $compose_pkg                         = $podman::compose_pkg,
+  Enum['absent', 'installed'] $compose_pkg_ensure       = $podman::compose_pkg_ensure,
   String $file_header                                   = $podman::file_header,
   Boolean $manage_subuid                                = $podman::manage_subuid,
   Boolean $match_subuid_subgid                          = $podman::match_subuid_subgid,
@@ -49,6 +51,7 @@ class podman::install (
   ensure_resource('Package', $skopeo_pkg, { 'ensure' => 'installed' })
   if $buildah_pkg { ensure_resource('Package', $buildah_pkg, { 'ensure' => $buildah_pkg_ensure }) }
   if $podman_docker_pkg { ensure_resource('Package', $podman_docker_pkg, { 'ensure' => $podman_docker_pkg_ensure }) }
+  if $compose_pkg { ensure_resource('Package', $compose_pkg, { 'ensure' => $compose_pkg_ensure }) }
 
   if $manage_subuid {
     Concat { '/etc/subuid':

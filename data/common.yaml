@@ -23,3 +23,5 @@ podman::buildah_pkg: buildah
 podman::buildah_pkg_ensure: absent
 podman::rootless_users: []
 podman::enable_api_socket: false
+podman::compose_pkg: podman-compose
+podman::compose_pkg_ensure: absent
