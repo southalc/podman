@@ -22,9 +22,9 @@
 #   }
 #
 define podman::volume (
-  String $ensure  = 'present',
-  Hash $flags     = {},
-  String $user    = '',
+  String $ensure = 'present',
+  Hash $flags    = {},
+  String $user   = '',
 ) {
   require podman::install
 
@@ -68,14 +68,14 @@ define podman::volume (
 
   case $ensure {
     'present': {
-      Exec { "podman_create_volume_${title}":
+      exec { "podman_create_volume_${title}":
         command => "podman volume create ${_flags} ${title}",
         unless  => "podman volume inspect ${title}",
         *       => $exec_defaults,
       }
     }
     'absent': {
-      Exec { "podman_remove_volume_${title}":
+      exec { "podman_remove_volume_${title}":
         command => "podman volume rm ${title}",
         unless  => "podman volume inspect ${title}; test $? -ne 0",
         *       => $exec_defaults,

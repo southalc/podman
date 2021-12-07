@@ -9,6 +9,7 @@ describe 'podman::rootless' do
   end
   let(:pre_condition) do
     <<~END
+      include podman
       group { 'user1': }
       -> user { 'user1':
         gid        => 'user1',

@@ -9,11 +9,11 @@
 #### Public Classes
 
 * [`podman`](#podman): Manage containers, pods, volumes, and images with podman without a docker daemon
-* [`podman::options`](#podmanoptions): edit container options in /etc/containers
 
 #### Private Classes
 
 * `podman::install`: Install podman packages
+* `podman::options`: edit container options in /etc/containers
 * `podman::service`: Manage the podman.socket service
 
 ### Defined types
@@ -22,7 +22,7 @@
 * [`podman::image`](#podmanimage): pull or remove container images
 * [`podman::network`](#podmannetwork): Create a podman network with defined flags
 * [`podman::pod`](#podmanpod): Create a podman pod with defined flags
-* [`podman::rootless`](#podmanrootless): Enable rootless podman containers to run as a systemd user service.
+* [`podman::rootless`](#podmanrootless): Enable a given user to run rootless podman containers as a systemd user service.
 * [`podman::subgid`](#podmansubgid): Define an entry in the `/etc/subgid` file.
 * [`podman::subuid`](#podmansubuid): Manage entries in `/etc/subuid`
 * [`podman::volume`](#podmanvolume): Create a podman volume with defined flags
@@ -78,17 +78,39 @@ Data type: `String`
 
 The name of the podman package (default 'podman')
 
+Default value: `'podman'`
+
 ##### `skopeo_pkg`
 
 Data type: `String`
 
 The name of the skopeo package (default 'skopeo')
 
+Default value: `'skopeo'`
+
 ##### `buildah_pkg`
 
-Data type: `Optional[String]`
+Data type: `String`
 
 The name of the buildah package (default 'buildah')
+
+Default value: `'buildah'`
+
+##### `podman_docker_pkg`
+
+Data type: `String`
+
+The name of the podman-docker package (default 'podman-docker').
+
+Default value: `'podman-docker'`
+
+##### `compose_pkg`
+
+Data type: `String`
+
+The name of the podman-compose package (default 'podman-compose').
+
+Default value: `'podman-compose'`
 
 ##### `buildah_pkg_ensure`
 
@@ -96,11 +118,7 @@ Data type: `Enum['absent', 'installed']`
 
 The ensure value for the buildah package (default 'absent')
 
-##### `podman_docker_pkg`
-
-Data type: `Optional[String]`
-
-The name of the podman-docker package (default 'podman-docker').
+Default value: `'absent'`
 
 ##### `podman_docker_pkg_ensure`
 
@@ -108,11 +126,32 @@ Data type: `Enum['absent', 'installed']`
 
 The ensure value for the podman docker package (default 'installed')
 
+Default value: `'installed'`
+
+##### `compose_pkg_ensure`
+
+Data type: `Enum['absent', 'installed']`
+
+The ensure value for the podman-compose package (default 'absent')
+
+Default value: `'absent'`
+
+##### `nodocker`
+
+Data type: `Enum['absent', 'file']`
+
+Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
+Values should be either 'file' or 'absent'. (default is 'absent')
+
+Default value: `'absent'`
+
 ##### `storage_options`
 
-Data type: `Optional[Hash]`
+Data type: `Hash`
 
 A hash containing any storage options you wish to set in /etc/containers/storage.conf
+
+Default value: `{}`
 
 ##### `rootless_users`
 
@@ -120,51 +159,15 @@ Data type: `Array`
 
 An array of users to manage using [`podman::rootless`](#podmanrootless)
 
+Default value: `[]`
+
 ##### `enable_api_socket`
 
 Data type: `Boolean`
 
 The enable value of the API socket (default `false`)
 
-##### `pods`
-
-Data type: `Hash`
-
-A hash of pods to manage using [`podman::pod`](#podmanpod)
-
-Default value: `{}`
-
-##### `volumes`
-
-Data type: `Hash`
-
-A hash of volumes to manage using [`podman::volume`](#podmanvolume)
-
-Default value: `{}`
-
-##### `images`
-
-Data type: `Hash`
-
-A hash of images to manage using [`podman::image`](#podmanimage)
-
-Default value: `{}`
-
-##### `containers`
-
-Data type: `Hash`
-
-A hash of containers to manage using [`podman::container`](#podmancontainer)
-
-Default value: `{}`
-
-##### `networks`
-
-Data type: `Hash`
-
-A hash of networks to manage using [`podman::network`](#podmannetwork)
-
-Default value: `{}`
+Default value: ``false``
 
 ##### `manage_subuid`
 
@@ -206,34 +209,45 @@ Hash key `subuid` is the subordinate UID, and `count` is the number of subordina
 
 Default value: `{}`
 
-##### `nodocker`
+##### `pods`
 
-Data type: `Enum['absent', 'file']`
+Data type: `Hash`
 
-Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
-Values should be either 'file' or 'absent'. (default is 'absent')
+A hash of pods to manage using [`podman::pod`](#podmanpod)
 
-Default value: `'absent'`
+Default value: `{}`
 
-### `podman::options`
+##### `volumes`
 
-edit container options in /etc/containers
+Data type: `Hash`
 
-#### Parameters
+A hash of volumes to manage using [`podman::volume`](#podmanvolume)
 
-The following parameters are available in the `podman::options` class.
+Default value: `{}`
 
-##### `storage`
+##### `images`
 
-A hash containing any storage options you wish to set in /etc/containers/storage.conf
+Data type: `Hash`
 
-##### `storage_options`
+A hash of images to manage using [`podman::image`](#podmanimage)
 
-Data type: `Optional[Hash]`
+Default value: `{}`
 
+##### `containers`
 
+Data type: `Hash`
 
-Default value: `$podman::storage_options`
+A hash of containers to manage using [`podman::container`](#podmancontainer)
+
+Default value: `{}`
+
+##### `networks`
+
+Data type: `Hash`
+
+A hash of networks to manage using [`podman::network`](#podmannetwork)
+
+Default value: `{}`
 
 ## Defined types
 
@@ -501,9 +515,13 @@ CIDR notation.
 
 Default value: ``undef``
 
-##### `label`
+##### `labels`
+
+Data type: `Hash[String,String]`
 
 A hash of metadata labels to set on the network.
+
+Default value: `{}`
 
 ##### `subnet`
 
@@ -520,14 +538,6 @@ Data type: `Boolean`
 Enable IPv6 (dual-stack) networking.
 
 Default value: ``false``
-
-##### `labels`
-
-Data type: `Hash[String,String]`
-
-
-
-Default value: `{}`
 
 ### `podman::pod`
 
@@ -579,7 +589,7 @@ Default value: `''`
 
 ### `podman::rootless`
 
-Enable rootless podman containers to run as a systemd user service.
+Enable a given user to run rootless podman containers as a systemd user service.
 
 ### `podman::subgid`
 

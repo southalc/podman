@@ -23,7 +23,7 @@
 #   Allocate container IP from a range. The range must be a complete subnet and in
 #   CIDR notation.
 #
-# @param label
+# @param labels
 #   A hash of metadata labels to set on the network.
 #
 # @param subnet

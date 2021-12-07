@@ -160,7 +160,7 @@ define podman::container (
       if $image == '' { fail('A source image is required') }
 
       # Detect changes to the defined podman flags and re-deploy if needed
-      Exec { "verify_container_flags_${handle}":
+      exec { "verify_container_flags_${handle}":
         command  => 'true',
         provider => 'shell',
         unless   => @("END"/$L),
@@ -179,7 +179,7 @@ define podman::container (
 
       # Re-deploy when $update is true and the container image has been updated
       if $update {
-        Exec { "verify_container_image_${handle}":
+        exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
           unless   => @("END"/$L),
@@ -204,7 +204,7 @@ define podman::container (
         }
       } else {
         # Re-deploy when $update is false but the resource image has changed
-        Exec { "verify_container_image_${handle}":
+        exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
           unless   => @("END"/$L),
@@ -228,7 +228,7 @@ define podman::container (
         }
       }
 
-      Exec { "podman_remove_image_${handle}":
+      exec { "podman_remove_image_${handle}":
         # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
@@ -238,7 +238,7 @@ define podman::container (
         *           => $exec_defaults,
       }
 
-      Exec { "podman_remove_container_${handle}":
+      exec { "podman_remove_container_${handle}":
         # Try nicely to stop the container, but then insist
         provider    => 'shell',
         command     => @("END"/L),
@@ -270,7 +270,7 @@ define podman::container (
         "${mem} --${flag[0]} '${flag[1]}'"
       }
 
-      Exec { "podman_create_${handle}":
+      exec { "podman_create_${handle}":
         command => "podman container create ${_flags} ${image} ${command}",
         unless  => "podman container exists ${container_name}",
         notify  => Exec["podman_generate_service_${handle}"],
@@ -279,7 +279,7 @@ define podman::container (
       }
 
       if $user != '' {
-        Exec { "podman_generate_service_${handle}":
+        exec { "podman_generate_service_${handle}":
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
           notify      => Exec["service_podman_${handle}"],
@@ -291,7 +291,7 @@ define podman::container (
         if $enable { $action = 'start'; $startup = 'enable' }
           else { $action = 'stop'; $startup = 'disable'
         }
-        Exec { "service_podman_${handle}":
+        exec { "service_podman_${handle}":
           command => @("END"/L),
                      ${systemctl} ${startup} podman-${container_name}.service
                      ${systemctl} ${action} podman-${container_name}.service
@@ -305,7 +305,7 @@ define podman::container (
         }
       }
       else {
-        Exec { "podman_generate_service_${handle}":
+        exec { "podman_generate_service_${handle}":
           path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
@@ -316,7 +316,7 @@ define podman::container (
         if $enable { $state = 'running'; $startup = 'true' }
           else { $state = 'stopped'; $startup = 'false'
         }
-        Service { "podman-${handle}":
+        service { "podman-${handle}":
           ensure => $state,
           enable => $startup,
         }
@@ -324,7 +324,7 @@ define podman::container (
     }
 
     'absent': {
-      Exec { "service_podman_${handle}":
+      exec { "service_podman_${handle}":
         command => @("END"/L),
                    ${systemctl} stop podman-${container_name}
                    ${systemctl} disable podman-${container_name}
@@ -338,8 +338,7 @@ define podman::container (
         *       => $exec_defaults,
       }
 
-      Exec { "podman_remove_container_${handle}":
-        # Try nicely to stop the container, but then insist
+      exec { "podman_remove_container_${handle}":
         command => "podman container rm --force ${container_name}",
         unless  => "podman container exists ${container_name}; test $? -eq 1",
         notify  => Exec["podman_remove_image_${handle}"],
@@ -347,7 +346,7 @@ define podman::container (
         *       => $exec_defaults,
       }
 
-      Exec { "podman_remove_image_${handle}":
+      exec { "podman_remove_image_${handle}":
         # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
@@ -356,7 +355,7 @@ define podman::container (
         *           => $exec_defaults,
       }
 
-      File { $service_unit_file:
+      file { $service_unit_file:
         ensure  => absent,
         require => [
           $requires,

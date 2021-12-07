@@ -1,5 +1,12 @@
 # Changelog
 
+## Release 0.5.3
+
+- Minor refactoring and general cleanup across several manifests.
+- All module parameters defined in the main class and referenced by other classes.
+- Default values moved from module hiera to main manifest.
+- Add ability to manage the podman-compose package.  Contributed by coreone
+
 ## Release 0.5.2
 
 - Minor fixes to the 'podman::network' defined type.  Contributed by optizor

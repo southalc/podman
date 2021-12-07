@@ -1,5 +1,4 @@
 ---
-# Set hiera lookup defaults
 lookup_options:
   podman::containers:
     merge: deep
@@ -14,14 +13,3 @@ lookup_options:
   podman::rootless_users:
     merge: unique
 
-podman::podman_pkg: podman
-podman::skopeo_pkg: skopeo
-podman::storage_options: ~
-podman::podman_docker_pkg: podman-docker
-podman::podman_docker_pkg_ensure: installed
-podman::buildah_pkg: buildah
-podman::buildah_pkg_ensure: absent
-podman::rootless_users: []
-podman::enable_api_socket: false
-podman::compose_pkg: podman-compose
-podman::compose_pkg_ensure: absent

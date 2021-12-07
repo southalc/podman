@@ -23,7 +23,7 @@
 define podman::pod (
   String $ensure = 'present',
   Hash $flags    = {},
-  String $user    = '',
+  String $user   = '',
 ) {
   require podman::install
 
@@ -72,14 +72,14 @@ define podman::pod (
 
   case $ensure {
     'present': {
-      Exec { "create_pod_${pod_name}":
+      exec { "create_pod_${pod_name}":
         command => "podman pod create ${_flags}",
         unless  => "podman pod exists ${pod_name}",
         *       => $exec_defaults,
       }
     }
     'absent': {
-      Exec { "remove_pod_${pod_name}":
+      exec { "remove_pod_${pod_name}":
         command => "podman pod rm ${pod_name}",
         unless  => "podman pod exists ${pod_name}; test $? -eq 1",
         *       => $exec_defaults,

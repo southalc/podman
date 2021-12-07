@@ -51,9 +51,9 @@ user account when the system boots.
 
 ### General podman and systemd notes
 
-Be aware of how to work with podman and systemd user services when running rootless containers.  First, you'll need to "su" to
-the assigned user work with the user's containers and services.  The systemd and podman commands rely on the 'XDG_RUNTIME_DIR'
-environment variable, so set it in the shell as follows:
+Be aware of how to work with podman and systemd user services when running rootless containers.  The systemd and podman commands
+rely on the 'XDG_RUNTIME_DIR' environment variable that is normally set during login by pam_systemd.  When you switch users this
+value will likely need to be set in the shell as follows:
 
 ```sh
 su - <container_user>
@@ -72,7 +72,8 @@ systemctl --user status podman-<container_name>
 ### containerd configuration
 
 This module also contains minimal support for editing the `containerd` configuration files that control some of the lower level
-settings for how containers are created. Currently, the only supported configuration file is `/etc/containers/storage.conf`. You should be able to set any of the settings with that file using the `$podman::storage_options` parameter. For example (if using Hiera):
+settings for how containers are created. Currently, the only supported configuration file is `/etc/containers/storage.conf`. You
+should be able to set any of the settings with that file using the `$podman::storage_options` parameter. For example (if using Hiera):
 
 ```yaml
 podman::storage_options:
@@ -183,3 +184,4 @@ the podman and skopeo packages
 ## Development
 
 I'd appreciate any feedback.  To contribute to development, fork the source and submit a pull request.
+

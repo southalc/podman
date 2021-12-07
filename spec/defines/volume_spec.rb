@@ -5,12 +5,21 @@ describe 'podman::volume' do
   let(:params) do
     {
       ensure: 'present',
-      user: '',
+      user: 'testuser',
     }
   end
-
   let(:pre_condition) do
-    'class {"::podman::install":
+    'user {"testuser":
+      ensure        => "present",
+      home          => "/home/testuser",
+      uid           => 5000,
+      gid           => 5000,
+      managehome    => true,
+    }
+    file {"/home/testuser":
+      ensure => "directory",
+    }
+    class {"podman":
       podman_pkg               => "podman",
       skopeo_pkg               => "skopeo",
       buildah_pkg              => "buildah",

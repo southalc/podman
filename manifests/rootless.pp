@@ -1,10 +1,7 @@
-# @summary
-#   Enable rootless podman containers to run as a systemd user service.
+# @summary Enable a given user to run rootless podman containers as a systemd user service.
 #
 define podman::rootless {
-  include podman
-
-  Exec { "loginctl_linger_${name}":
+  exec { "loginctl_linger_${name}":
     path     => '/sbin:/usr/sbin:/bin:/usr/bin',
     command  => "loginctl enable-linger ${name}",
     provider => 'shell',

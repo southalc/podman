@@ -79,14 +79,14 @@ define podman::image (
 
   case $ensure {
     'present': {
-      Exec { "pull_image_${title}":
+      exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman image exists ${image}",
         *       => $exec_defaults,
       }
     }
     'absent': {
-      Exec { "pull_image_${title}":
+      exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman rmi ${image}",
         *       => $exec_defaults,
