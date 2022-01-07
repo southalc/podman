@@ -25,7 +25,8 @@ define podman::rootless {
   )
 
   if $podman::enable_api_socket {
-    exec { "/bin/bash -c 'XDG_RUNTIME_DIR=/run/user/$( id -u ) systemctl --user enable --now podman.socket'":
+    exec { "podman rootless api socket ${name}":
+      command => "/bin/bash -c 'XDG_RUNTIME_DIR=/run/user/$( id -u ) systemctl --user enable --now podman.socket'",
       path    => '/bin:/usr/bin',
       user    => $name,
       unless  => "/bin/bash -c 'XDG_RUNTIME_DIR=/run/user/$( id -u ) systemctl --user status podman.socket'",
