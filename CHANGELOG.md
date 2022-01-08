@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.5.4
+
+- Bugfix. Creating multiple instances of podman::rootless fails, because they all have the same title for the api socket exec.
+  Contributed by dmaes
+
 ## Release 0.5.3
 
 - Minor refactoring and general cleanup across several manifests.
