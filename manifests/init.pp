@@ -137,7 +137,7 @@ class podman (
     unless defined(Podman::Rootless[$user]) {
       podman::rootless { $user: }
     }
-  }
 
-  User <||> -> Podman::Rootless <||>
+    User <| title == $user |> -> Podman::Rootless <| title == $user |>
+  }
 }
