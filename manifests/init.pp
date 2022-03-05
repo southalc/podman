@@ -31,9 +31,6 @@
 # @param storage_options
 #   A hash containing any storage options you wish to set in /etc/containers/storage.conf
 #
-# @param rootless_users
-#   An array of users to manage using [`podman::rootless`](#podmanrootless)
-#
 # @param enable_api_socket
 #   The enable value of the API socket (default `false`)
 #
@@ -110,7 +107,6 @@ class podman (
   Enum['absent', 'installed'] $compose_pkg_ensure       = 'absent',
   Enum['absent', 'file'] $nodocker                      = 'absent',
   Hash $storage_options                                 = {},
-  Array $rootless_users                                 = [],
   Boolean $enable_api_socket                            = false,
   Boolean $manage_subuid                                = false,
   Boolean $match_subuid_subgid                          = true,
@@ -132,12 +128,4 @@ class podman (
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
   $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
-
-  $rootless_users.each |$user| {
-    unless defined(Podman::Rootless[$user]) {
-      podman::rootless { $user: }
-    }
-  }
-
-  User <||> -> Podman::Rootless <||>
 }

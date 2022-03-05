@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.5.5
+
+- Remove rootless_users parameter from the main class and do not use a resource collector for users. Identified by imp-
+
 ## Release 0.5.4
 
 - Bugfix. Creating multiple instances of podman::rootless fails, because they all have the same title for the api socket exec.
