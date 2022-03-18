@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.5.6
+
+- No functional changes.  Bumped module dependencies to include the latest versions.  Suggested by yorickps
+
 ## Release 0.5.5
 
 - Remove rootless_users parameter from the main class and do not use a resource collector for users. Identified by imp-
