@@ -10,4 +10,6 @@ lookup_options:
     merge: deep
   podman::volumes:
     merge: deep
+  podman::rootless_users:
+    merge: unique
 
