@@ -29,7 +29,7 @@
 
 ## Classes
 
-### `podman`
+### <a name="podman"></a>`podman`
 
 Manage containers, pods, volumes, and images with podman without a docker daemon
 
@@ -70,9 +70,31 @@ podman::containers:
 
 #### Parameters
 
-The following parameters are available in the `podman` class.
+The following parameters are available in the `podman` class:
 
-##### `podman_pkg`
+* [`podman_pkg`](#podman_pkg)
+* [`skopeo_pkg`](#skopeo_pkg)
+* [`buildah_pkg`](#buildah_pkg)
+* [`podman_docker_pkg`](#podman_docker_pkg)
+* [`compose_pkg`](#compose_pkg)
+* [`buildah_pkg_ensure`](#buildah_pkg_ensure)
+* [`podman_docker_pkg_ensure`](#podman_docker_pkg_ensure)
+* [`compose_pkg_ensure`](#compose_pkg_ensure)
+* [`nodocker`](#nodocker)
+* [`storage_options`](#storage_options)
+* [`rootless_users`](#rootless_users)
+* [`enable_api_socket`](#enable_api_socket)
+* [`manage_subuid`](#manage_subuid)
+* [`file_header`](#file_header)
+* [`match_subuid_subgid`](#match_subuid_subgid)
+* [`subid`](#subid)
+* [`pods`](#pods)
+* [`volumes`](#volumes)
+* [`images`](#images)
+* [`containers`](#containers)
+* [`networks`](#networks)
+
+##### <a name="podman_pkg"></a>`podman_pkg`
 
 Data type: `String`
 
@@ -80,7 +102,7 @@ The name of the podman package (default 'podman')
 
 Default value: `'podman'`
 
-##### `skopeo_pkg`
+##### <a name="skopeo_pkg"></a>`skopeo_pkg`
 
 Data type: `String`
 
@@ -88,7 +110,7 @@ The name of the skopeo package (default 'skopeo')
 
 Default value: `'skopeo'`
 
-##### `buildah_pkg`
+##### <a name="buildah_pkg"></a>`buildah_pkg`
 
 Data type: `String`
 
@@ -96,7 +118,7 @@ The name of the buildah package (default 'buildah')
 
 Default value: `'buildah'`
 
-##### `podman_docker_pkg`
+##### <a name="podman_docker_pkg"></a>`podman_docker_pkg`
 
 Data type: `String`
 
@@ -104,7 +126,7 @@ The name of the podman-docker package (default 'podman-docker').
 
 Default value: `'podman-docker'`
 
-##### `compose_pkg`
+##### <a name="compose_pkg"></a>`compose_pkg`
 
 Data type: `String`
 
@@ -112,7 +134,7 @@ The name of the podman-compose package (default 'podman-compose').
 
 Default value: `'podman-compose'`
 
-##### `buildah_pkg_ensure`
+##### <a name="buildah_pkg_ensure"></a>`buildah_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
@@ -120,7 +142,7 @@ The ensure value for the buildah package (default 'absent')
 
 Default value: `'absent'`
 
-##### `podman_docker_pkg_ensure`
+##### <a name="podman_docker_pkg_ensure"></a>`podman_docker_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
@@ -128,7 +150,7 @@ The ensure value for the podman docker package (default 'installed')
 
 Default value: `'installed'`
 
-##### `compose_pkg_ensure`
+##### <a name="compose_pkg_ensure"></a>`compose_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
@@ -136,7 +158,7 @@ The ensure value for the podman-compose package (default 'absent')
 
 Default value: `'absent'`
 
-##### `nodocker`
+##### <a name="nodocker"></a>`nodocker`
 
 Data type: `Enum['absent', 'file']`
 
@@ -145,7 +167,7 @@ Values should be either 'file' or 'absent'. (default is 'absent')
 
 Default value: `'absent'`
 
-##### `storage_options`
+##### <a name="storage_options"></a>`storage_options`
 
 Data type: `Hash`
 
@@ -153,7 +175,7 @@ A hash containing any storage options you wish to set in /etc/containers/storage
 
 Default value: `{}`
 
-##### `rootless_users`
+##### <a name="rootless_users"></a>`rootless_users`
 
 Data type: `Array`
 
@@ -161,7 +183,7 @@ An array of users to manage using [`podman::rootless`](#podmanrootless)
 
 Default value: `[]`
 
-##### `enable_api_socket`
+##### <a name="enable_api_socket"></a>`enable_api_socket`
 
 Data type: `Boolean`
 
@@ -169,7 +191,7 @@ The enable value of the API socket (default `false`)
 
 Default value: ``false``
 
-##### `manage_subuid`
+##### <a name="manage_subuid"></a>`manage_subuid`
 
 Data type: `Boolean`
 
@@ -180,7 +202,7 @@ with another method.  You cannot use the `subuid` and `subgid` defined types unl
 
 Default value: ``false``
 
-##### `file_header`
+##### <a name="file_header"></a>`file_header`
 
 Data type: `String`
 
@@ -189,7 +211,7 @@ Default file_header is `# FILE MANAGED BY PUPPET`
 
 Default value: `'# FILE MANAGED BY PUPPET'`
 
-##### `match_subuid_subgid`
+##### <a name="match_subuid_subgid"></a>`match_subuid_subgid`
 
 Data type: `Boolean`
 
@@ -199,7 +221,7 @@ This setting requires `manage_subuid` to be `true` or it will have no effect.
 
 Default value: ``true``
 
-##### `subid`
+##### <a name="subid"></a>`subid`
 
 Data type: `Hash`
 
@@ -209,7 +231,7 @@ Hash key `subuid` is the subordinate UID, and `count` is the number of subordina
 
 Default value: `{}`
 
-##### `pods`
+##### <a name="pods"></a>`pods`
 
 Data type: `Hash`
 
@@ -217,7 +239,7 @@ A hash of pods to manage using [`podman::pod`](#podmanpod)
 
 Default value: `{}`
 
-##### `volumes`
+##### <a name="volumes"></a>`volumes`
 
 Data type: `Hash`
 
@@ -225,7 +247,7 @@ A hash of volumes to manage using [`podman::volume`](#podmanvolume)
 
 Default value: `{}`
 
-##### `images`
+##### <a name="images"></a>`images`
 
 Data type: `Hash`
 
@@ -233,7 +255,7 @@ A hash of images to manage using [`podman::image`](#podmanimage)
 
 Default value: `{}`
 
-##### `containers`
+##### <a name="containers"></a>`containers`
 
 Data type: `Hash`
 
@@ -241,7 +263,7 @@ A hash of containers to manage using [`podman::container`](#podmancontainer)
 
 Default value: `{}`
 
-##### `networks`
+##### <a name="networks"></a>`networks`
 
 Data type: `Hash`
 
@@ -251,7 +273,7 @@ Default value: `{}`
 
 ## Defined types
 
-### `podman::container`
+### <a name="podmancontainer"></a>`podman::container`
 
 manage podman container and register as a systemd service
 
@@ -276,9 +298,19 @@ podman::container { 'jenkins':
 
 #### Parameters
 
-The following parameters are available in the `podman::container` defined type.
+The following parameters are available in the `podman::container` defined type:
 
-##### `image`
+* [`image`](#image)
+* [`user`](#user)
+* [`flags`](#flags)
+* [`service_flags`](#service_flags)
+* [`command`](#command)
+* [`ensure`](#ensure)
+* [`enable`](#enable)
+* [`update`](#update)
+* [`ruby`](#ruby)
+
+##### <a name="image"></a>`image`
 
 Data type: `String`
 
@@ -287,7 +319,7 @@ Container registry source of the image being deployed.  Required when
 
 Default value: `''`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -297,7 +329,7 @@ the user must also be defined as a puppet resource that includes at least
 
 Default value: `''`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -315,7 +347,7 @@ YAML representation you can use `~` or `null` as the value.
 
 Default value: `{}`
 
-##### `service_flags`
+##### <a name="service_flags"></a>`service_flags`
 
 Data type: `Hash`
 
@@ -326,7 +358,7 @@ only the long form of the flag names.
 
 Default value: `{}`
 
-##### `command`
+##### <a name="command"></a>`command`
 
 Data type: `String`
 
@@ -334,7 +366,7 @@ Optional command to be used as the container entry point.
 
 Default value: `''`
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -342,7 +374,7 @@ Valid values are 'present' or 'absent'
 
 Default value: `'present'`
 
-##### `enable`
+##### <a name="enable"></a>`enable`
 
 Data type: `Boolean`
 
@@ -351,7 +383,7 @@ Valid values are 'running' or 'stopped'.
 
 Default value: ``true``
 
-##### `update`
+##### <a name="update"></a>`update`
 
 Data type: `Boolean`
 
@@ -363,7 +395,7 @@ of the puppet resource is changed.
 
 Default value: ``true``
 
-##### `ruby`
+##### <a name="ruby"></a>`ruby`
 
 Data type: `Stdlib::Unixpath`
 
@@ -373,7 +405,7 @@ The absolute path to the ruby binary to use in scripts. The default path is
 
 Default value: `$facts['ruby']['sitedir']`
 
-### `podman::image`
+### <a name="podmanimage"></a>`podman::image`
 
 pull or remove container images
 
@@ -392,16 +424,22 @@ podman::image { 'my_container':
 
 #### Parameters
 
-The following parameters are available in the `podman::image` defined type.
+The following parameters are available in the `podman::image` defined type:
 
-##### `image`
+* [`image`](#image)
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+* [`exec_env`](#exec_env)
+
+##### <a name="image"></a>`image`
 
 Data type: `String`
 
 The name of the container image to pull, which should be present in a
 configured container registry.
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -409,7 +447,7 @@ State of the resource must be either `present` or `absent`.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -418,7 +456,7 @@ long form of the flag name.
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -428,7 +466,7 @@ the user must also be defined as a Puppet resource and must include the
 
 Default value: `''`
 
-##### `exec_env`
+##### <a name="exec_env"></a>`exec_env`
 
 Data type: `Array`
 
@@ -438,7 +476,7 @@ pulled.  Useful for defining a proxy for downloads. For example:
 
 Default value: `[]`
 
-### `podman::network`
+### <a name="podmannetwork"></a>`podman::network`
 
 Create a podman network with defined flags
 
@@ -455,9 +493,20 @@ podman::network { 'mnetwork':
 
 #### Parameters
 
-The following parameters are available in the `podman::network` defined type.
+The following parameters are available in the `podman::network` defined type:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`disable_dns`](#disable_dns)
+* [`driver`](#driver)
+* [`opts`](#opts)
+* [`gateway`](#gateway)
+* [`internal`](#internal)
+* [`ip_range`](#ip_range)
+* [`labels`](#labels)
+* [`subnet`](#subnet)
+* [`ipv6`](#ipv6)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `Enum['present', 'absent']`
 
@@ -465,7 +514,7 @@ State of the resource must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
-##### `disable_dns`
+##### <a name="disable_dns"></a>`disable_dns`
 
 Data type: `Boolean`
 
@@ -474,7 +523,7 @@ to container name resolution.
 
 Default value: ``false``
 
-##### `driver`
+##### <a name="driver"></a>`driver`
 
 Data type: `Enum['bridge', 'macvlan']`
 
@@ -482,7 +531,7 @@ Driver to manage the network.
 
 Default value: `'bridge'`
 
-##### `opts`
+##### <a name="opts"></a>`opts`
 
 Data type: `Array[String]`
 
@@ -490,7 +539,7 @@ A list of driver specific options.
 
 Default value: `[]`
 
-##### `gateway`
+##### <a name="gateway"></a>`gateway`
 
 Data type: `Optional[String]`
 
@@ -498,7 +547,7 @@ Define the gateway for the network. Must also provide the subnet.
 
 Default value: ``undef``
 
-##### `internal`
+##### <a name="internal"></a>`internal`
 
 Data type: `Boolean`
 
@@ -506,7 +555,7 @@ Restrict external access of this network.
 
 Default value: ``false``
 
-##### `ip_range`
+##### <a name="ip_range"></a>`ip_range`
 
 Data type: `Optional[String]`
 
@@ -515,7 +564,7 @@ CIDR notation.
 
 Default value: ``undef``
 
-##### `labels`
+##### <a name="labels"></a>`labels`
 
 Data type: `Hash[String,String]`
 
@@ -523,7 +572,7 @@ A hash of metadata labels to set on the network.
 
 Default value: `{}`
 
-##### `subnet`
+##### <a name="subnet"></a>`subnet`
 
 Data type: `Optional[String]`
 
@@ -531,7 +580,7 @@ The subnet in CIDR notation
 
 Default value: ``undef``
 
-##### `ipv6`
+##### <a name="ipv6"></a>`ipv6`
 
 Data type: `Boolean`
 
@@ -539,7 +588,7 @@ Enable IPv6 (dual-stack) networking.
 
 Default value: ``false``
 
-### `podman::pod`
+### <a name="podmanpod"></a>`podman::pod`
 
 Create a podman pod with defined flags
 
@@ -557,9 +606,13 @@ podman::pod { 'mypod':
 
 #### Parameters
 
-The following parameters are available in the `podman::pod` defined type.
+The following parameters are available in the `podman::pod` defined type:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -567,7 +620,7 @@ State of the resource, which must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -577,7 +630,7 @@ pod name unless the 'name' flag is included in the hash of flags.
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
@@ -587,11 +640,11 @@ the user must also be defined as a Puppet resource and must include the
 
 Default value: `''`
 
-### `podman::rootless`
+### <a name="podmanrootless"></a>`podman::rootless`
 
 Enable a given user to run rootless podman containers as a systemd user service.
 
-### `podman::subgid`
+### <a name="podmansubgid"></a>`podman::subgid`
 
 Define an entry in the `/etc/subgid` file.
 
@@ -608,21 +661,25 @@ podman::subgid { 'myuser':
 
 #### Parameters
 
-The following parameters are available in the `podman::subgid` defined type.
+The following parameters are available in the `podman::subgid` defined type:
 
-##### `subgid`
+* [`subgid`](#subgid)
+* [`count`](#count)
+* [`order`](#order)
+
+##### <a name="subgid"></a>`subgid`
 
 Data type: `Integer`
 
 Numerical subordinate group ID
 
-##### `count`
+##### <a name="count"></a>`count`
 
 Data type: `Integer`
 
 Numerical subordinate group ID count
 
-##### `order`
+##### <a name="order"></a>`order`
 
 Data type: `Integer`
 
@@ -630,7 +687,7 @@ Sequence number for concat fragments#
 
 Default value: `10`
 
-### `podman::subuid`
+### <a name="podmansubuid"></a>`podman::subuid`
 
 Manage entries in `/etc/subuid`
 
@@ -647,21 +704,25 @@ podman::subuid { 'namevar':
 
 #### Parameters
 
-The following parameters are available in the `podman::subuid` defined type.
+The following parameters are available in the `podman::subuid` defined type:
 
-##### `subuid`
+* [`subuid`](#subuid)
+* [`count`](#count)
+* [`order`](#order)
+
+##### <a name="subuid"></a>`subuid`
 
 Data type: `Integer`
 
 Numerical subordinate user ID
 
-##### `count`
+##### <a name="count"></a>`count`
 
 Data type: `Integer`
 
 Numerical subordinate user ID count
 
-##### `order`
+##### <a name="order"></a>`order`
 
 Data type: `Integer`
 
@@ -669,7 +730,7 @@ Sequence number for concat fragments
 
 Default value: `10`
 
-### `podman::volume`
+### <a name="podmanvolume"></a>`podman::volume`
 
 Create a podman volume with defined flags
 
@@ -687,9 +748,13 @@ podman::volume { 'myvolume':
 
 #### Parameters
 
-The following parameters are available in the `podman::volume` defined type.
+The following parameters are available in the `podman::volume` defined type:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`flags`](#flags)
+* [`user`](#user)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `String`
 
@@ -697,7 +762,7 @@ State of the resource must be either 'present' or 'absent'.
 
 Default value: `'present'`
 
-##### `flags`
+##### <a name="flags"></a>`flags`
 
 Data type: `Hash`
 
@@ -708,7 +773,7 @@ Volume names are created based on the resoure title (namevar)
 
 Default value: `{}`
 
-##### `user`
+##### <a name="user"></a>`user`
 
 Data type: `String`
 
