@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.5.7
+
+- Bugfix. Revert "remove rootless_users parameter and users resource collector" Contributed by silug
+
 ## Release 0.5.6
 
 - No functional changes.  Bumped module dependencies to include the latest versions.  Suggested by yorickps

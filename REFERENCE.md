@@ -82,6 +82,7 @@ The following parameters are available in the `podman` class:
 * [`compose_pkg_ensure`](#compose_pkg_ensure)
 * [`nodocker`](#nodocker)
 * [`storage_options`](#storage_options)
+* [`rootless_users`](#rootless_users)
 * [`enable_api_socket`](#enable_api_socket)
 * [`manage_subuid`](#manage_subuid)
 * [`file_header`](#file_header)
@@ -173,6 +174,14 @@ Data type: `Hash`
 A hash containing any storage options you wish to set in /etc/containers/storage.conf
 
 Default value: `{}`
+
+##### <a name="rootless_users"></a>`rootless_users`
+
+Data type: `Array`
+
+An array of users to manage using [`podman::rootless`](#podmanrootless)
+
+Default value: `[]`
 
 ##### <a name="enable_api_socket"></a>`enable_api_socket`
 
