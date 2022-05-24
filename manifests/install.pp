@@ -7,6 +7,7 @@ class podman::install {
   ensure_resource('Package', $podman::buildah_pkg, { 'ensure' => $podman::buildah_pkg_ensure })
   ensure_resource('Package', $podman::podman_docker_pkg, { 'ensure' => $podman::podman_docker_pkg_ensure })
   ensure_resource('Package', $podman::compose_pkg, { 'ensure' => $podman::compose_pkg_ensure })
+  ensure_resource('Package', $podman::machienectl_pkg, { 'ensure' => $podman::machienectl_pkg_ensure })
 
   if $podman::manage_subuid {
     concat { ['/etc/subuid', '/etc/subgid']:
