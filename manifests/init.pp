@@ -37,6 +37,9 @@
 # @param enable_api_socket
 #   The enable value of the API socket (default `false`)
 #
+# @param enable_autoupdate_timer
+#   The enable value of the podman-auto-update.timer (default `false`)
+#
 # @param manage_subuid
 #   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
 #   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
@@ -112,6 +115,7 @@ class podman (
   Hash $storage_options                                 = {},
   Array $rootless_users                                 = [],
   Boolean $enable_api_socket                            = false,
+  Boolean $enable_autoupdate_timer                      = false,
   Boolean $manage_subuid                                = false,
   Boolean $match_subuid_subgid                          = true,
   String $file_header                                   = '# FILE MANAGED BY PUPPET',

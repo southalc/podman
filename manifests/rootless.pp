@@ -33,4 +33,19 @@ define podman::rootless {
       require => Exec["loginctl_linger_${name}"],
     }
   }
+
+  if $podman::enable_autoupdate_timer {
+    exec { "podman rootless podman-auto-update.timer ${name}":
+      command     => 'systemctl --user enable podman-auto-update.timer',
+      path        => '/bin:/usr/bin',
+      user        => $name,
+      environment => [
+        "HOME=${User[$name]['home']}",
+        "XDG_RUNTIME_DIR=/run/user/${User[$name]['uid']}",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$name]['uid']}/bus",
+      ],
+      unless      => 'systemctl --user is-enabled podman-auto-update.timer',
+      require     => Exec["loginctl_linger_${name}"],
+    }
+  }
 }
