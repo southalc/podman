@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.6.0
+
+- Start user.slice if not running before trying to use "systemctl --user" PR #42, contributed by jcpunk
+- Bugfix. Check for the container to avoid refresh errors. PR #43, contributed by jcpunk
+
 ## Release 0.5.7
 
 - Bugfix. Revert "remove rootless_users parameter and users resource collector" Contributed by silug
