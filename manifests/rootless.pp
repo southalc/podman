@@ -39,7 +39,7 @@ define podman::rootless {
   if $podman::enable_api_socket {
     exec { "podman rootless api socket ${name}":
       command     => 'systemctl --user enable --now podman.socket',
-      path        => '/bin:/usr/bin',
+      path        => $facts['path'],
       user        => $name,
       environment => [
         "HOME=${User[$name]['home']}",
@@ -47,7 +47,10 @@ define podman::rootless {
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$name]['uid']}/bus",
       ],
       unless      => 'systemctl --user status podman.socket',
-      require     => [Exec["loginctl_linger_${name}"], Exec["start_${name}.slice"], ],
+      require     => [
+        Exec["loginctl_linger_${name}"],
+        Exec["start_${name}.slice"],
+      ],
     }
   }
 }
