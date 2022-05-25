@@ -15,6 +15,9 @@
 # @param compose_pkg
 #   The name of the podman-compose package (default 'podman-compose').
 #
+# @param machienectl_pkg
+#   The name of the machienectl package (default 'systemd-container').
+#
 # @param buildah_pkg_ensure
 #   The ensure value for the buildah package (default 'absent')
 #
@@ -23,6 +26,9 @@
 #
 # @param compose_pkg_ensure
 #   The ensure value for the podman-compose package (default 'absent')
+#
+# @param machienectl_pkg_ensure
+#   The ensure value for the machienectl package (default 'installed')
 #
 # @param nodocker
 #   Should the module create the `/etc/containers/nodocker` file to quiet Docker CLI messages.
@@ -105,9 +111,11 @@ class podman (
   String $buildah_pkg                                   = 'buildah',
   String $podman_docker_pkg                             = 'podman-docker',
   String $compose_pkg                                   = 'podman-compose',
+  String $machienectl_pkg                               = 'systemd-container',
   Enum['absent', 'installed'] $buildah_pkg_ensure       = 'absent',
   Enum['absent', 'installed'] $podman_docker_pkg_ensure = 'installed',
   Enum['absent', 'installed'] $compose_pkg_ensure       = 'absent',
+  Enum['absent', 'installed'] $machienectl_pkg_ensure   = 'installed',
   Enum['absent', 'file'] $nodocker                      = 'absent',
   Hash $storage_options                                 = {},
   Array $rootless_users                                 = [],

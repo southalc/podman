@@ -9,6 +9,7 @@ describe 'podman' do
           podman_pkg: 'podman',
           skopeo_pkg: 'skopeo',
           buildah_pkg: 'buildah',
+          machienectl_pkg: 'machienectl',
           buildah_pkg_ensure: 'installed',
           podman_docker_pkg: 'podman-docker',
           podman_docker_pkg_ensure: 'installed',
