@@ -245,6 +245,7 @@ define podman::container (
                        ${systemctl} stop podman-${container_name} || podman container stop --time 60 ${container_name}
                        podman container rm --force ${container_name}
                        |END
+        onlyif      => "${systemctl} is-active podman-${container_name}",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
