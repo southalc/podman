@@ -26,10 +26,14 @@ define podman::rootless {
   )
 
   exec { "start_${name}.slice":
-    path     => $facts['path'],
-    command  => "machinectl shell ${name}@.host '/bin/true'",
-    unless   => "systemctl is-active user-${User[$name]['uid']}.slice",
-    require  => [Exec["loginctl_linger_${name}"], Service['systemd-logind'], File["${User[$name]['home']}/.config/systemd/user"],],
+    path    => $facts['path'],
+    command => "machinectl shell ${name}@.host '/bin/true'",
+    unless  => "systemctl is-active user-${User[$name]['uid']}.slice",
+    require => [
+      Exec["loginctl_linger_${name}"],
+      Service['systemd-logind'],
+      File["${User[$name]['home']}/.config/systemd/user"],
+    ],
   }
 
   if $podman::enable_api_socket {
