@@ -118,7 +118,7 @@ define podman::container (
     }
     $requires = [
       Podman::Rootless[$user],
-      Service['systemd-logind'],
+      Service['podman systemd-logind'],
     ]
     $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
 

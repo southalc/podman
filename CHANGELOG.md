@@ -2,6 +2,11 @@
 
 ## Release 0.6.0
 
+- Bugfix. Set "systemd-logind" service title to a unique value to avoid conflict with "puppet-systemd"
+  PR #45, contributed by jcpunk
+
+## Release 0.6.0
+
 - Start user.slice if not running before trying to use "systemctl --user" PR #42, contributed by jcpunk
 - Bugfix. Check for the container to avoid refresh errors. PR #43, contributed by jcpunk
 

@@ -7,9 +7,9 @@ define podman::rootless {
     provider => 'shell',
     unless   => "test $(loginctl show-user ${name} --property=Linger) = 'Linger=yes'",
     require  => User[$name],
-    notify   => Service['systemd-logind'],
+    notify   => Service['podman systemd-logind'],
   }
-  ensure_resource('Service', 'podman systemd-logind', { name => 'systemd-logind.service', ensure => 'running' } )
+  ensure_resource('Service', 'podman systemd-logind', { name => 'podman systemd-logind.service', ensure => 'running' } )
 
   # Ensure the systemd directory tree exists for user services
   ensure_resource('File', [
@@ -31,7 +31,7 @@ define podman::rootless {
     unless  => "systemctl is-active user-${User[$name]['uid']}.slice",
     require => [
       Exec["loginctl_linger_${name}"],
-      Service['systemd-logind'],
+      Service['podman systemd-logind'],
       File["${User[$name]['home']}/.config/systemd/user"],
     ],
   }

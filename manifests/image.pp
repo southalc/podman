@@ -68,7 +68,7 @@ define podman::image (
       user        => $user,
       require     => [
         Podman::Rootless[$user],
-        Service['systemd-logind'],
+        Service['podman systemd-logind'],
       ],
     }
   } else {
