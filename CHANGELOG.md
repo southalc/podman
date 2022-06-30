@@ -1,6 +1,10 @@
 # Changelog
 
-## Release 0.6.0
+## Release 0.6.2
+
+- Bugfix. Fix service name #49. contributed by jcpunk
+
+## Release 0.6.1
 
 - Bugfix. Set "systemd-logind" service title to a unique value to avoid conflict with "puppet-systemd"
   PR #45, contributed by jcpunk
