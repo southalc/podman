@@ -9,7 +9,7 @@ define podman::rootless {
     require  => User[$name],
     notify   => Service['podman systemd-logind'],
   }
-  ensure_resource('Service', 'podman systemd-logind', { name => 'podman systemd-logind.service', ensure => 'running' } )
+  ensure_resource('Service', 'podman systemd-logind', { name => 'systemd-logind.service', ensure => 'running' } )
 
   # Ensure the systemd directory tree exists for user services
   ensure_resource('File', [
