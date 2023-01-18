@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.6.3
+
+ - Add user option for networks #53. Contributed by jaevans
+ - Bugfix for manage_subuid documentation/implementation mismatch #51. Identified by ja391045
+
 ## Release 0.6.2
 
 - Bugfix. Fix service name #49. contributed by jcpunk

@@ -44,7 +44,7 @@
 #   The enable value of the API socket (default `false`)
 #
 # @param manage_subuid
-#   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+#   Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is false)
 #   The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
 #   out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
 #   with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.

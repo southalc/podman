@@ -213,7 +213,7 @@ Default value: ``false``
 
 Data type: `Boolean`
 
-Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is true)
+Should the module manage the `/etc/subuid` and `/etc/subgid` files (default is false)
 The implementation uses [concat](https://forge.puppet.com/puppetlabs/concat) fragments to build
 out the subuid/subgid entries.  If you have a large number of entries you may want to manage them
 with another method.  You cannot use the `subuid` and `subgid` defined types unless this is `true`.
@@ -523,6 +523,7 @@ The following parameters are available in the `podman::network` defined type:
 * [`labels`](#labels)
 * [`subnet`](#subnet)
 * [`ipv6`](#ipv6)
+* [`user`](#user)
 
 ##### <a name="ensure"></a>`ensure`
 
@@ -605,6 +606,16 @@ Data type: `Boolean`
 Enable IPv6 (dual-stack) networking.
 
 Default value: ``false``
+
+##### <a name="user"></a>`user`
+
+Data type: `String`
+
+Optional user for creating rootless container networks.  For rootless containers,
+the user must also be defined as a puppet resource that includes at least
+'uid', 'gid', and 'home' attributes.
+
+Default value: `''`
 
 ### <a name="podmanpod"></a>`podman::pod`
 
