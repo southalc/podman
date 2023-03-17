@@ -269,7 +269,16 @@ define podman::container (
 
       # Convert $service_flags hash to command arguments
       $_service_flags = $service_flags.reduce('') |$mem, $flag| {
-        "${mem} --${flag[0]} '${flag[1]}'"
+        if $flag[1] =~ String {
+          "${mem} --${flag[0]} '${flag[1]}'"
+        } elsif $flag[1] =~ Undef {
+          "${mem} --${flag[0]}"
+        } else {
+          $dup = $flag[1].reduce('') |$mem2, $value| {
+            "${mem2} --${flag[0]} '${value}'"
+          }
+          "${mem} ${dup}"
+        }
       }
 
       exec { "podman_create_${handle}":

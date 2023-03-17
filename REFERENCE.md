@@ -77,11 +77,11 @@ The following parameters are available in the `podman` class:
 * [`buildah_pkg`](#buildah_pkg)
 * [`podman_docker_pkg`](#podman_docker_pkg)
 * [`compose_pkg`](#compose_pkg)
-* [`machienectl_pkg`](#machienectl_pkg)
+* [`machinectl_pkg`](#machinectl_pkg)
 * [`buildah_pkg_ensure`](#buildah_pkg_ensure)
 * [`podman_docker_pkg_ensure`](#podman_docker_pkg_ensure)
 * [`compose_pkg_ensure`](#compose_pkg_ensure)
-* [`machienectl_pkg_ensure`](#machienectl_pkg_ensure)
+* [`machinectl_pkg_ensure`](#machinectl_pkg_ensure)
 * [`nodocker`](#nodocker)
 * [`storage_options`](#storage_options)
 * [`rootless_users`](#rootless_users)
@@ -136,11 +136,11 @@ The name of the podman-compose package (default 'podman-compose').
 
 Default value: `'podman-compose'`
 
-##### <a name="machienectl_pkg"></a>`machienectl_pkg`
+##### <a name="machinectl_pkg"></a>`machinectl_pkg`
 
 Data type: `String`
 
-The name of the machienectl package (default 'systemd-container').
+The name of the machinectl package (default 'systemd-container').
 
 Default value: `'systemd-container'`
 
@@ -168,11 +168,11 @@ The ensure value for the podman-compose package (default 'absent')
 
 Default value: `'absent'`
 
-##### <a name="machienectl_pkg_ensure"></a>`machienectl_pkg_ensure`
+##### <a name="machinectl_pkg_ensure"></a>`machinectl_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
 
-The ensure value for the machienectl package (default 'installed')
+The ensure value for the machinectl package (default 'installed')
 
 Default value: `'installed'`
 

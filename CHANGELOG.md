@@ -1,5 +1,13 @@
 # Changelog
 
+## Release 0.6.4
+
+ - Bugfix. Fixed spelling typo "machienectl", which changed module parameters:
+  "machienectl_pkg_ensure" is now "machinectl_pkg_ensure"
+  "machienectl_pkg" is now "machinectl_pkg"
+ - Bugfix for issue #54. Unable to set the "--new" option when the systemd unit will be
+   created. identified by tuxmaster5000
+
 ## Release 0.6.3
 
  - Add user option for networks #53. Contributed by jaevans
