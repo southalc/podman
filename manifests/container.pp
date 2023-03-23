@@ -82,7 +82,7 @@ define podman::container (
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
-  $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %>')).chomp()
+  $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %>'), strict)
 
   # Add the default name and a custom label using the base64 encoded flags
   if has_key($flags, 'label') {
@@ -168,8 +168,8 @@ define podman::container (
                    if podman container exists ${container_name}
                      then
                      saved_resource_flags="\$(podman container inspect ${container_name} \
-                       --format '{{.Config.Labels.puppet_resource_flags}}' | tr -d '\n')"
-                     current_resource_flags="\$(echo '${flags_base64}' | tr -d '\n')"
+                       --format '{{.Config.Labels.puppet_resource_flags}}')"
+                     current_resource_flags="${flags_base64}"
                      test "\${saved_resource_flags}" = "\${current_resource_flags}"
                    fi
                    |END
@@ -256,7 +256,11 @@ define podman::container (
       # Convert $merged_flags hash to usable command arguments
       $_flags = $merged_flags.reduce('') |$mem, $flag| {
         if $flag[1] =~ String {
-          "${mem} --${flag[0]} '${flag[1]}'"
+          if $flag[1] == '' {
+            "${mem} --${flag[0]}"
+          } else {
+            "${mem} --${flag[0]} '${flag[1]}'"
+          }
         } elsif $flag[1] =~ Undef {
           "${mem} --${flag[0]}"
         } else {
@@ -270,7 +274,11 @@ define podman::container (
       # Convert $service_flags hash to command arguments
       $_service_flags = $service_flags.reduce('') |$mem, $flag| {
         if $flag[1] =~ String {
-          "${mem} --${flag[0]} '${flag[1]}'"
+          if $flag[1] == '' {
+            "${mem} --${flag[0]}"
+          } else {
+            "${mem} --${flag[0]} '${flag[1]}'"
+          }
         } elsif $flag[1] =~ Undef {
           "${mem} --${flag[0]}"
         } else {

@@ -140,7 +140,7 @@ define podman::network (
       }
     }
     'absent': {
-      exec { "podman_remove_volume_${title}":
+      exec { "podman_remove_network_${title}":
         command => "podman network rm ${title}",
         onlyif  => "podman network exists ${title}",
         path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],

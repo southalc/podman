@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.6.5
+
+ - Bugfix for issue #55, Typo in network manifest. Identified by CyberLine
+ - Bugfix for issue #56, creates invalid systemd service file. Identified by tuxmaster5000
+
 ## Release 0.6.4
 
  - Bugfix. Fixed spelling typo "machienectl", which changed module parameters:
