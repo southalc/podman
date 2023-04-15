@@ -240,13 +240,17 @@ define podman::container (
       }
 
       exec { "podman_remove_container_${handle}":
-        # Try nicely to stop the container, but then insist
+        # Try to stop the container service, then the container directly
         provider    => 'shell',
         command     => @("END"/L),
-                       ${systemctl} stop podman-${container_name} || podman container stop --time 60 ${container_name}
-                       podman container rm --force ${container_name}
+                       ${systemctl} stop podman-${container_name} || true
+                       podman container stop --time 60 ${container_name} || true
+                       podman container rm --force ${container_name} || true
                        |END
-        onlyif      => "${systemctl} is-active podman-${container_name}",
+        onlyif      => @("END"/L),
+                       test $(podmain container inspect --format json ${container_name} |\
+                       ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+                       |END
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
@@ -256,11 +260,7 @@ define podman::container (
       # Convert $merged_flags hash to usable command arguments
       $_flags = $merged_flags.reduce('') |$mem, $flag| {
         if $flag[1] =~ String {
-          if $flag[1] == '' {
-            "${mem} --${flag[0]}"
-          } else {
-            "${mem} --${flag[0]} '${flag[1]}'"
-          }
+          "${mem} --${flag[0]} '${flag[1]}'"
         } elsif $flag[1] =~ Undef {
           "${mem} --${flag[0]}"
         } else {

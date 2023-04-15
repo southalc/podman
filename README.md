@@ -9,6 +9,10 @@
 5. [Limitations - OS compatibility, etc.](#limitations)
 6. [Development - Guide for contributing to the module](#development)
 
+## *** NOTICE ***
+Version 0.6.5 of the module slightly changes the way the container options are stored by Puppet. This will cause
+podman::container resources to detect a state change and re-deploy, interrupting any service running in those containers.
+
 ## Description
 
 Podman enables running standard docker containers without the usual docker daemon.  This has some benefits from a security
