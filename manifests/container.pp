@@ -9,6 +9,10 @@
 #   the user must also be defined as a puppet resource that includes at least
 #   'uid', 'gid', and 'home' attributes.
 #
+# @param pod
+#   This parameter is used by the podman::pod resource and should never be used
+#   directly.
+#
 # @param flags
 #   All flags for the 'podman container create' command are supported via the
 #   'flags' hash parameter, using only the long form of the flag name.  The
@@ -36,7 +40,7 @@
 #
 # @param enable
 #   Status of the automatically generated systemd service for the container.
-#   Valid values are 'running' or 'stopped'.
+#   Valid values are 'running' or 'stopped'. This is ignored if pod is set.
 #
 # @param update
 #   When `true`, the container will be redeployed when a new container image is
@@ -67,6 +71,7 @@
 define podman::container (
   String $image          = '',
   String $user           = '',
+  String $pod            = '',
   Hash $flags            = {},
   Hash $service_flags    = {},
   String $command        = '',
@@ -94,8 +99,15 @@ define podman::container (
   }
 
   # If a container name is not set, use the Puppet resource name
-  $merged_flags = merge({ name => $title, label => $label}, $no_label )
-  $container_name = $merged_flags['name']
+  if $pod == '' {
+    $merged_flags = {name => $title, label => $label} + $no_label
+    $container_name = $merged_flags['name']
+    $service_unit = "podman-${container_name}.service"
+  } else {
+    $merged_flags = {name => $title, label => $label} + $no_label + {pod => $pod}
+    $container_name = $merged_flags['name']
+    $service_unit = "container-${container_name}.service"
+  }
 
   # A rootless container will run as the defined user
   if $user != '' {
@@ -120,7 +132,7 @@ define podman::container (
       Podman::Rootless[$user],
       Service['podman systemd-logind'],
     ]
-    $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+    $service_unit_file ="${User[$user]['home']}/.config/systemd/user/${service_unit}"
 
     # Reload systemd when service files are updated
     ensure_resource('Exec', "podman_systemd_${user}_reload", {
@@ -140,7 +152,7 @@ define podman::container (
   } else {
     $systemctl = 'systemctl '
     $handle = $container_name
-    $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
+    $service_unit_file = "/etc/systemd/system/${service_unit}"
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
     }
@@ -243,7 +255,7 @@ define podman::container (
         # Try to stop the container service, then the container directly
         provider    => 'shell',
         command     => @("END"/L),
-                       ${systemctl} stop podman-${container_name} || true
+                       ${systemctl} stop ${service_unit} || true
                        podman container stop --time 60 ${container_name} || true
                        podman container rm --force ${container_name} || true
                        |END
@@ -292,52 +304,55 @@ define podman::container (
       exec { "podman_create_${handle}":
         command => "podman container create ${_flags} ${image} ${command}",
         unless  => "podman container exists ${container_name}",
-        notify  => Exec["podman_generate_service_${handle}"],
         require => $requires,
         *       => $exec_defaults,
       }
 
-      if $user != '' {
-        exec { "podman_generate_service_${handle}":
-          command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
-          refreshonly => true,
-          notify      => Exec["service_podman_${handle}"],
-          require     => $requires,
-          *           => $exec_defaults,
-        }
+      # Do not generate systemd units if container is part of a pod.
+      if $pod == '' {
+        if $user != '' {
+          exec { "podman_generate_service_${handle}":
+            command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
+            refreshonly => true,
+            subscribe   => Exec["podman_create_${handle}"],
+            notify      => Exec["service_podman_${handle}"],
+            require     => $requires,
+            *           => $exec_defaults,
+          }
 
-        # Work-around for managing user systemd services
-        if $enable { $action = 'start'; $startup = 'enable' }
-          else { $action = 'stop'; $startup = 'disable'
+          # Work-around for managing user systemd services
+          if $enable { $action = 'start'; $startup = 'enable' }
+            else { $action = 'stop'; $startup = 'disable'
+          }
+          exec { "service_podman_${handle}":
+            command => @("END"/L),
+                      ${systemctl} ${startup} ${service_unit}
+                      ${systemctl} ${action} ${service_unit}
+                      |END
+            unless  => @("END"/L),
+                      ${systemctl} is-active ${service_unit} && \
+                        ${systemctl} is-enabled ${service_unit}
+                      |END
+            require => $requires,
+            *       => $exec_defaults,
+          }
         }
-        exec { "service_podman_${handle}":
-          command => @("END"/L),
-                     ${systemctl} ${startup} podman-${container_name}.service
-                     ${systemctl} ${action} podman-${container_name}.service
-                     |END
-          unless  => @("END"/L),
-                     ${systemctl} is-active podman-${container_name}.service && \
-                       ${systemctl} is-enabled podman-${container_name}.service
-                     |END
-          require => $requires,
-          *       => $exec_defaults,
-        }
-      }
-      else {
-        exec { "podman_generate_service_${handle}":
-          path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-          command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
-          refreshonly => true,
-          notify      => Service["podman-${handle}"],
-        }
+        else {
+          exec { "podman_generate_service_${handle}":
+            path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+            command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
+            refreshonly => true,
+            notify      => Service["podman-${handle}"],
+          }
 
-        # Configure the container service per parameters
-        if $enable { $state = 'running'; $startup = 'true' }
-          else { $state = 'stopped'; $startup = 'false'
-        }
-        service { "podman-${handle}":
-          ensure => $state,
-          enable => $startup,
+          # Configure the container service per parameters
+          if $enable { $state = 'running'; $startup = 'true' }
+            else { $state = 'stopped'; $startup = 'false'
+          }
+          service { "podman-${handle}":
+            ensure => $state,
+            enable => $startup,
+          }
         }
       }
     }
@@ -345,12 +360,12 @@ define podman::container (
     'absent': {
       exec { "service_podman_${handle}":
         command => @("END"/L),
-                   ${systemctl} stop podman-${container_name}
-                   ${systemctl} disable podman-${container_name}
+                   ${systemctl} stop ${service_unit}
+                   ${systemctl} disable ${service_unit}
                    |END
         onlyif  => @("END"/$L),
-                   test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
-                     "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
+                   test "\$(${systemctl} is-active ${service_unit} 2>&1)" = "active" -o \
+                     "\$(${systemctl} is-enabled ${service_unit} 2>&1)" = "enabled"
                    |END
         notify  => Exec["podman_remove_container_${handle}"],
         require => $requires,
