@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.6.6
+ - Bugfix. Update install.pp due to false positive on selinux check #60. Contributed by magarvo
+ - Support ArchLinux #61. Contributed by traylenator
+ - Update supported OS list to drop specific versioned releases.
+ 
 ## Release 0.6.5
 
  - Bugfix for issue #55, Typo in network manifest. Identified by CyberLine

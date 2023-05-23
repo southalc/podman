@@ -1,6 +1,6 @@
 {
   "name": "southalc-podman",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "author": "Chris Southall",
   "summary": "Manage podman containers with puppet",
   "license": "Apache-2.0",
@@ -29,45 +29,23 @@
     {
       "operatingsystem": "Archlinux"
     },
-
     {
-      "operatingsystem": "CentOS",
-      "operatingsystemrelease": [
-        "7",
-        "8"
-      ]
+      "operatingsystem": "CentOS"
     },
     {
-      "operatingsystem": "OracleLinux",
-      "operatingsystemrelease": [
-        "7",
-        "8"
-      ]
+      "operatingsystem": "Debian"
     },
     {
-      "operatingsystem": "RedHat",
-      "operatingsystemrelease": [
-        "7",
-        "8"
-      ]
+      "operatingsystem": "OracleLinux"
     },
     {
-      "operatingsystem": "Scientific",
-      "operatingsystemrelease": [
-        "7"
-      ]
+      "operatingsystem": "RedHat"
     },
     {
-      "operatingsystem": "Fedora",
-      "operatingsystemrelease": [
-        "29",
-        "30",
-        "31",
-        "32",
-        "33",
-        "34",
-        "35"
-      ]
+      "operatingsystem": "Fedora"
+    },
+    {
+      "operatingsystem": "Ubuntu"
     }
   ],
   "requirements": [
