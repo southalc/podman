@@ -40,7 +40,7 @@ class podman::install {
     }
   }
 
-  if $::selinux or $facts['os']['selinux']['enabled'] {
+  if $::selinux == true or $facts['os']['selinux']['enabled'] == true {
     selboolean { 'container_manage_cgroup':
       persistent => true,
       value      => on,
