@@ -18,7 +18,7 @@ address of '127.0.0.1'.  Be aware when running rootless containers that publishe
 host firewall.  Use another module like [firewalld](https://forge.puppet.com/modules/puppet/firewalld) to open ports on the
 host and the inbound traffic will reach the rootless container.
 
-The defined types 'pod', 'image', 'volume', and 'container' are essentially wrappers around the respective podman "create"
+The defined types 'pod', 'image', 'volume', 'secret' and 'container' are essentially wrappers around the respective podman "create"
 commands (`podman <type> create`).  The defined types support all flags for the command, but require them to be expressed
 using the long form (`--env` instead of `-e`).  Flags that don't require values should set the value to undef (use `~` or
 `null` in YAML).  Flags that are used more than once should be expressed as an array.  The Jenkins example configuration
@@ -94,6 +94,7 @@ here is using hiera lookup for class assignments.  The example will perform the 
 * Use `loginctl` to `enable-linger` on the 'jenkins' user so the user's containers can run as a systemd user service
 * Creates volume `jenkins` owned by user `jenkins`
 * Creates container `jenkins` from the defined image source owned by user `jenkins`
+* Creates secret `db_pass` with secret version and gives it to jenkins container as an environment variable.
 * Sets container flags to label the container, publish ports, and attach the previously created `jenkins` volume
 * Set service flags for the systemd service to timeout at 60 seconds
 * A systemd service `podman-<container_name>` is created, enabled, and started that runs as a user service
@@ -148,6 +149,16 @@ podman::volumes:
   jenkins:
     user: jenkins
 
+lookup_options:
+  podman::secret::secret:
+    convert_to: "Sensitive"
+podman::secret:
+  db_pass:
+    user: jenkins
+    secret: very
+    label:
+      - version=20230615
+
 podman::containers:
   jenkins:
     user: jenkins
@@ -159,6 +170,8 @@ podman::containers:
         - '8080:8080'
         - '50000:50000'
       volume: 'jenkins:/var/jenkins_home'
+      secret:
+        - 'db_pass,type=env,target=DB_PASS'
     service_flags:
       timeout: '60'
     require:
