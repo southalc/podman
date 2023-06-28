@@ -1,6 +1,6 @@
 {
   "name": "southalc-podman",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "author": "Chris Southall",
   "summary": "Manage podman containers with puppet",
   "license": "Apache-2.0",
@@ -10,11 +10,11 @@
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.1.0 <= 9.0.0"
+      "version_requirement": ">= 4.1.0 <= 10.0.0"
     },
     {
       "name": "puppetlabs/concat",
-      "version_requirement": ">= 2.1.0 <= 8.0.0"
+      "version_requirement": ">= 2.1.0 <= 10.0.0"
     },
     {
       "name": "puppetlabs/selinux_core",
@@ -22,7 +22,7 @@
     },
     {
       "name": "puppetlabs/inifile",
-      "version_requirement": ">= 4.2.0 <= 6.0.0"
+      "version_requirement": ">= 4.2.0 <= 7.0.0"
     }
   ],
   "operatingsystem_support": [
@@ -51,7 +51,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 4.10.0 < 8.0.0"
+      "version_requirement": ">= 4.10.0 < 9.0.0"
     }
   ],
   "pdk-version": "2.3.0",
