@@ -14,6 +14,13 @@ describe 'podman::container' do
       let(:facts) { os_facts }
 
       it { is_expected.to compile.with_all_deps }
+      context "with flag['label'] set" do
+        let(:params) do
+          super().merge(flags: { label: 'a=b' })
+        end
+
+        it { is_expected.to compile.with_all_deps }
+      end
     end
   end
 end

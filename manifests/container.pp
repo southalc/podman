@@ -85,7 +85,7 @@ define podman::container (
   $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %>'), strict)
 
   # Add the default name and a custom label using the base64 encoded flags
-  if has_key($flags, 'label') {
+  if 'label' in  $flags {
     $label = [] + $flags['label'] + "puppet_resource_flags=${flags_base64}"
     $no_label = $flags.delete('label')
   } else {
