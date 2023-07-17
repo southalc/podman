@@ -130,15 +130,7 @@ define podman::secret (
     'present': {
       Exec{"create_secret_${title}":
         command => $_command,
-        unless  => @("END"/$L),
-                   if podman secret inspect ${title}
-                     then
-                     saved_resource_flags="\$(podman secret inspect ${title} \
-                       --format ''{{.Spec.Labels.puppet_resource_flags}}'')"
-                     current_resource_flags="${flags_base64}"
-                     test "\${saved_resource_flags}" = "\${current_resource_flags}"
-                   fi
-                   |END
+        unless  => "/usr/bin/test \"$(podman secret inspect ${title}  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"${flags_base64}\"",
         *       => $exec_defaults,
       }
     }

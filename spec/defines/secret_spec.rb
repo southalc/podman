@@ -60,7 +60,7 @@ describe 'podman::secret' do
         it {
           is_expected.to contain_exec('create_secret_root_password')
             .with_command(sensitive("printf 'tiptop' | podman secret create --label 'puppet_resource_flags=e30=' root_password -\n"))
-            .with_unless(%r{current_resource_flags="e30="})
+            .with_unless("/usr/bin/test \"\$(podman secret inspect root_password  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"e30=\"")
         }
       end
       context 'with path parameter set' do
@@ -81,7 +81,7 @@ describe 'podman::secret' do
           it {
             is_expected.to contain_exec('create_secret_root_password')
               .with_command("podman secret create  --label 'trust=this' --label 'puppet_resource_flags=eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119' root_password /tmp/my_root")
-              .with_unless(%r{current_resource_flags="eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119"})
+              .with_unless("/usr/bin/test \"\$(podman secret inspect root_password  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119\"")
           }
         end
       end
