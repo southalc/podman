@@ -216,13 +216,21 @@ define podman::pod (
 
       # Start/stop systemd service units.
       if $enable {
-        exec { "service_pod_${handle}":
+        exec { "service_stop_pod_${handle}":
+          command     => "${systemctl} stop ${service_unit}",
+          refreshonly => true,
+          subscribe   => Exec["podman_generate_service_${handle}"],
+          require     => Exec[$podman_systemd_reload],
+          *           => $exec_defaults,
+        }
+
+        exec { "service_start_pod_${handle}":
           command => "${systemctl} enable --now ${service_unit}",
           unless  => @("END"/L),
             ${systemctl} is-active ${service_unit} && \
             ${systemctl} is-enabled ${service_unit}
             |END
-          require => Exec[$podman_systemd_reload],
+          require => Exec["service_stop_pod_${handle}"],
           *       => $exec_defaults,
         }
       } else {
