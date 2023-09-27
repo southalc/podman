@@ -24,7 +24,7 @@
 define podman::volume (
   String $ensure = 'present',
   Hash $flags    = {},
-  String $user   = '',
+  Optional[String] $user   = undef,
 ) {
   require podman::install
 
@@ -42,7 +42,7 @@ define podman::volume (
     }
   }
 
-  if $user != '' {
+  if $user != undef and $user != '' {
     ensure_resource('podman::rootless', $user, {})
 
     # Set execution environment for the rootless user
@@ -87,4 +87,3 @@ define podman::volume (
     }
   }
 }
-

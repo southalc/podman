@@ -20,7 +20,6 @@ define podman::subuid (
   Integer $count,
   Integer $order  = 10,
 ) {
-
   Concat::Fragment { "subuid_fragment_${title}":
     order   => $order,
     target  => '/etc/subuid',

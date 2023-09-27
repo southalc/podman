@@ -20,7 +20,6 @@ define podman::subgid (
   Integer $count,
   Integer $order = 10,
 ) {
-
   Concat::Fragment { "subgid_fragment_${title}":
     order   => $order,
     target  => '/etc/subgid',

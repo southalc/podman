@@ -129,7 +129,7 @@ class podman (
   Hash $images                                          = {},
   Hash $containers                                      = {},
   Hash $networks                                        = {},
-){
+) {
   include podman::install
   include podman::options
   include podman::service

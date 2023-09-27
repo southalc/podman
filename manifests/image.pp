@@ -33,9 +33,9 @@ define podman::image (
   String $image,
   String $ensure = 'present',
   Hash $flags    = {},
-  String $user   = '',
+  Optional[String] $user = undef,
   Array $exec_env = [],
-){
+) {
   require podman::install
 
   # Convert $flags hash to command arguments
@@ -52,17 +52,17 @@ define podman::image (
     }
   }
 
-  if $user != '' {
+  if $user != undef and $user != '' {
     ensure_resource('podman::rootless', $user, {})
 
     # Set execution environment for the rootless user
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
       environment => [
-          "HOME=${User[$user]['home']}",
-          "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
-          "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
-        ] + $exec_env,
+        "HOME=${User[$user]['home']}",
+        "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
+      ] + $exec_env,
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
