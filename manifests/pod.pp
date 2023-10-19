@@ -51,23 +51,20 @@ define podman::pod (
     # Set execution environment for the rootless user
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      cwd         => User[$user]['home'],
+      provider    => 'shell',
+      user        => $user,
+      require     => [Podman::Rootless[$user], Service['podman systemd-logind']],
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
-      cwd         => User[$user]['home'],
-      provider    => 'shell',
-      user        => $user,
-      require     => [
-        Podman::Rootless[$user],
-        Service['podman systemd-logind'],
-      ],
     }
   } else {
     $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-      provider    => 'shell',
+      path     => '/sbin:/usr/sbin:/bin:/usr/bin',
+      provider => 'shell',
     }
   }
 

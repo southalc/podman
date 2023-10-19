@@ -41,15 +41,12 @@ define podman::rootless {
       command     => 'systemctl --user enable --now podman.socket',
       path        => $facts['path'],
       user        => $name,
+      unless      => 'systemctl --user status podman.socket',
+      require     => [Exec["loginctl_linger_${name}"], Exec["start_${name}.slice"]],
       environment => [
         "HOME=${User[$name]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$name]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$name]['uid']}/bus",
-      ],
-      unless      => 'systemctl --user status podman.socket',
-      require     => [
-        Exec["loginctl_linger_${name}"],
-        Exec["start_${name}.slice"],
       ],
     }
   }

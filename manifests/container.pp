@@ -108,49 +108,43 @@ define podman::container (
     # Set default execution environment for the rootless user
     $exec_defaults = {
       path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      cwd         => User[$user]['home'],
+      user        => $user,
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
-      cwd         => User[$user]['home'],
-      user        => $user,
     }
-    $requires = [
-      Podman::Rootless[$user],
-      Service['podman systemd-logind'],
-    ]
+    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
     $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
 
     # Reload systemd when service files are updated
-    ensure_resource('Exec', "podman_systemd_${user}_reload", {
+    ensure_resource('Exec', "podman_systemd_${user}_reload",
+      {
         path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         command     => "${systemctl} daemon-reload",
         refreshonly => true,
-        environment => [
-          "HOME=${User[$user]['home']}",
-          "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
-        ],
+        environment => ["HOME=${User[$user]['home']}", "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}"],
         cwd         => User[$user]['home'],
         provider    => 'shell',
         user        => $user,
-      }
+      },
     )
     $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
   } else {
     $systemctl = 'systemctl '
     $handle = $container_name
     $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
-    $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-    }
+    $exec_defaults = { path => '/sbin:/usr/sbin:/bin:/usr/bin' }
 
     # Reload systemd when service files are updated
-    ensure_resource('Exec', 'podman_systemd_reload', {
+    ensure_resource('Exec', 'podman_systemd_reload',
+      {
         path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         command     => "${systemctl} daemon-reload",
         refreshonly => true,
-      }
+      },
     )
     $requires = []
     $_podman_systemd_reload = Exec['podman_systemd_reload']
@@ -200,10 +194,7 @@ define podman::container (
           command  => 'true',
           provider => 'shell',
           unless   => $unless_vci,
-          notify   => [
-            Exec["podman_remove_image_${handle}"],
-            Exec["podman_remove_container_${handle}"],
-          ],
+          notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
           *        => $exec_defaults,
         }
@@ -226,17 +217,14 @@ define podman::container (
           command  => 'true',
           provider => 'shell',
           unless   => $unless_vci,
-          notify   => [
-            Exec["podman_remove_image_${handle}"],
-            Exec["podman_remove_container_${handle}"],
-          ],
+          notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
           *        => $exec_defaults,
         }
       }
 
+      # Try to remove the image, but exit with success regardless
       exec { "podman_remove_image_${handle}":
-        # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
@@ -398,10 +386,7 @@ define podman::container (
 
       file { $service_unit_file:
         ensure  => absent,
-        require => [
-          $requires,
-          Exec["service_podman_${handle}"],
-        ],
+        require => [$requires, Exec["service_podman_${handle}"]],
         notify  => $_podman_systemd_reload,
       }
     }

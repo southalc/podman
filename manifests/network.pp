@@ -58,11 +58,6 @@ define podman::network (
 ) {
   require podman::install
 
-  $_disable_dns = $disable_dns ? {
-    true    => '--disable-dns',
-    default => '',
-  }
-
   # Convert opts list to command arguments
   $_opts = $opts.reduce('') |$mem, $opt| {
     "${mem} --flag ${opt}"
@@ -78,6 +73,12 @@ define podman::network (
       }
       "${mem} ${dup}"
     }
+  }
+
+  # FIXME/TODO: not used (yet?)
+  $_disable_dns = $disable_dns ? {
+    true    => '--disable-dns',
+    default => '',
   }
 
   $_gateway = $gateway ? {
@@ -109,18 +110,15 @@ define podman::network (
   if $user != undef and $user != '' {
     # Set default execution environment for the rootless user
     $exec_defaults = {
-      user => $user,
+      user        => $user,
+      cwd         => User[$user]['home'],
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
-      cwd         => User[$user]['home'],
     }
-    $requires = [
-      Podman::Rootless[$user],
-      Service['podman systemd-logind'],
-    ]
+    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
   } else {
     $exec_defaults = {}
     $requires = []
