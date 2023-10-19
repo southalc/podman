@@ -82,26 +82,26 @@ define podman::network (
 
   $_gateway = $gateway ? {
     undef   => '',
-    default => "--gateway ${gateway}",
+    default => " --gateway ${gateway}",
   }
 
   $_internal = $internal ? {
-    true    => '--internal',
+    true    => ' --internal',
     default => '',
   }
 
   $_ip_range = $ip_range ? {
     undef   => '',
-    default => "--ip-range ${ip_range}"
+    default => " --ip-range ${ip_range}"
   }
 
   $_subnet = $subnet ? {
     undef   => '',
-    default => "--subnet ${subnet}",
+    default => " --subnet ${subnet}",
   }
 
   $_ipv6 = $ipv6 ? {
-    true    => '--ipv6',
+    true    => ' --ipv6',
     default => '',
   }
 
@@ -129,7 +129,7 @@ define podman::network (
   case $ensure {
     'present': {
       exec { "podman_create_network_${title}":
-        command => "podman network create ${title} --driver ${driver} ${_opts} ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}", # lint:ignore:140chars
+        command => "podman network create ${title} --driver ${driver}${_opts}${_gateway}${_internal}${_ip_range}${_labels}${_subnet}${_ipv6}", # lint:ignore:140chars
         unless  => "podman network exists ${title}",
         path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
         require => $requires,
