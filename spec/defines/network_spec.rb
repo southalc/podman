@@ -16,7 +16,7 @@ describe 'podman::network' do
           {
             'command' => 'podman network create testing-title --driver bridge',
             'unless'  => 'podman network exists testing-title',
-            'path'    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'    => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require' => [],
           },
         )
@@ -66,7 +66,7 @@ describe 'podman::network' do
           {
             'command' => 'podman network rm testing-title',
             'onlyif'  => 'podman network exists testing-title',
-            'path'    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'    => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require' => [],
           },
         )
@@ -94,7 +94,7 @@ describe 'podman::network' do
           {
             'command'     => 'podman network rm testing-title',
             'onlyif'      => 'podman network exists testing-title',
-            'path'        => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require'     => ['Podman::Rootless[dummy]', 'Service[podman systemd-logind]'],
             'user'        => 'dummy',
             'environment' => ['HOME=/home/dummy', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],

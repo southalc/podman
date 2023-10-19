@@ -131,7 +131,7 @@ define podman::network (
       exec { "podman_create_network_${title}":
         command => "podman network create ${title} --driver ${driver}${_opts}${_gateway}${_internal}${_ip_range}${_labels}${_subnet}${_ipv6}", # lint:ignore:140chars
         unless  => "podman network exists ${title}",
-        path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         require => $requires,
         *       => $exec_defaults,
       }
@@ -140,7 +140,7 @@ define podman::network (
       exec { "podman_remove_network_${title}":
         command => "podman network rm ${title}",
         onlyif  => "podman network exists ${title}",
-        path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         require => $requires,
         *       => $exec_defaults,
       }
