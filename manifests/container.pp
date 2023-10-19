@@ -161,20 +161,20 @@ define podman::container (
       if $image == undef { fail('A source image is required') }
 
       # Detect changes to the defined podman flags and re-deploy if needed
+      $unless_vcf = @("END"/$L)
+        if podman container exists ${container_name}
+          then
+          saved_resource_flags="\$(podman container inspect ${container_name} \
+            --format '{{.Config.Labels.puppet_resource_flags}}')"
+          current_resource_flags="${flags_base64}"
+          test "\${saved_resource_flags}" = "\${current_resource_flags}"
+        fi
+        | END
+
       exec { "verify_container_flags_${handle}":
         command  => 'true',
         provider => 'shell',
-        # lint:ignore:strict_indent
-        unless   => @("END"/$L),
-          if podman container exists ${container_name}
-            then
-            saved_resource_flags="\$(podman container inspect ${container_name} \
-              --format '{{.Config.Labels.puppet_resource_flags}}')"
-            current_resource_flags="${flags_base64}"
-            test "\${saved_resource_flags}" = "\${current_resource_flags}"
-          fi
-          |END
-        # lint:endignore
+        unless   => $unless_vcf,
         notify   => Exec["podman_remove_container_${handle}"],
         require  => $requires,
         *        => $exec_defaults,
@@ -182,24 +182,24 @@ define podman::container (
 
       # Re-deploy when $update is true and the container image has been updated
       if $update {
+        $unless_vci = @("END"/$L)
+          if podman container exists ${container_name}
+            then
+            image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
+            running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
+            latest_digest=\$(skopeo inspect docker://${image} | \
+              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+            [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
+              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+            test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
+            test "\${running_digest}" = "\${latest_digest}"
+          fi
+          | END
+
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
-          # lint:ignore:strict_indent
-          unless   => @("END"/$L),
-            if podman container exists ${container_name}
-              then
-              image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
-              running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
-              latest_digest=\$(skopeo inspect docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
-              test "\${running_digest}" = "\${latest_digest}"
-            fi
-            |END
-          # lint:endignore
+          unless   => $unless_vci,
           notify   => [
             Exec["podman_remove_image_${handle}"],
             Exec["podman_remove_container_${handle}"],
@@ -209,23 +209,23 @@ define podman::container (
         }
       } else {
         # Re-deploy when $update is false but the resource image has changed
+        $unless_vci = @("END"/$L)
+          if podman container exists ${container_name}
+            then
+            running=\$(podman container inspect ${container_name} --format '{{.ImageName}}' | awk -F/ '{print \$NF}')
+            declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
+            test "\${running}" = "\${declared}" && exit 0
+            available=\$(skopeo inspect docker://${image} | \
+              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
+            test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
+            exit 1
+          fi
+          | END
+
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
-          # lint:ignore:strict_indent
-          unless   => @("END"/$L),
-            if podman container exists ${container_name}
-              then
-              running=\$(podman container inspect ${container_name} --format '{{.ImageName}}' | awk -F/ '{print \$NF}')
-              declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
-              test "\${running}" = "\${declared}" && exit 0
-              available=\$(skopeo inspect docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
-              test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
-              exit 1
-            fi
-            |END
-          # lint:endignore
+          unless   => $unless_vci,
           notify   => [
             Exec["podman_remove_image_${handle}"],
             Exec["podman_remove_container_${handle}"],
@@ -245,20 +245,22 @@ define podman::container (
         *           => $exec_defaults,
       }
 
+      $command_prc = @("END"/L)
+        ${systemctl} stop podman-${container_name} || true
+        podman container stop --time 60 ${container_name} || true
+        podman container rm --force ${container_name} || true
+        | END
+
+      $onlyif_prc = @("END"/L)
+        test $(podmain container inspect --format json ${container_name} |\
+        ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+        | END
+
+      # Try to stop the container service, then the container directly
       exec { "podman_remove_container_${handle}":
-        # Try to stop the container service, then the container directly
         provider    => 'shell',
-        # lint:ignore:strict_indent
-        command     => @("END"/L),
-                       ${systemctl} stop podman-${container_name} || true
-                       podman container stop --time 60 ${container_name} || true
-                       podman container rm --force ${container_name} || true
-                       |END
-        onlyif      => @("END"/L),
-                       test $(podmain container inspect --format json ${container_name} |\
-                       ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
-                       |END
-        # lint:endignore
+        command     => $command_prc,
+        onlyif      => $onlyif_prc,
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
@@ -319,17 +321,20 @@ define podman::container (
           $action = 'start'; $startup = 'enable'
         } else { $action = 'stop'; $startup = 'disable'
         }
+
+        $command_sp = @("END"/L)
+          ${systemctl} ${startup} podman-${container_name}.service
+          ${systemctl} ${action} podman-${container_name}.service
+          | END
+
+        $unless_sp = @("END"/L)
+          ${systemctl} is-active podman-${container_name}.service && \
+            ${systemctl} is-enabled podman-${container_name}.service
+          | END
+
         exec { "service_podman_${handle}":
-          # lint:ignore:strict_indent
-          command => @("END"/L),
-                     ${systemctl} ${startup} podman-${container_name}.service
-                     ${systemctl} ${action} podman-${container_name}.service
-                     |END
-          unless  => @("END"/L),
-                     ${systemctl} is-active podman-${container_name}.service && \
-                       ${systemctl} is-enabled podman-${container_name}.service
-                     |END
-          # lint:endignore
+          command => $command_sp,
+          unless  => $unless_sp,
           require => $requires,
           *       => $exec_defaults,
         }
@@ -356,17 +361,19 @@ define podman::container (
     }
 
     'absent': {
+      $command_sp = @("END"/L)
+        ${systemctl} stop podman-${container_name}
+        ${systemctl} disable podman-${container_name}
+        | END
+
+      $onlyif_sp = @("END"/$L)
+        test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
+          "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
+        | END
+
       exec { "service_podman_${handle}":
-        # lint:ignore:strict_indent
-        command => @("END"/L),
-                   ${systemctl} stop podman-${container_name}
-                   ${systemctl} disable podman-${container_name}
-                   |END
-        onlyif  => @("END"/$L),
-                   test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
-                     "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
-                   |END
-        # lint:endignore
+        command => $command_sp,
+        onlyif  => $onlyif_sp,
         notify  => Exec["podman_remove_container_${handle}"],
         require => $requires,
         *       => $exec_defaults,
@@ -380,8 +387,8 @@ define podman::container (
         *       => $exec_defaults,
       }
 
+      # Try to remove the image, but exit with success regardless
       exec { "podman_remove_image_${handle}":
-        # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
