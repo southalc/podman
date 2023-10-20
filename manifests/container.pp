@@ -99,8 +99,10 @@ define podman::container (
 
   # A rootless container will run as the defined user
   if $user != undef and $user != '' {
-    ensure_resource('podman::rootless', $user, {})
     $systemctl = 'systemctl --user '
+    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
+    $service_unit_file = "${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+    $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
 
     # The handle is used to ensure resources have unique names
     $handle = "${user}-${container_name}"
@@ -115,8 +117,8 @@ define podman::container (
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
     }
-    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
-    $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+
+    ensure_resource('podman::rootless', $user, {})
 
     # Reload systemd when service files are updated
     ensure_resource('Exec', "podman_systemd_${user}_reload",
@@ -130,11 +132,12 @@ define podman::container (
         user        => $user,
       },
     )
-    $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
   } else {
     $systemctl = 'systemctl '
-    $handle = $container_name
+    $requires = []
     $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
+    $_podman_systemd_reload = Exec['podman_systemd_reload']
+    $handle = $container_name
     $exec_defaults = {}
 
     # Reload systemd when service files are updated
@@ -145,8 +148,6 @@ define podman::container (
         refreshonly => true,
       },
     )
-    $requires = []
-    $_podman_systemd_reload = Exec['podman_systemd_reload']
   }
 
   case $ensure {
