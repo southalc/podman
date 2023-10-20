@@ -57,7 +57,6 @@ define podman::image (
 
     # Set execution environment for the rootless user
     $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
@@ -69,7 +68,9 @@ define podman::image (
       ] + $exec_env,
     }
   } else {
-    $exec_defaults = { path => '/sbin:/usr/sbin:/bin:/usr/bin', environment => $exec_env }
+    $exec_defaults = {
+      environment => $exec_env,
+    }
   }
 
   case $ensure {
@@ -77,6 +78,7 @@ define podman::image (
       exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman image exists ${image}",
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
     }
@@ -84,6 +86,7 @@ define podman::image (
       exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman rmi ${image}",
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
     }

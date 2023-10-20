@@ -47,7 +47,6 @@ define podman::volume (
 
     # Set execution environment for the rootless user
     $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
@@ -59,9 +58,7 @@ define podman::volume (
       ],
     }
   } else {
-    $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-    }
+    $exec_defaults = {}
   }
 
   case $ensure {
@@ -69,6 +66,7 @@ define podman::volume (
       exec { "podman_create_volume_${title}":
         command => "podman volume create ${_flags} ${title}",
         unless  => "podman volume inspect ${title}",
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
     }
@@ -76,6 +74,7 @@ define podman::volume (
       exec { "podman_remove_volume_${title}":
         command => "podman volume rm ${title}",
         unless  => "podman volume inspect ${title}; test $? -ne 0",
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
     }

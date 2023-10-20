@@ -107,7 +107,6 @@ define podman::container (
 
     # Set default execution environment for the rootless user
     $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
       cwd         => User[$user]['home'],
       user        => $user,
       environment => [
@@ -136,7 +135,7 @@ define podman::container (
     $systemctl = 'systemctl '
     $handle = $container_name
     $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
-    $exec_defaults = { path => '/sbin:/usr/sbin:/bin:/usr/bin' }
+    $exec_defaults = {}
 
     # Reload systemd when service files are updated
     ensure_resource('Exec', 'podman_systemd_reload',
@@ -171,6 +170,7 @@ define podman::container (
         unless   => $unless_vcf,
         notify   => Exec["podman_remove_container_${handle}"],
         require  => $requires,
+        path     => '/sbin:/usr/sbin:/bin:/usr/bin',
         *        => $exec_defaults,
       }
 
@@ -196,6 +196,7 @@ define podman::container (
           unless   => $unless_vci,
           notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
+          path     => '/sbin:/usr/sbin:/bin:/usr/bin',
           *        => $exec_defaults,
         }
       } else {
@@ -219,6 +220,7 @@ define podman::container (
           unless   => $unless_vci,
           notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
+          path     => '/sbin:/usr/sbin:/bin:/usr/bin',
           *        => $exec_defaults,
         }
       }
@@ -230,6 +232,7 @@ define podman::container (
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => [$requires, Exec["podman_remove_container_${handle}"]],
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
@@ -252,6 +255,7 @@ define podman::container (
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
@@ -292,6 +296,7 @@ define podman::container (
         unless  => "podman container exists ${container_name}",
         notify  => Exec["podman_generate_service_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
@@ -301,6 +306,7 @@ define podman::container (
           refreshonly => true,
           notify      => Exec["service_podman_${handle}"],
           require     => $requires,
+          path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           *           => $exec_defaults,
         }
 
@@ -325,6 +331,7 @@ define podman::container (
           command => $command_sp,
           unless  => $unless_sp,
           require => $requires,
+          path    => '/sbin:/usr/sbin:/bin:/usr/bin',
           *       => $exec_defaults,
         }
       } else {
@@ -363,6 +370,7 @@ define podman::container (
         onlyif  => $onlyif_sp,
         notify  => Exec["podman_remove_container_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
@@ -371,6 +379,7 @@ define podman::container (
         unless  => "podman container exists ${container_name}; test $? -eq 1",
         notify  => Exec["podman_remove_image_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
@@ -380,6 +389,7 @@ define podman::container (
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
         require     => [$requires, Exec["podman_remove_container_${handle}"]],
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
