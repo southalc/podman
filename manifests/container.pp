@@ -307,7 +307,8 @@ define podman::container (
         # Work-around for managing user systemd services
         if $enable {
           $action = 'start'; $startup = 'enable'
-        } else { $action = 'stop'; $startup = 'disable'
+        } else {
+          $action = 'stop'; $startup = 'disable'
         }
 
         $command_sp = @("END"/L)
@@ -326,8 +327,7 @@ define podman::container (
           require => $requires,
           *       => $exec_defaults,
         }
-      }
-      else {
+      } else {
         exec { "podman_generate_service_${handle}":
           path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
