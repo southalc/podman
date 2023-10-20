@@ -22,8 +22,8 @@
 #
 define podman::pod (
   Enum['present', 'absent'] $ensure = 'present',
-  Hash $flags    = {},
-  Optional[String] $user = undef,
+  Hash                      $flags  = {},
+  Optional[String]          $user   = undef,
 ) {
   require podman::install
 

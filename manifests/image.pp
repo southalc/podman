@@ -30,11 +30,11 @@
 #   }
 #
 define podman::image (
-  String $image,
-  Enum['present', 'absent'] $ensure = 'present',
-  Hash $flags    = {},
-  Optional[String] $user = undef,
-  Array $exec_env = [],
+  String                    $image,
+  Enum['present', 'absent'] $ensure   = 'present',
+  Hash                      $flags    = {},
+  Optional[String]          $user     = undef,
+  Array                     $exec_env = [],
 ) {
   require podman::install
 

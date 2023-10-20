@@ -65,15 +65,15 @@
 #   }
 #
 define podman::container (
-  Optional[String] $image  = undef,
-  Optional[String] $user   = undef,
-  Hash $flags               = {},
-  Hash $service_flags       = {},
-  Optional[String] $command = undef,
-  Enum['present', 'absent'] $ensure = 'present',
-  Boolean $enable           = true,
-  Boolean $update           = true,
-  Stdlib::Unixpath $ruby    = $facts['ruby']['sitedir'] ? {
+  Optional[String]          $image         = undef,
+  Optional[String]          $user          = undef,
+  Hash                      $flags         = {},
+  Hash                      $service_flags = {},
+  Optional[String]          $command       = undef,
+  Enum['present', 'absent'] $ensure        = 'present',
+  Boolean                   $enable        = true,
+  Boolean                   $update        = true,
+  Stdlib::Unixpath          $ruby          = $facts['ruby']['sitedir'] ? {
     /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
     default                => '/usr/bin/ruby',
   },

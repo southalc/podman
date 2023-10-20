@@ -44,17 +44,17 @@
 #   }
 #
 define podman::network (
-  Enum['present', 'absent'] $ensure = 'present',
-  Enum['bridge', 'macvlan'] $driver = 'bridge',
-  Boolean $disable_dns = false,
-  Array[String] $opts = [],
-  Optional[String] $gateway = undef,
-  Boolean $internal = false,
-  Optional[String] $ip_range = undef,
-  Hash[String,String] $labels = {},
-  Optional[String] $subnet = undef,
-  Boolean $ipv6 = false,
-  Optional[String] $user = undef,
+  Enum['present', 'absent'] $ensure      = 'present',
+  Enum['bridge', 'macvlan'] $driver      = 'bridge',
+  Boolean                   $disable_dns = false,
+  Array[String]             $opts        = [],
+  Optional[String]          $gateway     = undef,
+  Boolean                   $internal    = false,
+  Optional[String]          $ip_range    = undef,
+  Hash[String,String]       $labels      = {},
+  Optional[String]          $subnet      = undef,
+  Boolean                   $ipv6        = false,
+  Optional[String]          $user        = undef,
 ) {
   require podman::install
 
