@@ -21,7 +21,7 @@
 #   }
 #
 define podman::pod (
-  String $ensure = 'present',
+  Enum['present', 'absent'] $ensure = 'present',
   Hash $flags    = {},
   Optional[String] $user = undef,
 ) {
@@ -76,15 +76,12 @@ define podman::pod (
         *       => $exec_defaults,
       }
     }
-    'absent': {
+    default: {
       exec { "remove_pod_${pod_name}":
         command => "podman pod rm ${pod_name}",
         unless  => "podman pod exists ${pod_name}; test $? -eq 1",
         *       => $exec_defaults,
       }
-    }
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }

@@ -22,8 +22,8 @@
 #   }
 #
 define podman::volume (
-  String $ensure = 'present',
-  Hash $flags    = {},
+  Enum['present', 'absent'] $ensure = 'present',
+  Hash             $flags  = {},
   Optional[String] $user   = undef,
 ) {
   require podman::install
@@ -72,15 +72,12 @@ define podman::volume (
         *       => $exec_defaults,
       }
     }
-    'absent': {
+    default: {
       exec { "podman_remove_volume_${title}":
         command => "podman volume rm ${title}",
         unless  => "podman volume inspect ${title}; test $? -ne 0",
         *       => $exec_defaults,
       }
-    }
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }

@@ -134,7 +134,7 @@ define podman::network (
         *       => $exec_defaults,
       }
     }
-    'absent': {
+    default: {
       exec { "podman_remove_network_${title}":
         command => "podman network rm ${title}",
         onlyif  => "podman network exists ${title}",
@@ -142,9 +142,6 @@ define podman::network (
         require => $requires,
         *       => $exec_defaults,
       }
-    }
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }

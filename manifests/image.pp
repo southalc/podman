@@ -31,7 +31,7 @@
 #
 define podman::image (
   String $image,
-  String $ensure = 'present',
+  Enum['present', 'absent'] $ensure = 'present',
   Hash $flags    = {},
   Optional[String] $user = undef,
   Array $exec_env = [],
@@ -80,15 +80,12 @@ define podman::image (
         *       => $exec_defaults,
       }
     }
-    'absent': {
+    default: {
       exec { "pull_image_${title}":
         command => "podman image pull ${_flags} ${image}",
         unless  => "podman rmi ${image}",
         *       => $exec_defaults,
       }
-    }
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }

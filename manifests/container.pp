@@ -70,7 +70,7 @@ define podman::container (
   Hash $flags               = {},
   Hash $service_flags       = {},
   Optional[String] $command = undef,
-  String $ensure            = 'present',
+  Enum['present', 'absent'] $ensure = 'present',
   Boolean $enable           = true,
   Boolean $update           = true,
   Stdlib::Unixpath $ruby    = $facts['ruby']['sitedir'] ? {
@@ -347,8 +347,7 @@ define podman::container (
         }
       }
     }
-
-    'absent': {
+    default: {
       $command_sp = @("END"/L)
         ${systemctl} stop podman-${container_name}
         ${systemctl} disable podman-${container_name}
@@ -389,10 +388,6 @@ define podman::container (
         require => [$requires, Exec["service_podman_${handle}"]],
         notify  => $_podman_systemd_reload,
       }
-    }
-
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }
