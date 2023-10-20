@@ -25,7 +25,7 @@
 # @param service_flags
 #   When a container is created, a systemd unit file for the container service
 #   is generated using the 'podman generate systemd' command.  All flags for the
-#   command are supported using the 'service_flags" hash parameter, again using
+#   command are supported using the 'service_flags' hash parameter, again using
 #   only the long form of the flag names.
 #
 # @param command
