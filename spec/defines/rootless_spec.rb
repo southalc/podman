@@ -3,8 +3,7 @@ require 'spec_helper'
 describe 'podman::rootless' do
   let(:title) { 'testing-title' }
   let(:pre_condition) do
-    "include podman
-     # user & file needed by podman::rootless
+    "# user & file needed by podman::rootless
      user { 'testing-title':
        ensure  => 'present',
        gid     => 1111,
@@ -20,6 +19,7 @@ describe 'podman::rootless' do
       let(:facts) { os_facts }
 
       it { is_expected.to compile }
+      it { is_expected.to contain_class('podman') }
 
       it do
         is_expected.to contain_exec('loginctl_linger_testing-title').only_with(
@@ -91,25 +91,21 @@ describe 'podman::rootless' do
       end
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_class('podman::install') }                # from podman
-      it { is_expected.to contain_class('podman::options') }                # from podman
-      it { is_expected.to contain_class('podman::service') }                # from podman
-      it { is_expected.to contain_class('podman') }                         # from pre_condition
-      it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman::install
-      it { is_expected.to contain_package('buildah') }                      # from podman::install
-      it { is_expected.to contain_package('podman-compose') }               # from podman::install
-      it { is_expected.to contain_package('podman-docker') }                # from podman::install
-      it { is_expected.to contain_package('podman') }                       # from podman::install
-      it { is_expected.to contain_package('skopeo') }                       # from podman::install
+      it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman
+      it { is_expected.to contain_package('buildah') }                      # from podman
+      it { is_expected.to contain_package('podman-compose') }               # from podman
+      it { is_expected.to contain_package('podman-docker') }                # from podman
+      it { is_expected.to contain_package('podman') }                       # from podman
+      it { is_expected.to contain_package('skopeo') }                       # from podman
       if os_facts[:os]['family'] == 'Archlinux'
-        it { is_expected.to contain_package('systemd') }                    # from podman::install
+        it { is_expected.to contain_package('systemd') }                    # from podman
       else
-        it { is_expected.to contain_package('systemd-container') }          # from podman::install
+        it { is_expected.to contain_package('systemd-container') }          # from podman
       end
       if os_facts[:os]['selinux']['enabled'] == true
-        it { is_expected.to contain_selboolean('container_manage_cgroup') } # from podman::install
+        it { is_expected.to contain_selboolean('container_manage_cgroup') } # from podman
       end
-      it { is_expected.to contain_service('podman.socket') }                # from podman::service
+      it { is_expected.to contain_service('podman.socket') }                # from podman
     end
   end
 

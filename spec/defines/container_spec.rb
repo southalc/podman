@@ -3,15 +3,12 @@ require 'spec_helper'
 describe 'podman::container' do
   let(:title) { 'namevar' }
   let(:params) { { image: 'registry:latest' } }
-  let(:pre_condition) { 'include podman' }
 
   on_supported_os.each do |os, os_facts|
     context "on #{os} with defaults for all parameters and image set to valid value" do
       let(:facts) { os_facts }
 
       it { is_expected.to compile.with_all_deps }
-      it { is_expected.to contain_class('podman') }
-      it { is_expected.to contain_class('podman::install') }
 
       it do
         is_expected.to contain_exec('podman_systemd_reload').only_with(
@@ -158,28 +155,6 @@ describe 'podman::container' do
           },
         )
       end
-
-      # only here to reach 100% resource coverage]
-      context 'cover additional resource from other classes' do
-        it { is_expected.to contain_class('podman::options') }              # from podman
-        it { is_expected.to contain_class('podman::service') }              # from podman
-        it { is_expected.to contain_service('podman.socket') }              # from podman::service
-        it { is_expected.to contain_file('/etc/containers/nodocker') }      # from podman::install
-        it { is_expected.to contain_package('buildah') }                    # from podman::install
-        it { is_expected.to contain_package('podman-compose') }             # from podman::install
-        it { is_expected.to contain_package('podman-docker') }              # from podman::install
-        it { is_expected.to contain_package('podman') }                     # from podman::install
-        it { is_expected.to contain_package('skopeo') }                     # from podman::install
-        if os_facts[:os]['family'] == 'Archlinux'
-          it { is_expected.to contain_package('systemd') }                  # from podman::install
-        else
-          it { is_expected.to contain_package('systemd-container') }        # from podman::install
-        end
-
-        if os_facts[:os]['selinux']['enabled'] == true
-          it { is_expected.to contain_selboolean('container_manage_cgroup') } # from podman::install
-        end
-      end
     end
   end
 
@@ -243,8 +218,7 @@ describe 'podman::container' do
     context 'with user set to valid testing' do
       let(:params) { { user: 'testing', image: 'mandatory:latest', } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'testing':
            ensure  => 'present',
            gid     => 1111,
@@ -354,20 +328,36 @@ describe 'podman::container' do
 
       # only here to reach 100% resource coverage
       context 'cover additional resource from other classes' do
+        it { is_expected.to contain_class('podman') }                            # from podman::rootless
         it { is_expected.to contain_exec('loginctl_linger_testing') }            # from podman::rootless
         it { is_expected.to contain_service('podman systemd-logind') }           # from podman::rootless
         it { is_expected.to contain_file('/home/testing/.config') }              # from podman::rootless
         it { is_expected.to contain_file('/home/testing/.config/systemd') }      # from podman::rootless
         it { is_expected.to contain_file('/home/testing/.config/systemd/user') } # from podman::rootless
         it { is_expected.to contain_exec('start_testing.slice') }                # from podman::rootless
+        it { is_expected.to contain_service('podman.socket') }                   # from podman
+        it { is_expected.to contain_file('/etc/containers/nodocker') }           # from podman
+        it { is_expected.to contain_package('buildah') }                         # from podman
+        it { is_expected.to contain_package('podman-compose') }                  # from podman
+        it { is_expected.to contain_package('podman-docker') }                   # from podman
+        it { is_expected.to contain_package('podman') }                          # from podman
+        it { is_expected.to contain_package('skopeo') }                          # from podman
+        if os_facts[:os]['family'] == 'Archlinux'
+          it { is_expected.to contain_package('systemd') }                       # from podman
+        else
+          it { is_expected.to contain_package('systemd-container') }             # from podman
+        end
+
+        if os_facts[:os]['selinux']['enabled'] == true
+          it { is_expected.to contain_selboolean('container_manage_cgroup') }    # from podman
+        end
       end
     end
 
     context 'with user set to valid testing when ensure is set to valid absent' do
       let(:params) { { user: 'testing', ensure: 'absent', image: 'mandatory:latest', } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'testing':
            ensure => 'present',
            gid    => 1111,
@@ -434,7 +424,6 @@ describe 'podman::container' do
 
     context 'with flags set to valid hash' do
       let(:params) { { flags: { publish: ['242:242'], volume: 'jenkins:/test/ing' }, image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       unless_flags = <<-END.gsub(%r{^\s+\|}, '')
         |if podman container exists namevar
@@ -468,7 +457,6 @@ describe 'podman::container' do
 
     context 'with flags set to valid hash containing a label' do
       let(:params) { { flags: { publish: ['242:242'], volume: 'jenkins:/test/ing', label: 'test' }, image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       unless_flags = <<-END.gsub(%r{^\s+\|}, '')
         |if podman container exists namevar
@@ -503,8 +491,7 @@ describe 'podman::container' do
     context 'with flags set to valid hash when user is set to valid testing' do
       let(:params) { { flags: { publish: ['242:242'], volume: 'jenkins:/test/ing' }, user: 'testing', image: 'mandatory:latest' } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'testing':
            ensure => 'present',
            gid    => 1111,
@@ -556,7 +543,6 @@ describe 'podman::container' do
 
     context 'with command set to valid /test/ing' do
       let(:params) { { command: '/test/ing', image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       it do
         is_expected.to contain_exec('podman_create_namevar').with(
@@ -569,7 +555,6 @@ describe 'podman::container' do
 
     context 'with ensure set to valid absent' do
       let(:params) { { ensure: 'absent', image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       it do
         is_expected.to contain_exec('service_podman_namevar').only_with(
@@ -621,8 +606,7 @@ describe 'podman::container' do
     context 'with ensure set to valid absent when user is set to valid value' do
       let(:params) { { ensure: 'absent', user: 'user', image: 'mandatory:latest' } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'user':
            ensure => 'present',
            gid    => 1111,
@@ -716,7 +700,6 @@ describe 'podman::container' do
 
     context 'with enable set to valid false' do
       let(:params) { { enable: false, image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       it do
         is_expected.to contain_service('podman-namevar').only_with(
@@ -731,8 +714,7 @@ describe 'podman::container' do
     context 'with enable set to valid false when user is set to valid value' do
       let(:params) { { enable: false, user: 'user', image: 'mandatory:latest' } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'user':
            ensure => 'present',
            gid    => 1111,
@@ -759,7 +741,6 @@ describe 'podman::container' do
 
     context 'with update set to valid false' do
       let(:params) { { update: false, image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       unless_image = <<-END.gsub(%r{^\s+\|}, '')
         |if podman container exists namevar
@@ -789,7 +770,6 @@ describe 'podman::container' do
 
     context 'with ruby set to valid /test/ing' do
       let(:params) { { ruby: '/test/ing', image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       unless_ruby = <<-END.gsub(%r{^\s+\|}, '')
         |if podman container exists namevar
@@ -814,7 +794,6 @@ describe 'podman::container' do
 
     context 'with ruby set to valid /test/ing when update is false' do
       let(:params) { { ruby: '/test/ing', update: false, image: 'mandatory:latest' } }
-      let(:pre_condition) { 'include podman' }
 
       unless_ruby = <<-END.gsub(%r{^\s+\|}, '')
         |if podman container exists namevar

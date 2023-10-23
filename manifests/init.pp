@@ -130,10 +130,6 @@ class podman (
   Hash                        $containers               = {},
   Hash                        $networks                 = {},
 ) {
-  include podman::install
-  include podman::options
-  include podman::service
-
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
@@ -141,11 +137,82 @@ class podman (
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
   $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
 
+  ensure_resource('Package', $podman_pkg, { 'ensure' => 'installed' })
+  ensure_resource('Package', $skopeo_pkg, { 'ensure' => 'installed' })
+  ensure_resource('Package', $buildah_pkg, { 'ensure' => $buildah_pkg_ensure })
+  ensure_resource('Package', $podman_docker_pkg, { 'ensure' => $podman_docker_pkg_ensure })
+  ensure_resource('Package', $compose_pkg, { 'ensure' => $compose_pkg_ensure })
+  ensure_resource('Package', $machinectl_pkg, { 'ensure' => $machinectl_pkg_ensure })
+
   $rootless_users.each |$user| {
     unless defined(Podman::Rootless[$user]) {
       podman::rootless { $user: }
     }
 
     User <| title == $user |> -> Podman::Rootless <| title == $user |>
+  }
+
+  if $manage_subuid {
+    concat { ['/etc/subuid', '/etc/subgid']:
+      owner          => 'root',
+      group          => 'root',
+      mode           => '0644',
+      order          => 'alpha',
+      ensure_newline => true,
+    }
+
+    concat_fragment { 'subuid_header':
+      target  => '/etc/subuid',
+      order   => 1,
+      content => $file_header,
+    }
+
+    concat_fragment { 'subgid_header':
+      target  => '/etc/subgid',
+      order   => 1,
+      content => $file_header,
+    }
+
+    if $match_subuid_subgid {
+      $podman::subid.each |$name, $properties| {
+        Resource['Podman::Subuid'] { $name: * => $properties }
+        $subgid = { subgid => $properties['subuid'], count => $properties['count'] }
+        Resource['Podman::Subgid'] { $name: * => $subgid }
+      }
+    }
+  }
+
+  if $facts['os']['selinux']['enabled'] == true {
+    selboolean { 'container_manage_cgroup':
+      persistent => true,
+      value      => on,
+      require    => Package[$podman_pkg],
+    }
+  }
+
+  file { '/etc/containers/nodocker':
+    ensure  => $podman::nodocker,
+    group   => 'root',
+    owner   => 'root',
+    mode    => '0644',
+    require => Package[$podman::podman_pkg],
+  }
+
+  unless $storage_options.empty {
+    $storage_defaults = {
+      'ensure' => present,
+      'path' => '/etc/containers/storage.conf',
+    }
+    inifile::create_ini_settings($storage_options, $storage_defaults)
+  }
+
+  $ensure = $enable_api_socket ? {
+    true    => 'running',
+    default => 'stopped',
+  }
+
+  service { 'podman.socket':
+    ensure => $ensure,
+    enable => $enable_api_socket,
   }
 }

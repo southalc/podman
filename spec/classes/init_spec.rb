@@ -6,33 +6,59 @@ describe 'podman' do
       let(:facts) { os_facts }
 
       it { is_expected.to compile }
-      it { is_expected.to contain_class('podman::install') }
-      it { is_expected.to contain_class('podman::options') }
-      it { is_expected.to contain_class('podman::service') }
       it { is_expected.to have_package_resource_count(6) }
       it { is_expected.to have_podman__pod_resource_count(0) }
       it { is_expected.to have_podman__volume_resource_count(0) }
       it { is_expected.to have_podman__image_resource_count(0) }
       it { is_expected.to have_podman__container_resource_count(0) }
       it { is_expected.to have_podman__network_resource_count(0) }
+
+      it { is_expected.to contain_package('buildah').with_ensure('absent') }
+      it { is_expected.to contain_package('podman-compose').with_ensure('absent') }
+      it { is_expected.to contain_package('podman-docker').with_ensure('installed') }
+      it { is_expected.to contain_package('podman').with_ensure('installed') }
+      it { is_expected.to contain_package('skopeo').with_ensure('installed') }
+
+      if os_facts[:os]['family'] == 'Archlinux'
+        it { is_expected.to contain_package('systemd').with_ensure('installed') }
+      else
+        it { is_expected.to contain_package('systemd-container').with_ensure('installed') }
+      end
+
       it { is_expected.to have_podman__rootless_resource_count(0) }
 
-      # only here to reach 100% resource coverage
-      it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman::install
-      it { is_expected.to contain_package('buildah') }                      # from podman::install
-      it { is_expected.to contain_package('podman-compose') }               # from podman::install
-      it { is_expected.to contain_package('podman-docker') }                # from podman::install
-      it { is_expected.to contain_package('podman') }                       # from podman::install
-      it { is_expected.to contain_package('skopeo') }                       # from podman::install
-      if os_facts[:os]['family'] == 'Archlinux'
-        it { is_expected.to contain_package('systemd') }                    # from podman::install
-      else
-        it { is_expected.to contain_package('systemd-container') }          # from podman::install
-      end
       if os_facts[:os]['selinux']['enabled'] == true
-        it { is_expected.to contain_selboolean('container_manage_cgroup') } # from podman::install
+        it do
+          is_expected.to contain_selboolean('container_manage_cgroup').only_with(
+            {
+              'persistent' => true,
+              'value'      => 'on',
+              'require'    => 'Package[podman]',
+            },
+          )
+        end
       end
-      it { is_expected.to contain_service('podman.socket') }                # from podman::service
+
+      it do
+        is_expected.to contain_file('/etc/containers/nodocker').only_with(
+          {
+            'ensure'  => 'absent',
+            'group'   => 'root',
+            'owner'   => 'root',
+            'mode'    => '0644',
+            'require' => 'Package[podman]',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_service('podman.socket').only_with(
+          {
+            'ensure' => 'stopped',
+            'enable' => false,
+          },
+        )
+      end
     end
   end
 
@@ -49,66 +75,66 @@ describe 'podman' do
   on_supported_os(redhat).each do |_os, os_facts|
     let(:facts) { os_facts }
 
-    context 'with podman_pkg set to valid testing' do
-      let(:params) { { podman_pkg: 'testing' } } # parameter used in podman::install
+    context 'when podman_pkg is set to valid testing' do
+      let(:params) { { podman_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('installed') }
     end
 
-    context 'with skopeo_pkg set to valid testing' do
-      let(:params) { { skopeo_pkg: 'testing' } } # parameter used in podman::install
+    context 'when skopeo_pkg is set to valid testing' do
+      let(:params) { { skopeo_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('installed') }
     end
 
-    context 'with buildah_pkg set to valid testing' do
-      let(:params) { { buildah_pkg: 'testing' } } # parameter used in podman::install
+    context 'when buildah_pkg is set to valid testing' do
+      let(:params) { { buildah_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('absent') }
     end
 
-    context 'with podman_docker_pkg set to valid testing' do
-      let(:params) { { podman_docker_pkg: 'testing' } } # parameter used in podman::install
+    context 'when podman_docker_pkg is set to valid testing' do
+      let(:params) { { podman_docker_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('installed') }
     end
 
-    context 'with compose_pkg set to valid testing' do
-      let(:params) { { compose_pkg: 'testing' } } # parameter used in podman::install
+    context 'when compose_pkg is set to valid testing' do
+      let(:params) { { compose_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('absent') }
     end
 
-    context 'with machinectl_pkg set to valid testing' do
-      let(:params) { { machinectl_pkg: 'testing' } } # parameter used in podman::install
+    context 'when machinectl_pkg is set to valid testing' do
+      let(:params) { { machinectl_pkg: 'testing' } }
 
-      it { is_expected.to contain_package('testing') }
+      it { is_expected.to contain_package('testing').with_ensure('installed') }
     end
 
     context 'with buildah_pkg_ensure set to valid installed' do
-      let(:params) { { buildah_pkg_ensure: 'installed' } } # parameter used in podman::install
+      let(:params) { { buildah_pkg_ensure: 'installed' } }
 
       it { is_expected.to contain_package('buildah').with_ensure('installed') }
     end
 
     context 'with podman_docker_pkg_ensure set to valid absent' do
-      let(:params) { { podman_docker_pkg_ensure: 'absent' } } # parameter used in podman::install
+      let(:params) { { podman_docker_pkg_ensure: 'absent' } }
 
       it { is_expected.to contain_package('podman-docker').with_ensure('absent') }
     end
     context 'with compose_pkg_ensure set to valid installed' do
-      let(:params) { { compose_pkg_ensure: 'installed' } } # parameter used in podman::install
+      let(:params) { { compose_pkg_ensure: 'installed' } }
 
       it { is_expected.to contain_package('podman-compose').with_ensure('installed') }
     end
     context 'with machinectl_pkg_ensure set to valid absent' do
-      let(:params) { { machinectl_pkg_ensure: 'absent' } } # parameter used in podman::install
+      let(:params) { { machinectl_pkg_ensure: 'absent' } }
 
       it { is_expected.to contain_package('systemd-container').with_ensure('absent') }
     end
 
     context 'with nodocker set to valid file' do
-      let(:params) { { nodocker: 'file' } } # parameter used in podman::install
+      let(:params) { { nodocker: 'file' } }
 
       it { is_expected.to contain_file('/etc/containers/nodocker').with_ensure('file') }
     end
@@ -194,7 +220,7 @@ describe 'podman' do
     context 'with enable_api_socket set to valid true' do
       let(:params) { { enable_api_socket: true } }
 
-      it do # parameter used in podman::service
+      it do
         is_expected.to contain_service('podman.socket').with(
           {
             'ensure' => 'running',
@@ -205,7 +231,7 @@ describe 'podman' do
     end
 
     context 'with enable_api_socket set to valid true when rootless_users is set to valid [dummy]' do
-      let(:params) { { enable_api_socket: true, rootless_users: ['dummy'] } } # parameter used in podman::service & podman::rootless
+      let(:params) { { enable_api_socket: true, rootless_users: ['dummy'] } }
       let(:pre_condition) do
         "# user & file needed by podman::rootless
          user { 'dummy':
@@ -251,23 +277,78 @@ describe 'podman' do
     end
 
     context 'with manage_subuid set to valid true' do
-      let(:params) { { manage_subuid: true } } # parameter used in podman::install
+      let(:params) { { manage_subuid: true } }
 
-      it { is_expected.to contain_concat('/etc/subuid') }
-      it { is_expected.to contain_concat('/etc/subgid') }
-      it { is_expected.to contain_concat_fragment('subuid_header') }
-      it { is_expected.to contain_concat_fragment('subgid_header') }
+      it do
+        is_expected.to contain_concat('/etc/subuid').with(
+          {
+            'owner'          => 'root',
+            'group'          => 'root',
+            'mode'           => '0644',
+            'order'          => 'alpha',
+            'ensure_newline' => true,
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_concat('/etc/subgid').with(
+          {
+            'owner'          => 'root',
+            'group'          => 'root',
+            'mode'           => '0644',
+            'order'          => 'alpha',
+            'ensure_newline' => true,
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_concat_fragment('subuid_header').only_with(
+          {
+            'target'  => '/etc/subuid',
+            'order'   => '1',
+            'content' => '# FILE MANAGED BY PUPPET',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_concat_fragment('subgid_header').only_with(
+          {
+            'target'  => '/etc/subgid',
+            'order'   => '1',
+            'content' => '# FILE MANAGED BY PUPPET',
+          },
+        )
+      end
+
+      it { is_expected.to have_podman__subuid_resource_count(0) }
+      it { is_expected.to have_podman__subgid_resource_count(0) }
     end
 
     context 'with manage_subuid set to valid true when subid is a valid hash' do
-      let(:params) { { manage_subuid: true, subid: { dummy: { subuid: 242, count: 1 } } } } # parameter used in podman::install
+      let(:params) { { manage_subuid: true, subid: { dummy: { subuid: 242, count: 1 } } } }
 
-      it { is_expected.to contain_concat('/etc/subuid') }
-      it { is_expected.to contain_concat('/etc/subgid') }
-      it { is_expected.to contain_concat_fragment('subuid_header') }
-      it { is_expected.to contain_concat_fragment('subgid_header') }
-      it { is_expected.to contain_podman__subuid('dummy') }
-      it { is_expected.to contain_podman__subgid('dummy') }
+      it do
+        is_expected.to contain_podman__subuid('dummy').only_with(
+          {
+            'subuid' => 242,
+            'count'  => 1,
+            'order'  => 10,
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_podman__subgid('dummy').only_with(
+          {
+            'subgid' => 242,
+            'count'  => 1,
+            'order'  => 10,
+          },
+        )
+      end
 
       # only here to reach 100% resource coverage
       it { is_expected.to contain_concat__fragment('subgid_fragment_dummy') } # from podman::subgid
@@ -275,14 +356,14 @@ describe 'podman' do
     end
 
     context 'with match_subuid_subgid set to valid false when manage_subuid is true and subid is a valid hash' do
-      let(:params) { { match_subuid_subgid: false, manage_subuid: true, subid: { dummy: { subuid: 242, count: 1 } } } } # parameter used in podman::install
+      let(:params) { { match_subuid_subgid: false, manage_subuid: true, subid: { dummy: { subuid: 242, count: 1 } } } }
 
       it { is_expected.not_to contain_podman__subuid('dummy') }
       it { is_expected.not_to contain_podman__subgid('dummy') }
     end
 
     context 'with file_header set to valid #testing when manage_subuid is true' do
-      let(:params) { { file_header: '#testing', manage_subuid: true } } # parameter used in podman::install
+      let(:params) { { file_header: '#testing', manage_subuid: true } }
 
       it { is_expected.to contain_concat_fragment('subuid_header').with_content('#testing') }
       it { is_expected.to contain_concat_fragment('subgid_header').with_content('#testing') }
