@@ -65,20 +65,24 @@
 #   }
 #
 define podman::container (
-  Optional[String]          $image         = undef,
-  Optional[String]          $user          = undef,
-  Hash                      $flags         = {},
-  Hash                      $service_flags = {},
-  Optional[String]          $command       = undef,
-  Enum['present', 'absent'] $ensure        = 'present',
-  Boolean                   $enable        = true,
-  Boolean                   $update        = true,
-  Stdlib::Unixpath          $ruby          = $facts['ruby']['sitedir'] ? {
-    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
-    default                => '/usr/bin/ruby',
-  },
+  Optional[String]           $image         = undef,
+  Optional[String]           $user          = undef,
+  Hash                       $flags         = {},
+  Hash                       $service_flags = {},
+  Optional[String]           $command       = undef,
+  Enum['present', 'absent']  $ensure        = 'present',
+  Boolean                    $enable        = true,
+  Boolean                    $update        = true,
+  Optional[Stdlib::Unixpath] $ruby          = undef,
 ) {
   require podman::install
+
+  $installed_ruby = $facts['ruby']['sitedir'] ? {
+    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
+    default                => '/usr/bin/ruby',
+  }
+
+  $_ruby = pick($ruby, $installed_ruby)
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
@@ -183,9 +187,9 @@ define podman::container (
             image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
             running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
             latest_digest=\$(skopeo inspect docker://${image} | \
-              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
             [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
-              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
             test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
             test "\${running_digest}" = "\${latest_digest}"
           fi
@@ -209,7 +213,7 @@ define podman::container (
             declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
             test "\${running}" = "\${declared}" && exit 0
             available=\$(skopeo inspect docker://${image} | \
-              ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
             test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
             exit 1
           fi
@@ -245,7 +249,7 @@ define podman::container (
 
       $onlyif_prc = @("END"/L)
         test $(podmain container inspect --format json ${container_name} |\
-        ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
         | END
 
       # Try to stop the container service, then the container directly
