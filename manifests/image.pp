@@ -36,8 +36,6 @@ define podman::image (
   Optional[String]          $user     = undef,
   Array                     $exec_env = [],
 ) {
-  require podman::install
-
   # Convert $flags hash to command arguments
   $_flags = $flags.reduce('') |$mem, $flag| {
     if $flag[1] =~ String {
