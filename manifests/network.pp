@@ -81,14 +81,19 @@ define podman::network (
     default => '',
   }
 
-  $_gateway = $gateway ? {
-    undef   => '',
-    default => " --gateway ${gateway}",
-  }
-
   $_internal = $internal ? {
     true    => ' --internal',
     default => '',
+  }
+
+  $_ipv6 = $ipv6 ? {
+    true    => ' --ipv6',
+    default => '',
+  }
+
+  $_gateway = $gateway ? {
+    undef   => '',
+    default => " --gateway ${gateway}",
   }
 
   $_ip_range = $ip_range ? {
@@ -99,11 +104,6 @@ define podman::network (
   $_subnet = $subnet ? {
     undef   => '',
     default => " --subnet ${subnet}",
-  }
-
-  $_ipv6 = $ipv6 ? {
-    true    => ' --ipv6',
-    default => '',
   }
 
   # A rootless container network will be defined as the defined user
