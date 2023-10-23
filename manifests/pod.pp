@@ -28,8 +28,8 @@ define podman::pod (
   require podman::install
 
   # The resource name will be the pod name by default
+  $pod_name = $title
   $name_flags = merge({ name => $title }, $flags )
-  $pod_name = $name_flags['name']
 
   # Convert $flags hash to command arguments
   $_flags = $name_flags.reduce('') |$mem, $flag| {
