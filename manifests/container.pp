@@ -65,19 +65,19 @@
 #   }
 #
 define podman::container (
-  String $image          = '',
-  String $user           = '',
-  Hash $flags            = {},
-  Hash $service_flags    = {},
-  String $command        = '',
-  String $ensure         = 'present',
-  Boolean $enable        = true,
-  Boolean $update        = true,
-  Stdlib::Unixpath $ruby = $facts['ruby']['sitedir'] ? {
+  Optional[String] $image  = undef,
+  Optional[String] $user   = undef,
+  Hash $flags               = {},
+  Hash $service_flags       = {},
+  Optional[String] $command = undef,
+  String $ensure            = 'present',
+  Boolean $enable           = true,
+  Boolean $update           = true,
+  Stdlib::Unixpath $ruby    = $facts['ruby']['sitedir'] ? {
     /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
     default                => '/usr/bin/ruby',
   },
-){
+) {
   require podman::install
 
   # Add a label of base64 encoded flags defined for the container resource
@@ -94,11 +94,11 @@ define podman::container (
   }
 
   # If a container name is not set, use the Puppet resource name
-  $merged_flags = merge({ name => $title, label => $label}, $no_label )
+  $merged_flags = merge({ name => $title, label => $label }, $no_label )
   $container_name = $merged_flags['name']
 
   # A rootless container will run as the defined user
-  if $user != '' {
+  if $user != undef and $user != '' {
     ensure_resource('podman::rootless', $user, {})
     $systemctl = 'systemctl --user '
 
@@ -158,21 +158,23 @@ define podman::container (
 
   case $ensure {
     'present': {
-      if $image == '' { fail('A source image is required') }
+      if $image == undef { fail('A source image is required') }
 
       # Detect changes to the defined podman flags and re-deploy if needed
       exec { "verify_container_flags_${handle}":
         command  => 'true',
         provider => 'shell',
+        # lint:ignore:strict_indent
         unless   => @("END"/$L),
-                   if podman container exists ${container_name}
-                     then
-                     saved_resource_flags="\$(podman container inspect ${container_name} \
-                       --format '{{.Config.Labels.puppet_resource_flags}}')"
-                     current_resource_flags="${flags_base64}"
-                     test "\${saved_resource_flags}" = "\${current_resource_flags}"
-                   fi
-                   |END
+          if podman container exists ${container_name}
+            then
+            saved_resource_flags="\$(podman container inspect ${container_name} \
+              --format '{{.Config.Labels.puppet_resource_flags}}')"
+            current_resource_flags="${flags_base64}"
+            test "\${saved_resource_flags}" = "\${current_resource_flags}"
+          fi
+          |END
+        # lint:endignore
         notify   => Exec["podman_remove_container_${handle}"],
         require  => $requires,
         *        => $exec_defaults,
@@ -183,6 +185,7 @@ define podman::container (
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
+          # lint:ignore:strict_indent
           unless   => @("END"/$L),
             if podman container exists ${container_name}
               then
@@ -196,6 +199,7 @@ define podman::container (
               test "\${running_digest}" = "\${latest_digest}"
             fi
             |END
+          # lint:endignore
           notify   => [
             Exec["podman_remove_image_${handle}"],
             Exec["podman_remove_container_${handle}"],
@@ -208,6 +212,7 @@ define podman::container (
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
+          # lint:ignore:strict_indent
           unless   => @("END"/$L),
             if podman container exists ${container_name}
               then
@@ -220,6 +225,7 @@ define podman::container (
               exit 1
             fi
             |END
+          # lint:endignore
           notify   => [
             Exec["podman_remove_image_${handle}"],
             Exec["podman_remove_container_${handle}"],
@@ -235,13 +241,14 @@ define podman::container (
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
-        require     => [ $requires, Exec["podman_remove_container_${handle}"]],
+        require     => [$requires, Exec["podman_remove_container_${handle}"]],
         *           => $exec_defaults,
       }
 
       exec { "podman_remove_container_${handle}":
         # Try to stop the container service, then the container directly
         provider    => 'shell',
+        # lint:ignore:strict_indent
         command     => @("END"/L),
                        ${systemctl} stop podman-${container_name} || true
                        podman container stop --time 60 ${container_name} || true
@@ -251,6 +258,7 @@ define podman::container (
                        test $(podmain container inspect --format json ${container_name} |\
                        ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
                        |END
+        # lint:endignore
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
@@ -297,7 +305,7 @@ define podman::container (
         *       => $exec_defaults,
       }
 
-      if $user != '' {
+      if $user != undef and $user != '' {
         exec { "podman_generate_service_${handle}":
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
@@ -307,10 +315,12 @@ define podman::container (
         }
 
         # Work-around for managing user systemd services
-        if $enable { $action = 'start'; $startup = 'enable' }
-          else { $action = 'stop'; $startup = 'disable'
+        if $enable {
+          $action = 'start'; $startup = 'enable'
+        } else { $action = 'stop'; $startup = 'disable'
         }
         exec { "service_podman_${handle}":
+          # lint:ignore:strict_indent
           command => @("END"/L),
                      ${systemctl} ${startup} podman-${container_name}.service
                      ${systemctl} ${action} podman-${container_name}.service
@@ -319,6 +329,7 @@ define podman::container (
                      ${systemctl} is-active podman-${container_name}.service && \
                        ${systemctl} is-enabled podman-${container_name}.service
                      |END
+          # lint:endignore
           require => $requires,
           *       => $exec_defaults,
         }
@@ -332,8 +343,10 @@ define podman::container (
         }
 
         # Configure the container service per parameters
-        if $enable { $state = 'running'; $startup = 'true' }
-          else { $state = 'stopped'; $startup = 'false'
+        if $enable {
+          $state = 'running'; $startup = 'true'
+        } else {
+          $state = 'stopped'; $startup = 'false'
         }
         service { "podman-${handle}":
           ensure => $state,
@@ -344,6 +357,7 @@ define podman::container (
 
     'absent': {
       exec { "service_podman_${handle}":
+        # lint:ignore:strict_indent
         command => @("END"/L),
                    ${systemctl} stop podman-${container_name}
                    ${systemctl} disable podman-${container_name}
@@ -352,6 +366,7 @@ define podman::container (
                    test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
                      "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
                    |END
+        # lint:endignore
         notify  => Exec["podman_remove_container_${handle}"],
         require => $requires,
         *       => $exec_defaults,
@@ -370,7 +385,7 @@ define podman::container (
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
-        require     => [ $requires, Exec["podman_remove_container_${handle}"]],
+        require     => [$requires, Exec["podman_remove_container_${handle}"]],
         *           => $exec_defaults,
       }
 
@@ -389,4 +404,3 @@ define podman::container (
     }
   }
 }
-

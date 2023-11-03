@@ -7,11 +7,9 @@ Facter.add(:podman_version) do
   confine { Facter::Core::Execution.which('podman') }
 
   setcode do
-    begin
-      JSON.parse(Facter::Core::Execution.exec("podman version --format '{{json .}}'"))
-    rescue
-      nil
-    end
+    JSON.parse(Facter::Core::Execution.exec("podman version --format '{{json .}}'"))
+  rescue
+    nil
   end
 end
 
@@ -33,19 +31,17 @@ Facter.add(:podman, type: :aggregate) do
   end
 
   chunk(:socket_user) do
-    begin
-      val = {}
-      Dir.glob('/run/user/*/podman/podman.sock') do |path|
-        next unless File.exist?(path)
-        uid = path.split(File::SEPARATOR)[3].to_i
+    val = {}
+    Dir.glob('/run/user/*/podman/podman.sock') do |path|
+      next unless File.exist?(path)
+      uid = path.split(File::SEPARATOR)[3].to_i
 
-        val['socket'] = {} if val['socket'].nil?
-        val['socket'][Etc.getpwuid(uid)[:name]] = path
-      end
-
-      val
-    rescue
-      nil
+      val['socket'] = {} if val['socket'].nil?
+      val['socket'][Etc.getpwuid(uid)[:name]] = path
     end
+
+    val
+  rescue
+    nil
   end
 end

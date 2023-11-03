@@ -22,13 +22,13 @@ class podman::install {
       default:
         order   => 1,
         content => $podman::file_header,
-      ;
+        ;
       'subuid_header':
         target  => '/etc/subuid',
-      ;
+        ;
       'subgid_header':
         target  => '/etc/subgid',
-      ;
+        ;
     }
 
     if $podman::match_subuid_subgid {
@@ -40,7 +40,7 @@ class podman::install {
     }
   }
 
-  if $facts['selinux'] == true or $facts['os']['selinux']['enabled'] == true {
+  if $facts['os']['selinux']['enabled'] == true {
     selboolean { 'container_manage_cgroup':
       persistent => true,
       value      => on,
