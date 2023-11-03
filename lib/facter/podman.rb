@@ -35,7 +35,7 @@ Facter.add(:podman, type: :aggregate) do
     Dir.glob('/run/user/*/podman/podman.sock') do |path|
       next unless File.exist?(path)
       uid = path.split(File::SEPARATOR)[3].to_i
-
+      next if uid == 0
       val['socket'] = {} if val['socket'].nil?
       val['socket'][Etc.getpwuid(uid)[:name]] = path
     end
