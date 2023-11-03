@@ -44,24 +44,19 @@
 #   }
 #
 define podman::network (
-  Enum['present', 'absent'] $ensure = 'present',
-  Enum['bridge', 'macvlan'] $driver = 'bridge',
-  Boolean $disable_dns = false,
-  Array[String] $opts = [],
-  Optional[String] $gateway = undef,
-  Boolean $internal = false,
-  Optional[String] $ip_range = undef,
-  Hash[String,String] $labels = {},
-  Optional[String] $subnet = undef,
-  Boolean $ipv6 = false,
-  Optional[String] $user = undef,
+  Enum['present', 'absent'] $ensure      = 'present',
+  Enum['bridge', 'macvlan'] $driver      = 'bridge',
+  Boolean                   $disable_dns = false,
+  Array[String]             $opts        = [],
+  Optional[String]          $gateway     = undef,
+  Boolean                   $internal    = false,
+  Optional[String]          $ip_range    = undef,
+  Hash[String,String]       $labels      = {},
+  Optional[String]          $subnet      = undef,
+  Boolean                   $ipv6        = false,
+  Optional[String]          $user        = undef,
 ) {
   require podman::install
-
-  $_disable_dns = $disable_dns ? {
-    true    => '--disable-dns',
-    default => '',
-  }
 
   # Convert opts list to command arguments
   $_opts = $opts.reduce('') |$mem, $opt| {
@@ -80,73 +75,74 @@ define podman::network (
     }
   }
 
-  $_gateway = $gateway ? {
-    undef   => '',
-    default => "--gateway ${gateway}",
+  # FIXME/TODO: not used (yet?)
+  $_disable_dns = $disable_dns ? {
+    true    => '--disable-dns',
+    default => '',
   }
 
   $_internal = $internal ? {
-    true    => '--internal',
+    true    => ' --internal',
     default => '',
+  }
+
+  $_ipv6 = $ipv6 ? {
+    true    => ' --ipv6',
+    default => '',
+  }
+
+  $_gateway = $gateway ? {
+    undef   => '',
+    default => " --gateway ${gateway}",
   }
 
   $_ip_range = $ip_range ? {
     undef   => '',
-    default => "--ip-range ${ip_range}"
+    default => " --ip-range ${ip_range}"
   }
 
   $_subnet = $subnet ? {
     undef   => '',
-    default => "--subnet ${subnet}",
-  }
-
-  $_ipv6 = $ipv6 ? {
-    true    => '--ipv6',
-    default => '',
+    default => " --subnet ${subnet}",
   }
 
   # A rootless container network will be defined as the defined user
   if $user != undef and $user != '' {
+    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
+
     # Set default execution environment for the rootless user
     $exec_defaults = {
-      user => $user,
+      user        => $user,
+      cwd         => User[$user]['home'],
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
-      cwd         => User[$user]['home'],
     }
-    $requires = [
-      Podman::Rootless[$user],
-      Service['podman systemd-logind'],
-    ]
   } else {
-    $exec_defaults = {}
     $requires = []
+    $exec_defaults = {}
   }
 
   case $ensure {
     'present': {
       exec { "podman_create_network_${title}":
-        command => "podman network create ${title} --driver ${driver} ${_opts} ${_gateway} ${_internal} ${_ip_range} ${_labels} ${_subnet} ${_ipv6}", # lint:ignore:140chars
+        command => "podman network create ${title} --driver ${driver}${_opts}${_gateway}${_internal}${_ip_range}${_labels}${_subnet}${_ipv6}", # lint:ignore:140chars
         unless  => "podman network exists ${title}",
-        path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
-        require => $requires,
-        *       => $exec_defaults,
-      }
-    }
-    'absent': {
-      exec { "podman_remove_network_${title}":
-        command => "podman network rm ${title}",
-        onlyif  => "podman network exists ${title}",
-        path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         require => $requires,
         *       => $exec_defaults,
       }
     }
     default: {
-      fail('"ensure" must be "present" or "absent"')
+      exec { "podman_remove_network_${title}":
+        command => "podman network rm ${title}",
+        onlyif  => "podman network exists ${title}",
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
+        require => $requires,
+        *       => $exec_defaults,
+      }
     }
   }
 }

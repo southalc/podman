@@ -14,9 +14,9 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').only_with(
           {
-            'command' => 'podman network create testing-title --driver bridge       ',
+            'command' => 'podman network create testing-title --driver bridge',
             'unless'  => 'podman network exists testing-title',
-            'path'    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'    => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require' => [],
           },
         )
@@ -66,7 +66,7 @@ describe 'podman::network' do
           {
             'command' => 'podman network rm testing-title',
             'onlyif'  => 'podman network exists testing-title',
-            'path'    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'    => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require' => [],
           },
         )
@@ -94,7 +94,7 @@ describe 'podman::network' do
           {
             'command'     => 'podman network rm testing-title',
             'onlyif'      => 'podman network exists testing-title',
-            'path'        => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'require'     => ['Podman::Rootless[dummy]', 'Service[podman systemd-logind]'],
             'user'        => 'dummy',
             'environment' => ['HOME=/home/dummy', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
@@ -118,7 +118,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver macvlan       ',
+            'command' => 'podman network create testing-title --driver macvlan',
           },
         )
       end
@@ -137,7 +137,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge  --flag test --flag ing      ',
+            'command' => 'podman network create testing-title --driver bridge --flag test --flag ing',
           },
         )
       end
@@ -149,7 +149,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge  --gateway testing     ',
+            'command' => 'podman network create testing-title --driver bridge --gateway testing',
           },
         )
       end
@@ -161,7 +161,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge   --internal    ',
+            'command' => 'podman network create testing-title --driver bridge --internal',
           },
         )
       end
@@ -173,7 +173,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge    --ip-range testing   ',
+            'command' => 'podman network create testing-title --driver bridge --ip-range testing',
           },
         )
       end
@@ -185,7 +185,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => "podman network create testing-title --driver bridge      --label test 'ing' --label test2 'ing2'  ",
+            'command' => "podman network create testing-title --driver bridge --label test 'ing' --label test2 'ing2'",
           },
         )
       end
@@ -197,7 +197,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge      --subnet testing ',
+            'command' => 'podman network create testing-title --driver bridge --subnet testing',
           },
         )
       end
@@ -209,7 +209,7 @@ describe 'podman::network' do
       it do
         is_expected.to contain_exec('podman_create_network_testing-title').with(
           {
-            'command' => 'podman network create testing-title --driver bridge       --ipv6',
+            'command' => 'podman network create testing-title --driver bridge --ipv6',
           },
         )
       end

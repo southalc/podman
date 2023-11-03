@@ -25,7 +25,7 @@
 # @param service_flags
 #   When a container is created, a systemd unit file for the container service
 #   is generated using the 'podman generate systemd' command.  All flags for the
-#   command are supported using the 'service_flags" hash parameter, again using
+#   command are supported using the 'service_flags' hash parameter, again using
 #   only the long form of the flag names.
 #
 # @param command
@@ -65,20 +65,24 @@
 #   }
 #
 define podman::container (
-  Optional[String] $image  = undef,
-  Optional[String] $user   = undef,
-  Hash $flags               = {},
-  Hash $service_flags       = {},
-  Optional[String] $command = undef,
-  String $ensure            = 'present',
-  Boolean $enable           = true,
-  Boolean $update           = true,
-  Stdlib::Unixpath $ruby    = $facts['ruby']['sitedir'] ? {
-    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
-    default                => '/usr/bin/ruby',
-  },
+  Optional[String]           $image         = undef,
+  Optional[String]           $user          = undef,
+  Hash                       $flags         = {},
+  Hash                       $service_flags = {},
+  Optional[String]           $command       = undef,
+  Enum['present', 'absent']  $ensure        = 'present',
+  Boolean                    $enable        = true,
+  Boolean                    $update        = true,
+  Optional[Stdlib::Unixpath] $ruby          = undef,
 ) {
   require podman::install
+
+  $installed_ruby = $facts['ruby']['sitedir'] ? {
+    /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
+    default                => '/usr/bin/ruby',
+  }
+
+  $_ruby = pick($ruby, $installed_ruby)
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
@@ -99,61 +103,55 @@ define podman::container (
 
   # A rootless container will run as the defined user
   if $user != undef and $user != '' {
-    ensure_resource('podman::rootless', $user, {})
     $systemctl = 'systemctl --user '
+    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
+    $service_unit_file = "${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+    $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
 
     # The handle is used to ensure resources have unique names
     $handle = "${user}-${container_name}"
 
     # Set default execution environment for the rootless user
     $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
+      cwd         => User[$user]['home'],
+      user        => $user,
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
       ],
-      cwd         => User[$user]['home'],
-      user        => $user,
     }
-    $requires = [
-      Podman::Rootless[$user],
-      Service['podman systemd-logind'],
-    ]
-    $service_unit_file ="${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
+
+    ensure_resource('podman::rootless', $user, {})
 
     # Reload systemd when service files are updated
-    ensure_resource('Exec', "podman_systemd_${user}_reload", {
+    ensure_resource('Exec', "podman_systemd_${user}_reload",
+      {
         path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         command     => "${systemctl} daemon-reload",
         refreshonly => true,
-        environment => [
-          "HOME=${User[$user]['home']}",
-          "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
-        ],
+        environment => ["HOME=${User[$user]['home']}", "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}"],
         cwd         => User[$user]['home'],
         provider    => 'shell',
         user        => $user,
-      }
+      },
     )
-    $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
   } else {
     $systemctl = 'systemctl '
-    $handle = $container_name
+    $requires = []
     $service_unit_file = "/etc/systemd/system/podman-${container_name}.service"
-    $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-    }
+    $_podman_systemd_reload = Exec['podman_systemd_reload']
+    $handle = $container_name
+    $exec_defaults = {}
 
     # Reload systemd when service files are updated
-    ensure_resource('Exec', 'podman_systemd_reload', {
+    ensure_resource('Exec', 'podman_systemd_reload',
+      {
         path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         command     => "${systemctl} daemon-reload",
         refreshonly => true,
-      }
+      },
     )
-    $requires = []
-    $_podman_systemd_reload = Exec['podman_systemd_reload']
   }
 
   case $ensure {
@@ -161,107 +159,108 @@ define podman::container (
       if $image == undef { fail('A source image is required') }
 
       # Detect changes to the defined podman flags and re-deploy if needed
+      $unless_vcf = @("END"/$L)
+        if podman container exists ${container_name}
+          then
+          saved_resource_flags="\$(podman container inspect ${container_name} \
+            --format '{{.Config.Labels.puppet_resource_flags}}')"
+          current_resource_flags="${flags_base64}"
+          test "\${saved_resource_flags}" = "\${current_resource_flags}"
+        fi
+        | END
+
       exec { "verify_container_flags_${handle}":
         command  => 'true',
         provider => 'shell',
-        # lint:ignore:strict_indent
-        unless   => @("END"/$L),
-          if podman container exists ${container_name}
-            then
-            saved_resource_flags="\$(podman container inspect ${container_name} \
-              --format '{{.Config.Labels.puppet_resource_flags}}')"
-            current_resource_flags="${flags_base64}"
-            test "\${saved_resource_flags}" = "\${current_resource_flags}"
-          fi
-          |END
-        # lint:endignore
+        unless   => $unless_vcf,
         notify   => Exec["podman_remove_container_${handle}"],
         require  => $requires,
+        path     => '/sbin:/usr/sbin:/bin:/usr/bin',
         *        => $exec_defaults,
       }
 
       # Re-deploy when $update is true and the container image has been updated
       if $update {
+        $unless_vci = @("END"/$L)
+          if podman container exists ${container_name}
+            then
+            image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
+            running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
+            latest_digest=\$(skopeo inspect docker://${image} | \
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+            [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
+            test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
+            test "\${running_digest}" = "\${latest_digest}"
+          fi
+          | END
+
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
-          # lint:ignore:strict_indent
-          unless   => @("END"/$L),
-            if podman container exists ${container_name}
-              then
-              image_name=\$(podman container inspect ${container_name} --format '{{.ImageName}}')
-              running_digest=\$(podman image inspect \${image_name} --format '{{.Digest}}')
-              latest_digest=\$(skopeo inspect docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              [[ $? -ne 0 ]] && latest_digest=\$(skopeo inspect --no-creds docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
-              test -z "\${latest_digest}" && exit 0     # Do not update if unable to get latest digest
-              test "\${running_digest}" = "\${latest_digest}"
-            fi
-            |END
-          # lint:endignore
-          notify   => [
-            Exec["podman_remove_image_${handle}"],
-            Exec["podman_remove_container_${handle}"],
-          ],
+          unless   => $unless_vci,
+          notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
+          path     => '/sbin:/usr/sbin:/bin:/usr/bin',
           *        => $exec_defaults,
         }
       } else {
         # Re-deploy when $update is false but the resource image has changed
+        $unless_vci = @("END"/$L)
+          if podman container exists ${container_name}
+            then
+            running=\$(podman container inspect ${container_name} --format '{{.ImageName}}' | awk -F/ '{print \$NF}')
+            declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
+            test "\${running}" = "\${declared}" && exit 0
+            available=\$(skopeo inspect docker://${image} | \
+              ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
+            test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
+            exit 1
+          fi
+          | END
+
         exec { "verify_container_image_${handle}":
           command  => 'true',
           provider => 'shell',
-          # lint:ignore:strict_indent
-          unless   => @("END"/$L),
-            if podman container exists ${container_name}
-              then
-              running=\$(podman container inspect ${container_name} --format '{{.ImageName}}' | awk -F/ '{print \$NF}')
-              declared=\$(echo "${image}" | awk -F/ '{print \$NF}')
-              test "\${running}" = "\${declared}" && exit 0
-              available=\$(skopeo inspect docker://${image} | \
-                ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))["Name"]')
-              test -z "\${available}" && exit 0     # Do not update update if unable to get the new image
-              exit 1
-            fi
-            |END
-          # lint:endignore
-          notify   => [
-            Exec["podman_remove_image_${handle}"],
-            Exec["podman_remove_container_${handle}"],
-          ],
+          unless   => $unless_vci,
+          notify   => [Exec["podman_remove_image_${handle}"], Exec["podman_remove_container_${handle}"]],
           require  => $requires,
+          path     => '/sbin:/usr/sbin:/bin:/usr/bin',
           *        => $exec_defaults,
         }
       }
 
+      # Try to remove the image, but exit with success regardless
       exec { "podman_remove_image_${handle}":
-        # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => [$requires, Exec["podman_remove_container_${handle}"]],
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
+      $command_prc = @("END"/L)
+        ${systemctl} stop podman-${container_name} || true
+        podman container stop --time 60 ${container_name} || true
+        podman container rm --force ${container_name} || true
+        | END
+
+      $onlyif_prc = @("END"/L)
+        test $(podmain container inspect --format json ${container_name} |\
+        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+        | END
+
+      # Try to stop the container service, then the container directly
       exec { "podman_remove_container_${handle}":
-        # Try to stop the container service, then the container directly
         provider    => 'shell',
-        # lint:ignore:strict_indent
-        command     => @("END"/L),
-                       ${systemctl} stop podman-${container_name} || true
-                       podman container stop --time 60 ${container_name} || true
-                       podman container rm --force ${container_name} || true
-                       |END
-        onlyif      => @("END"/L),
-                       test $(podmain container inspect --format json ${container_name} |\
-                       ${ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
-                       |END
-        # lint:endignore
+        command     => $command_prc,
+        onlyif      => $onlyif_prc,
         refreshonly => true,
         notify      => Exec["podman_create_${handle}"],
         require     => $requires,
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
@@ -302,6 +301,7 @@ define podman::container (
         unless  => "podman container exists ${container_name}",
         notify  => Exec["podman_generate_service_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
@@ -311,30 +311,35 @@ define podman::container (
           refreshonly => true,
           notify      => Exec["service_podman_${handle}"],
           require     => $requires,
+          path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           *           => $exec_defaults,
         }
 
         # Work-around for managing user systemd services
         if $enable {
           $action = 'start'; $startup = 'enable'
-        } else { $action = 'stop'; $startup = 'disable'
+        } else {
+          $action = 'stop'; $startup = 'disable'
         }
+
+        $command_sp = @("END"/L)
+          ${systemctl} ${startup} podman-${container_name}.service
+          ${systemctl} ${action} podman-${container_name}.service
+          | END
+
+        $unless_sp = @("END"/L)
+          ${systemctl} is-active podman-${container_name}.service && \
+            ${systemctl} is-enabled podman-${container_name}.service
+          | END
+
         exec { "service_podman_${handle}":
-          # lint:ignore:strict_indent
-          command => @("END"/L),
-                     ${systemctl} ${startup} podman-${container_name}.service
-                     ${systemctl} ${action} podman-${container_name}.service
-                     |END
-          unless  => @("END"/L),
-                     ${systemctl} is-active podman-${container_name}.service && \
-                       ${systemctl} is-enabled podman-${container_name}.service
-                     |END
-          # lint:endignore
+          command => $command_sp,
+          unless  => $unless_sp,
           require => $requires,
+          path    => '/sbin:/usr/sbin:/bin:/usr/bin',
           *       => $exec_defaults,
         }
-      }
-      else {
+      } else {
         exec { "podman_generate_service_${handle}":
           path        => '/sbin:/usr/sbin:/bin:/usr/bin',
           command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
@@ -354,21 +359,23 @@ define podman::container (
         }
       }
     }
+    default: {
+      $command_sp = @("END"/L)
+        ${systemctl} stop podman-${container_name}
+        ${systemctl} disable podman-${container_name}
+        | END
 
-    'absent': {
+      $onlyif_sp = @("END"/$L)
+        test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
+          "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
+        | END
+
       exec { "service_podman_${handle}":
-        # lint:ignore:strict_indent
-        command => @("END"/L),
-                   ${systemctl} stop podman-${container_name}
-                   ${systemctl} disable podman-${container_name}
-                   |END
-        onlyif  => @("END"/$L),
-                   test "\$(${systemctl} is-active podman-${container_name} 2>&1)" = "active" -o \
-                     "\$(${systemctl} is-enabled podman-${container_name} 2>&1)" = "enabled"
-                   |END
-        # lint:endignore
+        command => $command_sp,
+        onlyif  => $onlyif_sp,
         notify  => Exec["podman_remove_container_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
@@ -377,30 +384,25 @@ define podman::container (
         unless  => "podman container exists ${container_name}; test $? -eq 1",
         notify  => Exec["podman_remove_image_${handle}"],
         require => $requires,
+        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
         *       => $exec_defaults,
       }
 
+      # Try to remove the image, but exit with success regardless
       exec { "podman_remove_image_${handle}":
-        # Try to remove the image, but exit with success regardless
         provider    => 'shell',
         command     => "podman rmi ${image} || exit 0",
         refreshonly => true,
         require     => [$requires, Exec["podman_remove_container_${handle}"]],
+        path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         *           => $exec_defaults,
       }
 
       file { $service_unit_file:
         ensure  => absent,
-        require => [
-          $requires,
-          Exec["service_podman_${handle}"],
-        ],
+        require => [$requires, Exec["service_podman_${handle}"]],
         notify  => $_podman_systemd_reload,
       }
-    }
-
-    default: {
-      fail('"ensure" must be "present" or "absent"')
     }
   }
 }
