@@ -71,7 +71,7 @@ define podman::secret (
   }
 
   # If a secret name is not set, use the Puppet resource name
-  $merged_flags = merge({label => $label}, $no_label )
+  $merged_flags = merge({ label => $label }, $no_label )
 
   # Convert $flags hash to command arguments
   $_flags = $merged_flags.reduce('') |$mem, $flag| {
@@ -116,10 +116,10 @@ define podman::secret (
     fail('Only one of the parameters path or secret to podman::secret must be set')
   } elsif $secret {
     $_command = Sensitive(stdlib::deferrable_epp('podman/set_secret_from_stdin.epp', {
-      'secret' => $secret ,
-      'title'  => $title,
-      'flags'  => $_flags,
-      }))
+          'secret' => $secret ,
+          'title'  => $title,
+          'flags'  => $_flags,
+    }))
   } elsif $path {
     $_command = "podman secret create${_flags} ${title} ${path}"
   } else {
@@ -128,14 +128,14 @@ define podman::secret (
 
   case $ensure {
     'present': {
-      Exec{"create_secret_${title}":
+      Exec { "create_secret_${title}":
         command => $_command,
-        unless  => "/usr/bin/test \"$(podman secret inspect ${title}  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"${flags_base64}\"",
+        unless  => "test \"$(podman secret inspect ${title}  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"${flags_base64}\"",
         *       => $exec_defaults,
       }
     }
     default: {
-      Exec{"create_secret_${title}":
+      Exec { "create_secret_${title}":
         command => $_command,
         unless  => "podman secret rm ${title}",
         onlyif  => "podman secret inspect ${title}",
