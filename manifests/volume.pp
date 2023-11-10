@@ -26,7 +26,7 @@ define podman::volume (
   Hash                      $flags  = {},
   Optional[String]          $user   = undef,
 ) {
-  require podman::install
+#  require podman::install
 
   # Convert $flags hash to command arguments
   $_flags = $flags.reduce('') |$mem, $flag| {

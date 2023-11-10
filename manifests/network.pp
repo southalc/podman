@@ -56,8 +56,6 @@ define podman::network (
   Boolean                   $ipv6        = false,
   Optional[String]          $user        = undef,
 ) {
-  require podman::install
-
   # Convert opts list to command arguments
   $_opts = $opts.reduce('') |$mem, $opt| {
     "${mem} --flag ${opt}"

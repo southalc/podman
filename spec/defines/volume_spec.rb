@@ -2,14 +2,12 @@ require 'spec_helper'
 
 describe 'podman::volume' do
   let(:title) { 'testing-title' }
-  let(:pre_condition) { 'include podman' }
 
   on_supported_os.each do |os, os_facts|
     context "on #{os} with defaults for all parameters" do
       let(:facts) { os_facts }
 
       it { is_expected.to compile }
-      it { is_expected.to contain_class('podman::install') }
 
       it do
         is_expected.to contain_exec('podman_create_volume_testing-title').only_with(
@@ -20,26 +18,6 @@ describe 'podman::volume' do
           },
         )
       end
-
-      # only here to reach 100% resource coverage
-      it { is_expected.to contain_class('podman::options') }                # from podman
-      it { is_expected.to contain_class('podman::service') }                # from podman
-      it { is_expected.to contain_class('podman') }                         # from pre_condition
-      it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman::install
-      it { is_expected.to contain_package('buildah') }                      # from podman::install
-      it { is_expected.to contain_package('podman-compose') }               # from podman::install
-      it { is_expected.to contain_package('podman-docker') }                # from podman::install
-      it { is_expected.to contain_package('podman') }                       # from podman::install
-      it { is_expected.to contain_package('skopeo') }                       # from podman::install
-      if os_facts[:os]['family'] == 'Archlinux'
-        it { is_expected.to contain_package('systemd') }                    # from podman::install
-      else
-        it { is_expected.to contain_package('systemd-container') }          # from podman::install
-      end
-      if os_facts[:os]['selinux']['enabled'] == true
-        it { is_expected.to contain_selboolean('container_manage_cgroup') } # from podman::install
-      end
-      it { is_expected.to contain_service('podman.socket') }                # from podman::service
     end
   end
 
@@ -87,8 +65,7 @@ describe 'podman::volume' do
     context 'with user set to valid testing' do
       let(:params) { { user: 'testing' } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'testing':
            ensure  => 'present',
            gid     => 1111,
@@ -123,13 +100,28 @@ describe 'podman::volume' do
       it { is_expected.to contain_file('/home/testing/.config/systemd') }      # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config/systemd/user') } # from podman::rootless
       it { is_expected.to contain_service('podman systemd-logind') }           # from podman::rootless
+      it { is_expected.to contain_class('podman') }                            # from podman::rootless
+      it { is_expected.to contain_file('/etc/containers/nodocker') }           # from podman
+      it { is_expected.to contain_package('buildah') }                         # from podman
+      it { is_expected.to contain_package('podman-compose') }                  # from podman
+      it { is_expected.to contain_package('podman-docker') }                   # from podman
+      it { is_expected.to contain_package('podman') }                          # from podman
+      it { is_expected.to contain_package('skopeo') }                          # from podman
+      if os_facts[:os]['family'] == 'Archlinux'
+        it { is_expected.to contain_package('systemd') }                       # from podman
+      else
+        it { is_expected.to contain_package('systemd-container') }             # from podman
+      end
+      if os_facts[:os]['selinux']['enabled'] == true
+        it { is_expected.to contain_selboolean('container_manage_cgroup') }    # from podman
+      end
+      it { is_expected.to contain_service('podman.socket') }                   # from podman
     end
 
     context 'with user set to valid testing when ensure is set to valid absent' do
       let(:params) { { user: 'testing', ensure: 'absent' } }
       let(:pre_condition) do
-        "include podman
-         # user & file needed by podman::rootless
+        "# user & file needed by podman::rootless
          user { 'testing':
            ensure  => 'present',
            gid     => 1111,

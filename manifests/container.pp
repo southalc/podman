@@ -75,8 +75,6 @@ define podman::container (
   Boolean                    $update        = true,
   Optional[Stdlib::Unixpath] $ruby          = undef,
 ) {
-  require podman::install
-
   $installed_ruby = $facts['ruby']['sitedir'] ? {
     /^\/opt\/puppetlabs\// => '/opt/puppetlabs/puppet/bin/ruby',
     default                => '/usr/bin/ruby',

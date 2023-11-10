@@ -56,8 +56,6 @@ define podman::secret (
   Optional[String[1]] $user = undef,
   Hash $flags = {},
 ) {
-  require podman::install
-
   # Do not encode and store the secret
   $flags_base64 = base64('encode',String($flags.delete('secret')),'strict')
 

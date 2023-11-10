@@ -25,8 +25,6 @@ define podman::pod (
   Hash                      $flags  = {},
   Optional[String]          $user   = undef,
 ) {
-  require podman::install
-
   # The resource name will be the pod name by default
   $pod_name = $title
   $name_flags = merge({ name => $title }, $flags )
