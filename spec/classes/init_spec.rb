@@ -85,6 +85,18 @@ describe 'podman' do
       it { is_expected.to contain_package('testing') }
     end
 
+    context 'with podman_pkg_ensure set to valid installed' do
+      let(:params) { { podman_pkg_ensure: 'installed' } } # parameter used in podman::install
+
+      it { is_expected.to contain_package('podman').with_ensure('installed') }
+    end
+
+    context 'with podman_pkg_ensure set to valid version 1.0.0' do
+      let(:params) { { podman_pkg_ensure: '1.0.0' } } # parameter used in podman::install
+
+      it { is_expected.to contain_package('podman').with_ensure('1.0.0') }
+    end
+
     context 'with buildah_pkg_ensure set to valid installed' do
       let(:params) { { buildah_pkg_ensure: 'installed' } } # parameter used in podman::install
 
@@ -100,6 +112,11 @@ describe 'podman' do
       let(:params) { { compose_pkg_ensure: 'installed' } } # parameter used in podman::install
 
       it { is_expected.to contain_package('podman-compose').with_ensure('installed') }
+    end
+    context 'with compose_pkg_ensure set to valid version 1.0.0' do
+      let(:params) { { compose_pkg_ensure: '1.0.0' } } # parameter used in podman::install
+
+      it { is_expected.to contain_package('podman-compose').with_ensure('1.0.0') }
     end
     context 'with machinectl_pkg_ensure set to valid absent' do
       let(:params) { { machinectl_pkg_ensure: 'absent' } } # parameter used in podman::install
