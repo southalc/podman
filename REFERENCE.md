@@ -80,6 +80,7 @@ The following parameters are available in the `podman` class:
 * [`podman_docker_pkg`](#-podman--podman_docker_pkg)
 * [`compose_pkg`](#-podman--compose_pkg)
 * [`machinectl_pkg`](#-podman--machinectl_pkg)
+* [`podman_pkg_ensure`](#-podman--podman_pkg_ensure)
 * [`buildah_pkg_ensure`](#-podman--buildah_pkg_ensure)
 * [`podman_docker_pkg_ensure`](#-podman--podman_docker_pkg_ensure)
 * [`compose_pkg_ensure`](#-podman--compose_pkg_ensure)
@@ -148,6 +149,14 @@ The name of the machinectl package (default 'systemd-container').
 
 Default value: `'systemd-container'`
 
+##### <a name="-podman--podman_pkg_ensure"></a>`podman_pkg_ensure`
+
+Data type: `Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]`
+
+The ensure value for the podman package (default 'installed')
+
+Default value: `'installed'`
+
 ##### <a name="-podman--buildah_pkg_ensure"></a>`buildah_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
@@ -166,7 +175,7 @@ Default value: `'installed'`
 
 ##### <a name="-podman--compose_pkg_ensure"></a>`compose_pkg_ensure`
 
-Data type: `Enum['absent', 'installed']`
+Data type: `Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]`
 
 The ensure value for the podman-compose package (default 'absent')
 
