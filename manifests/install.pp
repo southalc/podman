@@ -2,7 +2,7 @@
 # @api private
 #
 class podman::install {
-  ensure_resource('Package', $podman::podman_pkg, { 'ensure' => 'installed' })
+  ensure_resource('Package', $podman::podman_pkg, { 'ensure' => $podman::podman_pkg_ensure })
   ensure_resource('Package', $podman::skopeo_pkg, { 'ensure' => 'installed' })
   ensure_resource('Package', $podman::buildah_pkg, { 'ensure' => $podman::buildah_pkg_ensure })
   ensure_resource('Package', $podman::podman_docker_pkg, { 'ensure' => $podman::podman_docker_pkg_ensure })

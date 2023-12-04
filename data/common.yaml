@@ -12,4 +12,3 @@ lookup_options:
     merge: deep
   podman::rootless_users:
     merge: unique
-

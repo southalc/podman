@@ -79,6 +79,7 @@ The following parameters are available in the `podman` class:
 * [`podman_docker_pkg`](#podman_docker_pkg)
 * [`compose_pkg`](#compose_pkg)
 * [`machinectl_pkg`](#machinectl_pkg)
+* [`podman_pkg_ensure`](#podman_pkg_ensure)
 * [`buildah_pkg_ensure`](#buildah_pkg_ensure)
 * [`podman_docker_pkg_ensure`](#podman_docker_pkg_ensure)
 * [`compose_pkg_ensure`](#compose_pkg_ensure)
@@ -145,6 +146,14 @@ The name of the machinectl package (default 'systemd-container').
 
 Default value: `'systemd-container'`
 
+##### <a name="podman_pkg_ensure"></a>`podman_pkg_ensure`
+
+Data type: `Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]`
+
+The ensure value for the podman package (default 'installed')
+
+Default value: `'absent'`
+
 ##### <a name="buildah_pkg_ensure"></a>`buildah_pkg_ensure`
 
 Data type: `Enum['absent', 'installed']`
@@ -163,7 +172,7 @@ Default value: `'installed'`
 
 ##### <a name="compose_pkg_ensure"></a>`compose_pkg_ensure`
 
-Data type: `Enum['absent', 'installed']`
+Data type: `Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]`
 
 The ensure value for the podman-compose package (default 'absent')
 
@@ -331,22 +340,22 @@ The following parameters are available in the `podman::container` defined type:
 
 ##### <a name="image"></a>`image`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Container registry source of the image being deployed.  Required when
 `ensure` is `present` but optional when `ensure` is set to `absent`.
 
-Default value: `''`
+Default value: ``undef``
 
 ##### <a name="user"></a>`user`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional user for running rootless containers.  For rootless containers,
 the user must also be defined as a puppet resource that includes at least
 'uid', 'gid', and 'home' attributes.
 
-Default value: `''`
+Default value: ``undef``
 
 ##### <a name="flags"></a>`flags`
 
@@ -372,22 +381,22 @@ Data type: `Hash`
 
 When a container is created, a systemd unit file for the container service
 is generated using the 'podman generate systemd' command.  All flags for the
-command are supported using the 'service_flags" hash parameter, again using
+command are supported using the 'service_flags' hash parameter, again using
 only the long form of the flag names.
 
 Default value: `{}`
 
 ##### <a name="command"></a>`command`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional command to be used as the container entry point.
 
-Default value: `''`
+Default value: ``undef``
 
 ##### <a name="ensure"></a>`ensure`
 
-Data type: `String`
+Data type: `Enum['present', 'absent']`
 
 Valid values are 'present' or 'absent'
 
@@ -416,13 +425,13 @@ Default value: ``true``
 
 ##### <a name="ruby"></a>`ruby`
 
-Data type: `Stdlib::Unixpath`
+Data type: `Optional[Stdlib::Unixpath]`
 
 The absolute path to the ruby binary to use in scripts. The default path is
 '/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
 '/usr/bin/ruby' for all others.
 
-Default value: `$facts['ruby']['sitedir']`
+Default value: ``undef``
 
 ### <a name="podmanimage"></a>`podman::image`
 
@@ -460,7 +469,7 @@ configured container registry.
 
 ##### <a name="ensure"></a>`ensure`
 
-Data type: `String`
+Data type: `Enum['present', 'absent']`
 
 State of the resource must be either `present` or `absent`.
 
@@ -477,13 +486,13 @@ Default value: `{}`
 
 ##### <a name="user"></a>`user`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'
 
-Default value: `''`
+Default value: ``undef``
 
 ##### <a name="exec_env"></a>`exec_env`
 
@@ -610,13 +619,13 @@ Default value: ``false``
 
 ##### <a name="user"></a>`user`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional user for creating rootless container networks.  For rootless containers,
 the user must also be defined as a puppet resource that includes at least
 'uid', 'gid', and 'home' attributes.
 
-Default value: `''`
+Default value: ``undef``
 
 ### <a name="podmanpod"></a>`podman::pod`
 
@@ -644,7 +653,7 @@ The following parameters are available in the `podman::pod` defined type:
 
 ##### <a name="ensure"></a>`ensure`
 
-Data type: `String`
+Data type: `Enum['present', 'absent']`
 
 State of the resource, which must be either 'present' or 'absent'.
 
@@ -662,13 +671,13 @@ Default value: `{}`
 
 ##### <a name="user"></a>`user`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'
 
-Default value: `''`
+Default value: ``undef``
 
 ### <a name="podmanrootless"></a>`podman::rootless`
 
@@ -884,7 +893,7 @@ The following parameters are available in the `podman::volume` defined type:
 
 ##### <a name="ensure"></a>`ensure`
 
-Data type: `String`
+Data type: `Enum['present', 'absent']`
 
 State of the resource must be either 'present' or 'absent'.
 
@@ -903,11 +912,11 @@ Default value: `{}`
 
 ##### <a name="user"></a>`user`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 Optional user for running rootless containers.  When using this parameter,
 the user must also be defined as a Puppet resource and must include the
 'uid', 'gid', and 'home'
 
-Default value: `''`
+Default value: ``undef``
 
