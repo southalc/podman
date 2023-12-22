@@ -98,7 +98,7 @@ describe 'podman::container' do
       end
 
       remove_command = <<-END.gsub(%r{^\s+\|}, '')
-        |systemctl  stop podman-namevar || true
+        |systemctl  stop container-namevar || true
         |podman container stop --time 60 namevar || true
         |podman container rm --force namevar || true
       END
@@ -143,15 +143,15 @@ describe 'podman::container' do
         is_expected.to contain_exec('podman_generate_service_namevar').only_with(
           {
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
-            'command'     => 'podman generate systemd  namevar > /etc/systemd/system/podman-namevar.service',
+            'command'     => 'podman generate systemd  namevar > /etc/systemd/system/container-namevar.service',
             'refreshonly' => true,
-            'notify'      => 'Service[podman-namevar]',
+            'notify'      => 'Service[container-namevar]',
           },
         )
       end
 
       it do
-        is_expected.to contain_service('podman-namevar').only_with(
+        is_expected.to contain_service('container-namevar').only_with(
           {
             'ensure' => 'running',
             'enable' => true,
@@ -326,7 +326,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_testing-namevar').only_with(
           {
-            'command'     => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/podman-namevar.service',
+            'command'     => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/container-namevar.service',
             'refreshonly' => true,
             'notify'      => 'Exec[service_podman_testing-namevar]',
             'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
@@ -341,8 +341,8 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('service_podman_testing-namevar').only_with(
           {
-            'command'     => "systemctl --user  enable podman-namevar.service\nsystemctl --user  start podman-namevar.service\n",
-            'unless'      => "systemctl --user  is-active podman-namevar.service &&   systemctl --user  is-enabled podman-namevar.service\n",
+            'command'     => "systemctl --user  enable container-namevar.service\nsystemctl --user  start container-namevar.service\n",
+            'unless'      => "systemctl --user  is-active container-namevar.service &&   systemctl --user  is-enabled container-namevar.service\n",
             'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'environment' => ['HOME=/home/testing', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
@@ -424,7 +424,7 @@ describe 'podman::container' do
       end
 
       it do
-        is_expected.to contain_file('/home/testing/.config/systemd/user/podman-namevar.service').with(
+        is_expected.to contain_file('/home/testing/.config/systemd/user/container-namevar.service').with(
           {
             'require' => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]', 'Exec[service_podman_testing-namevar]'],
           },
@@ -460,7 +460,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_namevar').with(
           {
-            'command' => 'podman generate systemd  namevar > /etc/systemd/system/podman-namevar.service',
+            'command' => 'podman generate systemd  namevar > /etc/systemd/system/container-namevar.service',
           },
         )
       end
@@ -494,7 +494,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_namevar').with(
           {
-            'command' => 'podman generate systemd  namevar > /etc/systemd/system/podman-namevar.service',
+            'command' => 'podman generate systemd  namevar > /etc/systemd/system/container-namevar.service',
           },
         )
       end
@@ -539,7 +539,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_testing-namevar').with(
           {
-            'command' => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/podman-namevar.service',
+            'command' => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/container-namevar.service',
           },
         )
       end
@@ -547,8 +547,8 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('service_podman_testing-namevar').with(
           {
-            'command' => "systemctl --user  enable podman-namevar.service\nsystemctl --user  start podman-namevar.service\n",
-            'unless'  => "systemctl --user  is-active podman-namevar.service &&   systemctl --user  is-enabled podman-namevar.service\n",
+            'command' => "systemctl --user  enable container-namevar.service\nsystemctl --user  start container-namevar.service\n",
+            'unless'  => "systemctl --user  is-active container-namevar.service &&   systemctl --user  is-enabled container-namevar.service\n",
           },
         )
       end
@@ -574,8 +574,8 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('service_podman_namevar').only_with(
           {
-            'command' => "systemctl  stop podman-namevar\nsystemctl  disable podman-namevar\n",
-            'onlyif'  => "test \"$(systemctl  is-active podman-namevar 2>&1)\" = \"active\" -o   \"$(systemctl  is-enabled podman-namevar 2>&1)\" = \"enabled\"\n",
+            'command' => "systemctl  stop container-namevar\nsystemctl  disable container-namevar\n",
+            'onlyif'  => "test \"$(systemctl  is-active container-namevar 2>&1)\" = \"active\" -o   \"$(systemctl  is-enabled container-namevar 2>&1)\" = \"enabled\"\n",
             'notify'  => 'Exec[podman_remove_container_namevar]',
             'require' => [],
             'path'    => '/sbin:/usr/sbin:/bin:/usr/bin',
@@ -608,7 +608,7 @@ describe 'podman::container' do
       end
 
       it do
-        is_expected.to contain_file('/etc/systemd/system/podman-namevar.service').only_with(
+        is_expected.to contain_file('/etc/systemd/system/container-namevar.service').only_with(
           {
             'ensure'  => 'absent',
             'require' => ['Exec[service_podman_namevar]'],
@@ -652,8 +652,8 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('service_podman_user-namevar').only_with(
           {
-            'command'     => "systemctl --user  stop podman-namevar\nsystemctl --user  disable podman-namevar\n",
-            'onlyif'      => "test \"$(systemctl --user  is-active podman-namevar 2>&1)\" = \"active\" -o   \"$(systemctl --user  is-enabled podman-namevar 2>&1)\" = \"enabled\"\n",
+            'command'     => "systemctl --user  stop container-namevar\nsystemctl --user  disable container-namevar\n",
+            'onlyif'      => "test \"$(systemctl --user  is-active container-namevar 2>&1)\" = \"active\" -o   \"$(systemctl --user  is-enabled container-namevar 2>&1)\" = \"enabled\"\n",
             'notify'      => 'Exec[podman_remove_container_user-namevar]',
             'require'     => ['Podman::Rootless[user]', 'Service[podman systemd-logind]'],
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
@@ -695,7 +695,7 @@ describe 'podman::container' do
       end
 
       it do
-        is_expected.to contain_file('/home/user/.config/systemd/user/podman-namevar.service').only_with(
+        is_expected.to contain_file('/home/user/.config/systemd/user/container-namevar.service').only_with(
           {
             'ensure'  => 'absent',
             'require' => ['Podman::Rootless[user]', 'Service[podman systemd-logind]', 'Exec[service_podman_user-namevar]'],
@@ -719,7 +719,7 @@ describe 'podman::container' do
       let(:pre_condition) { 'include podman' }
 
       it do
-        is_expected.to contain_service('podman-namevar').only_with(
+        is_expected.to contain_service('container-namevar').only_with(
           {
             'ensure' => 'stopped',
             'enable' => false,
@@ -746,7 +746,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('service_podman_user-namevar').with(
           {
-            'command' => "systemctl --user  disable podman-namevar.service\nsystemctl --user  stop podman-namevar.service\n",
+            'command' => "systemctl --user  disable container-namevar.service\nsystemctl --user  stop container-namevar.service\n",
           },
         )
       end
