@@ -307,8 +307,7 @@ define podman::container (
 
       if $user != undef and $user != '' {
         exec { "podman_generate_service_${handle}":
-          command     => "podman generate systemd --files ${_service_flags} ${container_name}",
-          cwd         => "${User[$user]['home']}/.config/systemd/user",
+          command     => "podman generate systemd ${_service_flags} ${container_name} > ${service_unit_file}",
           refreshonly => true,
           notify      => Exec["service_podman_${handle}"],
           require     => $requires,
@@ -343,7 +342,7 @@ define podman::container (
       } else {
         exec { "podman_generate_service_${handle}":
           path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-          command     => "podman generate systemd --files ${_service_flags} ${container_name}",
+          command     => "podman generate systemd --files --name ${_service_flags} ${container_name}",
           cwd         => '/etc/systemd/system',
           refreshonly => true,
           notify      => Service["container-${handle}"],

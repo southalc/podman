@@ -143,7 +143,7 @@ describe 'podman::container' do
         is_expected.to contain_exec('podman_generate_service_namevar').only_with(
           {
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
-            'command'     => 'podman generate systemd --files namevar',
+            'command'     => 'podman generate systemd --files --name namevar',
             'cwd'         => '/etc/systemd/system',
             'refreshonly' => true,
             'notify'      => 'Service[container-namevar]',
@@ -327,13 +327,13 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_testing-namevar').only_with(
           {
-            'command'     => 'podman generate systemd --files namevar',
+            'command'     => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/container-namevar.service',
             'refreshonly' => true,
             'notify'      => 'Exec[service_podman_testing-namevar]',
             'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'environment' => ['HOME=/home/testing', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
-            'cwd'         => '/home/testing/.config/systemd/user',
+            'cwd'         => '/home/testing',
             'user'        => 'testing',
           },
         )
@@ -461,7 +461,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_namevar').with(
           {
-            'command' => 'podman generate systemd --files namevar',
+            'command' => 'podman generate systemd --files --name namevar',
             'cwd'     => '/etc/systemd/system',
           },
         )
@@ -496,7 +496,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_namevar').with(
           {
-            'command' => 'podman generate systemd --files namevar',
+            'command' => 'podman generate systemd --files --name namevar',
             'cwd'     => '/etc/systemd/system',
           },
         )
@@ -542,8 +542,7 @@ describe 'podman::container' do
       it do
         is_expected.to contain_exec('podman_generate_service_testing-namevar').with(
           {
-            'command' => 'podman generate systemd --files namevar',
-            'cwd'     => '/home/testing/.config/systemd/user/',
+            'command' => 'podman generate systemd  namevar > /home/testing/.config/systemd/user/container-namevar.service',
           },
         )
       end
