@@ -189,6 +189,36 @@ Several additional examples are in a separate [github project](https://github.co
 a Traefik container configuration that enables SSL termination and proxy access to other containers running on the host, with a dynamic
 configuration directory enabling updates to proxy rules as new containers are added and/or removed.
 
+## Creating Containers,Volumes, Pods, ... with Quadlet Unit Files
+
+Container unit files can be created and managed, for example:
+
+```puppet
+podman::quadlet{'centos.container':
+  ensure          => present,
+  unit_entry     => {
+    'Description' => 'Trivial Container that will be very lazy',
+  },
+  service_entry       => {
+    'TimeoutStartSec' => '900',
+  },
+  container_entry => {
+    'Image' => 'quay.io/centos/centos:latest',
+    'Exec'  => 'sh -c "sleep inf'
+  },
+  install_entry   => {
+    'WantedBy' => 'default.target'
+  },
+  active          => true,
+}
+
+```
+
+Will create a service `centos.service` that is then started and enabled for boot.
+
+Similarly quadlets for volumes, pods, ... can be created in a similar manner
+
+
 ## Limitations
 
 The module was written and tested with RedHat/CentOS, but should work with any distribution that uses systemd and includes

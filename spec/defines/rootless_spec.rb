@@ -80,6 +80,40 @@ describe 'podman::rootless' do
       end
 
       it do
+        is_expected.to contain_file('/home/testing-title/.config/containers').only_with(
+          {
+            'ensure'  => 'directory',
+            'owner'   => 'testing-title',
+            'group'   => '1111',
+            'mode'    => '0700',
+            'require' => 'File[/home/testing-title]',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_file('/home/testing-title/.config/containers/systemd').only_with(
+          {
+            'ensure'  => 'directory',
+            'owner'   => 'testing-title',
+            'group'   => '1111',
+            'mode'    => '0700',
+            'require' => 'File[/home/testing-title]',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_exec('daemon-reload-testing-title').only_with(
+          {
+            'command' => ['systemd-run', '--pipe', '--wait', '--user', '--machine', 'testing-title@.host', '/usr/bin/systemctl', '--user', 'daemon-reload'],
+            'refreshonly' => true,
+            'path'    => os_facts[:path],
+          },
+        )
+      end
+
+      it do
         is_expected.to contain_exec('start_testing-title.slice').only_with(
           {
             'path'    => os_facts[:path],

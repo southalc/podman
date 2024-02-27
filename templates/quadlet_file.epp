@@ -1,0 +1,42 @@
+<%- |
+ Optional[Hash] $unit_entry,
+ Optional[Hash] $service_entry,
+ Optional[Hash] $install_entry,
+ Optional[Hash] $container_entry,
+ Optional[Hash] $volume_entry,
+ Optional[Hash] $pod_entry,
+| -%>
+<%-
+
+ # List of possible of unit sections, should match the list of _entry variables
+ # above.
+
+ $_unit_sections = [
+   'Unit',
+   'Service',
+   'Container',
+   'Pod',
+   'Volume',
+   'Install',
+]
+
+-%>
+# Deployed with puppet
+#
+<%-
+$_unit_sections.each | $_section | {
+  $_values = getvar("${downcase($_section)}_entry")
+  if $_values {
+-%>
+
+[<%= $_section %>]
+<%-
+    $_values.each | $_key, $_value | {
+      Array($_value, true).each | $_subvalue | { -%>
+<%= $_key %>=<%= $_subvalue %>
+<%-
+      }
+    }
+  }
+}
+-%>

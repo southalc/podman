@@ -15,7 +15,9 @@ define podman::rootless {
   ensure_resource('File', [
       "${User[$name]['home']}/.config",
       "${User[$name]['home']}/.config/systemd",
-      "${User[$name]['home']}/.config/systemd/user"
+      "${User[$name]['home']}/.config/systemd/user",
+      "${User[$name]['home']}/.config/containers",
+      "${User[$name]['home']}/.config/containers/systemd",
     ], {
       ensure  => directory,
       owner   => $name,
@@ -34,6 +36,16 @@ define podman::rootless {
       Service['podman systemd-logind'],
       File["${User[$name]['home']}/.config/systemd/user"],
     ],
+  }
+
+  # Use https://github.com/voxpupuli/puppet-systemd/pull/443 once available
+  exec { "daemon-reload-${name}":
+    command     => [
+      'systemd-run', '--pipe' , '--wait', '--user', '--machine',"${name}@.host",
+      '/usr/bin/systemctl', '--user', 'daemon-reload',
+    ],
+    refreshonly => true,
+    path        => $facts['path'],
   }
 
   if $podman::enable_api_socket {
