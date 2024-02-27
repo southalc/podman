@@ -3,6 +3,7 @@
 ---
 fixtures:
   forge_modules:
+    systemd: "puppet/systemd"
     stdlib: "puppetlabs/stdlib"
     concat: "puppetlabs/concat"
     selinux_core: "puppetlabs/selinux_core"
