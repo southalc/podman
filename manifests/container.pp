@@ -86,7 +86,7 @@ define podman::container (
 
   # Add a label of base64 encoded flags defined for the container resource
   # This will be used to determine when the resource state is changed
-  $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %>'), strict)
+  $flags_base64 = base64('encode', inline_template('<%= @flags.to_s %><%= @service_flags.to_s %><%= @command %>'), strict)
 
   # Add the default name and a custom label using the base64 encoded flags
   if 'label' in  $flags {
