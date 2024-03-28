@@ -31,7 +31,7 @@
 
 ### Data types
 
-* [`Podman::Quadret::Container`](#Podman--Quadret--Container): custom datatype for container entries of podman container quadlet
+* [`Podman::Quadlet::Container`](#Podman--Quadlet--Container): custom datatype for container entries of podman container quadlet
 
 ## Classes
 
@@ -630,7 +630,7 @@ Default value: `undef`
 
 ##### <a name="-podman--manage_container--container_entry"></a>`container_entry`
 
-Data type: `Optional[Podman::Quadret::Container]`
+Data type: `Optional[Podman::Quadlet::Container]`
 
 The `[Container]` section defintion.
 
@@ -1054,7 +1054,7 @@ Default value: `undef`
 
 ## Data types
 
-### <a name="Podman--Quadret--Container"></a>`Podman::Quadret::Container`
+### <a name="Podman--Quadlet--Container"></a>`Podman::Quadlet::Container`
 
 custom datatype for container entries of podman container quadlet
 

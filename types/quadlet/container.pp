@@ -1,6 +1,6 @@
 # @summary custom datatype for container entries of podman container quadlet
 # @see https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html
-type Podman::Quadret::Container = Struct[
+type Podman::Quadlet::Container = Struct[
   Optional['AddCapability'] => Array[String[1],1],
   Optional['Annotation'] => Array[String[1],1],
   Optional['AutoUpdate']  => Enum['registry','local'],

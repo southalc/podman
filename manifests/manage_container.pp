@@ -44,7 +44,7 @@ define podman::manage_container (
   Optional[Systemd::Unit::Install] $install_entry = undef,
   Optional[Systemd::Unit::Unit] $unit_entry = undef,
   Optional[Systemd::Unit::Service] $service_entry = undef,
-  Optional[Podman::Quadret::Container] $container_entry = undef,
+  Optional[Podman::Quadlet::Container] $container_entry = undef,
 ) {
   assert_type(Pattern[/[a-zA-Z\-_+]+\.container/], $name)
 
@@ -69,7 +69,6 @@ define podman::manage_container (
   }
 
   if $active != undef {
-
     $_service = regsubst($name,'(.+)\\.container','\\1.service')
 
     service { $_service:
