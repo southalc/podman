@@ -137,9 +137,9 @@ class podman (
   # Create resources from parameter hashes
   $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
+  $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
-  $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
 
   $rootless_users.each |$user| {
     unless defined(Podman::Rootless[$user]) {
