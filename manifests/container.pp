@@ -48,7 +48,7 @@
 # @param ruby
 #   The absolute path to the ruby binary to use in scripts. The default path is
 #   '/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
-#   '/usr/bin/ruby' for all others. 
+#   '/usr/bin/ruby' for all others.
 #
 # @example
 #   podman::container { 'jenkins':
@@ -248,8 +248,8 @@ define podman::container (
         | END
 
       $onlyif_prc = @("END"/L)
-        test $(podmain container inspect --format json ${container_name} |\
-        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+        test $(podman container inspect --format json ${container_name} |\
+        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =
         | END
 
       # Try to stop the container service, then the container directly
