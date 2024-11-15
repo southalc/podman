@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.7.0
+  - Added the quadlet defined type
+  - Use puppet-systemd to manage rootless users
+
 ## Release 0.6.7
   - Bugfix. Avoid deprecated has_key function #64. Contributed by traylenator
   - Support for Puppet 8.x & puppetlabs/stdlib 9.x #66

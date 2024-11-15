@@ -95,7 +95,7 @@ describe 'podman::network' do
             'command'     => 'podman network rm testing-title',
             'onlyif'      => 'podman network exists testing-title',
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
-            'require'     => ['Podman::Rootless[dummy]', 'Service[podman systemd-logind]'],
+            'require'     => ['Podman::Rootless[dummy]'],
             'user'        => 'dummy',
             'environment' => ['HOME=/home/dummy', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'cwd'         => '/home/dummy',
@@ -104,12 +104,12 @@ describe 'podman::network' do
       end
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_exec('loginctl_linger_dummy') }            # from podman::rootless
+      it { is_expected.to contain_podman__rootless('dummy') }                # from podman::rootless
+      it { is_expected.to contain_loginctl_user('dummy') }                   # from podman::rootless
       it { is_expected.to contain_exec('start_dummy.slice') }                # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config') }              # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config/systemd') }      # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config/systemd/user') } # from podman::rootless
-      it { is_expected.to contain_service('podman systemd-logind') }         # from podman::rootless
     end
 
     context 'with driver set to valid macvlan' do
@@ -237,13 +237,14 @@ describe 'podman::network' do
             'user'        => 'testing',
             'environment' => ['HOME=/home/testing', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'cwd'         => '/home/testing',
-            'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
+            'require'     => ['Podman::Rootless[testing]'],
           },
         )
       end
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_exec('loginctl_linger_testing') }            # from podman::rootless
+      it { is_expected.to contain_podman__rootless('testing') }
+      it { is_expected.to contain_loginctl_user('testing') }                   # from podman::rootless
       it { is_expected.to contain_exec('start_testing.slice') }                # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config') }              # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config/systemd') }      # from podman::rootless

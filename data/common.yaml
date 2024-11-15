@@ -10,6 +10,16 @@ lookup_options:
     merge: deep
   podman::volumes:
     merge: deep
+  podman::quadlets:
+    merge: deep
   podman::rootless_users:
     merge: unique
+
+podman::quadlet::defaults:
+  Unit:
+    Description: "Puppet managed quadlet"
+  Service:
+    TimeoutStartSec: "180"
+  Install:
+    WantedBy: "multi-user.target default.target"
 

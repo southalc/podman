@@ -50,7 +50,7 @@ define podman::volume (
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
-      require     => [Podman::Rootless[$user], Service['podman systemd-logind']],
+      require     => [Podman::Rootless[$user]],
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",

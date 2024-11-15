@@ -108,7 +108,7 @@ define podman::network (
 
   # A rootless container network will be defined as the defined user
   if $user != undef and $user != '' {
-    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
+    $requires = [Podman::Rootless[$user]]
 
     # Set default execution environment for the rootless user
     $exec_defaults = {

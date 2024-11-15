@@ -178,17 +178,17 @@ describe 'podman' do
       it { is_expected.to contain_podman__rootless('ing').only_with({}) }
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_exec('loginctl_linger_test') }            # from podman::rootless
-      it { is_expected.to contain_exec('loginctl_linger_ing') }             # from podman::rootless
-      it { is_expected.to contain_exec('start_test.slice') }                # from podman::rootless
-      it { is_expected.to contain_exec('start_ing.slice') }                 # from podman::rootless
-      it { is_expected.to contain_file('/home/ing/.config/systemd/user') }  # from podman::rootless
-      it { is_expected.to contain_file('/home/ing/.config/systemd') }       # from podman::rootless
-      it { is_expected.to contain_file('/home/ing/.config') }               # from podman::rootless
-      it { is_expected.to contain_file('/home/test/.config/systemd/user') } # from podman::rootless
-      it { is_expected.to contain_file('/home/test/.config/systemd') }      # from podman::rootless
-      it { is_expected.to contain_file('/home/test/.config') }              # from podman::rootless
-      it { is_expected.to contain_service('podman systemd-logind') }        # from podman::rootless
+      it { is_expected.to contain_loginctl_user('test') }                       # from podman::rootless
+      it { is_expected.to contain_loginctl_user('ing') }                        # from podman::rootless
+      it { is_expected.to contain_exec('start_test.slice') }                    # from podman::rootless
+      it { is_expected.to contain_exec('start_ing.slice') }                     # from podman::rootless
+      it { is_expected.to contain_file('/home/ing/.config/systemd/user') }      # from podman::rootless
+      it { is_expected.to contain_file('/home/ing/.config/systemd') }           # from podman::rootless
+      it { is_expected.to contain_file('/home/ing/.config') }                   # from podman::rootless
+      it { is_expected.to contain_file('/home/test/.config/systemd/user') }     # from podman::rootless
+      it { is_expected.to contain_file('/home/test/.config/systemd') }          # from podman::rootless
+      it { is_expected.to contain_file('/home/test/.config') }                  # from podman::rootless
+      it { is_expected.to contain_file('/etc/containers/systemd/users/4444') }  # from podman::rootless
     end
 
     context 'with enable_api_socket set to valid true' do
@@ -235,19 +235,18 @@ describe 'podman' do
             'user'        => 'dummy',
             'environment' => ['HOME=/home/dummy', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'unless'      => 'systemctl --user status podman.socket',
-            'require'     => ['Exec[loginctl_linger_dummy]', 'Exec[start_dummy.slice]'],
+            'require'     => ['Loginctl_user[dummy]', 'Exec[start_dummy.slice]'],
           },
         )
       end
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_exec('loginctl_linger_dummy') }            # from podman::rootless
+      it { is_expected.to contain_podman__rootless('dummy') }                # from podman::rootless
+      it { is_expected.to contain_loginctl_user('dummy') }                   # from podman::rootless
       it { is_expected.to contain_exec('start_dummy.slice') }                # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config/systemd/user') } # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config/systemd') }      # from podman::rootless
       it { is_expected.to contain_file('/home/dummy/.config') }              # from podman::rootless
-      it { is_expected.to contain_service('podman systemd-logind') }         # from podman::rootless
-      it { is_expected.to contain_podman__rootless('dummy') }                # from podman::rootless
     end
 
     context 'with manage_subuid set to valid true' do

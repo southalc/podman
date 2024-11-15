@@ -100,10 +100,7 @@ define podman::secret (
       cwd         => User[$user]['home'],
       provider    => 'shell',
       user        => $user,
-      require     => [
-        Podman::Rootless[$user],
-        Service['podman systemd-logind'],
-      ],
+      require     => Podman::Rootless[$user],
     }
   } else {
     $exec_defaults = {

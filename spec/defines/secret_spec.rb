@@ -56,7 +56,12 @@ describe 'podman::secret' do
         end
 
         it { is_expected.to compile }
+        it { is_expected.to contain_podman__subuid('testuser') }
+        it { is_expected.to contain_podman__subgid('testuser') }
+        it { is_expected.to contain_concat__fragment('subuid_fragment_testuser') }
+        it { is_expected.to contain_concat__fragment('subgid_fragment_testuser') }
         it { is_expected.to contain_exec('create_secret_root_password') }
+
         it {
           is_expected.to contain_exec('create_secret_root_password')
             .with_command(sensitive("printf 'tiptop' | podman secret create --label 'puppet_resource_flags=e30=' root_password -\n"))

@@ -78,6 +78,9 @@
 # @param networks
 #   A hash of networks to manage using [`podman::network`](#podmannetwork)
 #
+# @param quadlets
+#   A hash of quadlets to manage using [`podman::quadlet`](#podmanquadlet)
+#
 # @example Basic usage
 #   include podman
 #
@@ -129,6 +132,7 @@ class podman (
   Hash                        $images                   = {},
   Hash                        $containers               = {},
   Hash                        $networks                 = {},
+  Hash                        $quadlets                 = {},
 ) {
   include podman::install
   include podman::options
@@ -140,6 +144,7 @@ class podman (
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
   $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
+  $quadlets.each |$name, $properties| { Resource['Podman::Quadlet'] { $name: * => $properties, } }
 
   $rootless_users.each |$user| {
     unless defined(Podman::Rootless[$user]) {

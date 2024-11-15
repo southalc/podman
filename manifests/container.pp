@@ -104,7 +104,7 @@ define podman::container (
   # A rootless container will run as the defined user
   if $user != undef and $user != '' {
     $systemctl = 'systemctl --user '
-    $requires = [Podman::Rootless[$user], Service['podman systemd-logind']]
+    $requires = [Podman::Rootless[$user]]
     $service_unit_file = "${User[$user]['home']}/.config/systemd/user/podman-${container_name}.service"
     $_podman_systemd_reload = Exec["podman_systemd_${user}_reload"]
 

@@ -6,4 +6,5 @@ fixtures:
     stdlib: "puppetlabs/stdlib"
     concat: "puppetlabs/concat"
     selinux_core: "puppetlabs/selinux_core"
-    iniifile: "puppetlabs/inifile"
+    systemd: "puppet/systemd"
+    hashfile: "southalc/hashfile"

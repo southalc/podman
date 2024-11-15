@@ -22,25 +22,16 @@ describe 'podman::rootless' do
       it { is_expected.to compile }
 
       it do
-        is_expected.to contain_exec('loginctl_linger_testing-title').only_with(
+        is_expected.to contain_loginctl_user('testing-title').only_with(
           {
-            'path'     => '/sbin:/usr/sbin:/bin:/usr/bin',
-            'command'  => 'loginctl enable-linger testing-title',
-            'provider' => 'shell',
-            'unless'   => "test $(loginctl show-user testing-title --property=Linger) = 'Linger=yes'",
-            'require'  => 'User[testing-title]',
-            'notify'   => 'Service[podman systemd-logind]',
+            'linger' => 'enabled',
           },
         )
       end
 
       it do
-        is_expected.to contain_service('podman systemd-logind').only_with(
-          {
-            'name'   => 'systemd-logind.service',
-            'ensure' => 'running',
-          },
-        )
+        is_expected.to contain_file('/etc/containers/systemd/users').only_with({ 'ensure' => 'directory', })
+        is_expected.to contain_file('/etc/containers/systemd/users/3333').only_with({ 'ensure' => 'directory', })
       end
 
       it do
@@ -85,7 +76,7 @@ describe 'podman::rootless' do
             'path'    => os_facts[:path],
             'command' => "machinectl shell testing-title@.host '/bin/true'",
             'unless'  => 'systemctl is-active user-3333.slice',
-            'require' => ['Exec[loginctl_linger_testing-title]', 'Service[podman systemd-logind]', 'File[/home/testing-title/.config/systemd/user]'],
+            'require' => ['Loginctl_user[testing-title]', 'File[/home/testing-title/.config/systemd/user]'],
           },
         )
       end
@@ -151,7 +142,7 @@ describe 'podman::rootless' do
             'user'        => 'testing-title',
             'environment' => ['HOME=/home/testing-title', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'unless'      => 'systemctl --user status podman.socket',
-            'require'     => ['Exec[loginctl_linger_testing-title]', 'Exec[start_testing-title.slice]'],
+            'require'     => ['Loginctl_user[testing-title]', 'Exec[start_testing-title.slice]'],
           },
         )
       end

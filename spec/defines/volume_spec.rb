@@ -111,18 +111,18 @@ describe 'podman::volume' do
             'cwd'         => '/home/testing',
             'provider'    => 'shell',
             'user'        => 'testing',
-            'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
+            'require'     => ['Podman::Rootless[testing]'],
           },
         )
       end
 
       # only here to reach 100% resource coverage
-      it { is_expected.to contain_exec('loginctl_linger_testing') }            # from podman::rootless
+      it { is_expected.to contain_podman__rootless('testing') }
+      it { is_expected.to contain_loginctl_user('testing') }                   # from podman::rootless
       it { is_expected.to contain_exec('start_testing.slice') }                # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config') }              # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config/systemd') }      # from podman::rootless
       it { is_expected.to contain_file('/home/testing/.config/systemd/user') } # from podman::rootless
-      it { is_expected.to contain_service('podman systemd-logind') }           # from podman::rootless
     end
 
     context 'with user set to valid testing when ensure is set to valid absent' do
@@ -152,7 +152,7 @@ describe 'podman::volume' do
             'cwd'         => '/home/testing',
             'provider'    => 'shell',
             'user'        => 'testing',
-            'require'     => ['Podman::Rootless[testing]', 'Service[podman systemd-logind]'],
+            'require'     => ['Podman::Rootless[testing]'],
           },
         )
       end
