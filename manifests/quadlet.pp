@@ -54,73 +54,81 @@ define podman::quadlet (
   Hash $defaults                    = {}, # Values in module hiera
   Hash $settings                    = {},
 ) {
-  require podman::install
+  $podman_version = fact('podman.version')
 
-  $service_suffix = $quadlet_type ? {
-    'volume'  => '-volume',
-    'network' => '-network',
-    'pod'     => '-pod',
-    default   => '',
-  }
-  $service = "${name}${service_suffix}"
+  if $podman_version and versioncmp($podman_version, '4.4', true) >= 0 {
+    require podman::install
 
-  # A rootless container will run as the defined user
-  if $user == 'root' {
-    $quadlet_file = "/etc/containers/systemd/${title}.${quadlet_type}"
-    ensure_resource('Systemd::Daemon_reload', 'podman', {})
-    $notify_systemd = Systemd::Daemon_reload['podman']
-    $requires = []
-  } else {
-    $quadlet_file = "/etc/containers/systemd/users/${User[$user]['uid']}/${title}.${quadlet_type}"
-    ensure_resource('podman::rootless', $user, {})
-    $requires = [Podman::Rootless[$user]]
-    ensure_resource('Systemd::Daemon_reload', "podman_rootless_${user}", { user => $user })
-    $notify_systemd = Systemd::Daemon_reload["podman_rootless_${user}"]
-  }
+    $service_suffix = $quadlet_type ? {
+      'volume'  => '-volume',
+      'network' => '-network',
+      'pod'     => '-pod',
+      default   => '',
+    }
+    $service = "${name}${service_suffix}"
 
-  $hash2ini_options = {
-    key_val_separator => ' = ',
-    use_quotes        => false,
-  }
+    # A rootless container will run as the defined user
+    if $user == 'root' {
+      $quadlet_file = "/etc/containers/systemd/${title}.${quadlet_type}"
+      ensure_resource('Systemd::Daemon_reload', 'podman', {})
+      $notify_systemd = Systemd::Daemon_reload['podman']
+      $requires = []
+    } else {
+      $quadlet_file = "/etc/containers/systemd/users/${User[$user]['uid']}/${title}.${quadlet_type}"
+      ensure_resource('podman::rootless', $user, {})
+      $requires = [Podman::Rootless[$user]]
+      ensure_resource('Systemd::Daemon_reload', "podman_rootless_${user}", { user => $user })
+      $notify_systemd = Systemd::Daemon_reload["podman_rootless_${user}"]
+    }
 
-  file { $quadlet_file:
-    ensure  => $ensure,
-    content => hash2ini(merge($defaults, $settings), $hash2ini_options),
-    notify  => $notify_systemd,
-    require => $requires,
-  }
+    $hash2ini_options = {
+      key_val_separator => ' = ',
+      use_quotes        => false,
+    }
 
-  if $user == 'root' {
-    if $ensure == 'absent' {
-      service { $service:
-        ensure => stopped,
-        notify => File[$quadlet_file],
+    file { $quadlet_file:
+      ensure  => $ensure,
+      content => hash2ini(merge($defaults, $settings), $hash2ini_options),
+      notify  => $notify_systemd,
+      require => $requires,
+    }
+
+    if $user == 'root' {
+      if $ensure == 'absent' {
+        service { $service:
+          ensure => stopped,
+          notify => File[$quadlet_file],
+        }
+      } else {
+        service { $service:
+          ensure    => running,
+          require   => $notify_systemd,
+          subscribe => File[$quadlet_file],
+        }
       }
     } else {
-      service { $service:
-        ensure    => running,
-        require   => $notify_systemd,
-        subscribe => File[$quadlet_file],
+      if $ensure == 'absent' {
+        systemd::user_service { $service:
+          ensure => false,
+          enable => false,
+          user   => $user,
+          unit   => "${service}.service",
+          notify => File[$quadlet_file],
+        }
+      } else {
+        systemd::user_service { $service:
+          ensure    => true,
+          enable    => true,
+          user      => $user,
+          unit      => "${service}.service",
+          require   => $notify_systemd,
+          subscribe => File[$quadlet_file],
+        }
       }
     }
   } else {
-    if $ensure == 'absent' {
-      systemd::user_service { $service:
-        ensure => false,
-        enable => false,
-        user   => $user,
-        unit   => "${service}.service",
-        notify => File[$quadlet_file],
-      }
-    } else {
-      systemd::user_service { $service:
-        ensure    => true,
-        enable    => true,
-        user      => $user,
-        unit      => "${service}.service",
-        require   => $notify_systemd,
-        subscribe => File[$quadlet_file],
-      }
+    notify { "quadlet_${title}":
+      message => "This version of podman (${podman_version}) does not support quadlets.",
     }
   }
 }
