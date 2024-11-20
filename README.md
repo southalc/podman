@@ -112,6 +112,13 @@ podman::storage_options:
     rootless_storage_path: '"/tmp/containers-user-$UID/storage"'
 ```
 
+
+```yaml
+podman::containers_options:
+  engine:
+    cgroup_manager: '"cgroupfs"'
+```
+
 **Note the use of double quotes inside single quotes above.** This is due to the way the [puppetlabs/inifile](https://github.com/puppetlabs/puppetlabs-inifile/) module works currently.
 
 ## Examples
