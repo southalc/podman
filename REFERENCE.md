@@ -86,6 +86,7 @@ The following parameters are available in the `podman` class:
 * [`machinectl_pkg_ensure`](#-podman--machinectl_pkg_ensure)
 * [`nodocker`](#-podman--nodocker)
 * [`storage_options`](#-podman--storage_options)
+* [`containers_options`](#-podman--containers_options)
 * [`rootless_users`](#-podman--rootless_users)
 * [`enable_api_socket`](#-podman--enable_api_socket)
 * [`manage_subuid`](#-podman--manage_subuid)
@@ -193,6 +194,14 @@ Default value: `'absent'`
 Data type: `Hash`
 
 A hash containing any storage options you wish to set in /etc/containers/storage.conf
+
+Default value: `{}`
+
+##### <a name="-podman--containers_options"></a>`containers_options`
+
+Data type: `Hash`
+
+A hash containing any containers options you wish to set in /etc/containers/containers.conf
 
 Default value: `{}`
 

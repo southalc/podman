@@ -37,6 +37,9 @@
 # @param storage_options
 #   A hash containing any storage options you wish to set in /etc/containers/storage.conf
 #
+# @param containers_options
+#   A hash containing any containers options you wish to set in /etc/containers/containers.conf
+#
 # @param rootless_users
 #   An array of users to manage using [`podman::rootless`](#podmanrootless)
 #
@@ -121,6 +124,7 @@ class podman (
   Enum['absent', 'installed'] $machinectl_pkg_ensure    = 'installed',
   Enum['absent', 'file']      $nodocker                 = 'absent',
   Hash                        $storage_options          = {},
+  Hash                        $containers_options       = {},
   Array                       $rootless_users           = [],
   Boolean                     $enable_api_socket        = false,
   Boolean                     $manage_subuid            = false,
