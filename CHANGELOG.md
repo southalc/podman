@@ -2,6 +2,7 @@
 
 ## Release 0.7.2
   - Bugfix. Typos issue 87 as reported by pheeef
+  - Create podman networks before containers. Issues 78 and 85. Contributed by jonesbrennan
 
 ## Release 0.7.1
   - Include inifiles in module fixtures as required by unit tests 

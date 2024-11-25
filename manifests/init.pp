@@ -143,11 +143,11 @@ class podman (
   include podman::service
 
   # Create resources from parameter hashes
-  $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
+  $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
   $volumes.each |$name, $properties| { Resource['Podman::Volume'] { $name: * => $properties, } }
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
+  $pods.each |$name, $properties| { Resource['Podman::Pod'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
-  $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
   $quadlets.each |$name, $properties| {
     Resource['Podman::Quadlet'] { $name:
       * => merge({ defaults => lookup(podman::quadlet::defaults) }, $properties),
