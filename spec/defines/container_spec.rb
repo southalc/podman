@@ -105,11 +105,11 @@ describe 'podman::container' do
 
       remove_onlyif = if %r{^\/opt\/puppetlabs\/}.match?(os_facts[:ruby]['sitedir'])
                         <<-END.gsub(%r{^\s+\|}, '')
-          |test $(podmain container inspect --format json namevar |/opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
+          |test $(podman container inspect --format json namevar |/opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
         END
                       else
                         <<-END.gsub(%r{^\s+\|}, '')
-          |test $(podmain container inspect --format json namevar |/usr/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
+          |test $(podman container inspect --format json namevar |/usr/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
         END
                       end
 
@@ -807,7 +807,7 @@ describe 'podman::container' do
       it { is_expected.to contain_exec('verify_container_image_namevar').with_unless(unless_ruby) }
 
       onlyif_ruby = <<-END.gsub(%r{^\s+\|}, '')
-        |test $(podmain container inspect --format json namevar |/test/ing -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
+        |test $(podman container inspect --format json namevar |/test/ing -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
       END
 
       it { is_expected.to contain_exec('podman_remove_container_namevar').with_onlyif(onlyif_ruby) }
@@ -832,7 +832,7 @@ describe 'podman::container' do
       it { is_expected.to contain_exec('verify_container_image_namevar').with_unless(unless_ruby) }
 
       onlyif_ruby = <<-END.gsub(%r{^\s+\|}, '')
-        |test $(podmain container inspect --format json namevar |/test/ing -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
+        |test $(podman container inspect --format json namevar |/test/ing -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') =#{' '}
       END
 
       it { is_expected.to contain_exec('podman_remove_container_namevar').with_onlyif(onlyif_ruby) }

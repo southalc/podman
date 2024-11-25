@@ -248,7 +248,7 @@ define podman::container (
         | END
 
       $onlyif_prc = @("END"/L)
-        test $(podmain container inspect --format json ${container_name} |\
+        test $(podman container inspect --format json ${container_name} |\
         ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
         | END
 
