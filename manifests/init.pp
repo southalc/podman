@@ -148,7 +148,11 @@ class podman (
   $images.each |$name, $properties| { Resource['Podman::Image'] { $name: * => $properties, } }
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
   $networks.each |$name, $properties| { Resource['Podman::Network'] { $name: * => $properties, } }
-  $quadlets.each |$name, $properties| { Resource['Podman::Quadlet'] { $name: * => $properties, } }
+  $quadlets.each |$name, $properties| {
+    Resource['Podman::Quadlet'] { $name:
+      * => merge({ defaults => lookup(podman::quadlet::defaults) }, $properties),
+    }
+  }
 
   $rootless_users.each |$user| {
     unless defined(Podman::Rootless[$user]) {

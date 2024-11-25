@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.7.1
+  - Include inifiles in module fixtures as required by unit tests 
+  - Explicit lookup for defaults when calling the quadlet defined type from the main class
+
 ## Release 0.7.0
   - Added the quadlet defined type
   - Use puppet-systemd to manage rootless users
