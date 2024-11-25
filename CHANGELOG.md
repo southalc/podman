@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.2
+  - Bugfix. Typos issue 87 as reported by pheeef
+
 ## Release 0.7.1
   - Include inifiles in module fixtures as required by unit tests 
   - Explicit lookup for defaults when calling the quadlet defined type from the main class
