@@ -3,6 +3,7 @@
 ## Release 0.7.1
   - Include inifiles in module fixtures as required by unit tests 
   - Explicit lookup for defaults when calling the quadlet defined type from the main class
+  - Add management of /etc/containers/containers.conf #89.  Contributed by fasrc
 
 ## Release 0.7.0
   - Added the quadlet defined type

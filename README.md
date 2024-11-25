@@ -103,13 +103,20 @@ systemctl --user status podman-<container_name>
 ### containerd configuration
 
 This module also contains minimal support for editing the `containerd` configuration files that control some of the lower level
-settings for how containers are created. Currently, the only supported configuration file is `/etc/containers/storage.conf`. You
-should be able to set any of the settings with that file using the `$podman::storage_options` parameter. For example (if using Hiera):
+settings for how containers are created. Currently, the only supported configuration files are `/etc/containers/storage.conf` and `/etc/containers/containers.conf`. You
+should be able to set any of the settings with those files using the `$podman::storage_options` and `$podman::containers_options` parameters respectively. For example (if using Hiera):
 
 ```yaml
 podman::storage_options:
   storage:
     rootless_storage_path: '"/tmp/containers-user-$UID/storage"'
+```
+
+
+```yaml
+podman::containers_options:
+  engine:
+    cgroup_manager: '"cgroupfs"'
 ```
 
 **Note the use of double quotes inside single quotes above.** This is due to the way the [puppetlabs/inifile](https://github.com/puppetlabs/puppetlabs-inifile/) module works currently.

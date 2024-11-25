@@ -153,6 +153,46 @@ describe 'podman' do
       end
     end
 
+    context 'with containers_options set to valid hash' do
+      let(:params) { { containers_options: { testing1: { option1: 'value1', option2: 'value2' }, testing2: { option3: 'value3' } } } }
+
+      it do
+        is_expected.to contain_ini_setting('/etc/containers/containers.conf [testing1] option1').only_with(
+          {
+            'section'  => 'testing1',
+            'setting'  => 'option1',
+            'value'    => 'value1',
+            'ensure'   => 'present',
+            'path'     => '/etc/containers/containers.conf',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_ini_setting('/etc/containers/containers.conf [testing1] option2').only_with(
+          {
+            'section'  => 'testing1',
+            'setting'  => 'option2',
+            'value'    => 'value2',
+            'ensure'   => 'present',
+            'path'     => '/etc/containers/containers.conf',
+          },
+        )
+      end
+
+      it do
+        is_expected.to contain_ini_setting('/etc/containers/containers.conf [testing2] option3').only_with(
+          {
+            'section'  => 'testing2',
+            'setting'  => 'option3',
+            'value'    => 'value3',
+            'ensure'   => 'present',
+            'path'     => '/etc/containers/containers.conf',
+          },
+        )
+      end
+    end
+
     context 'with rootless_users set to valid [test, ing]' do
       let(:params) { { rootless_users: ['test', 'ing'] } }
       let(:pre_condition) do
