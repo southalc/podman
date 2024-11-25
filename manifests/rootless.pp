@@ -21,6 +21,7 @@ define podman::rootless {
   # Create the user directory for rootless quadlet files
   ensure_resource(
     'File', [
+      '/etc/containers/systemd',
       '/etc/containers/systemd/users',
       "/etc/containers/systemd/users/${User[$name]['uid']}"
     ],
