@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.3
+  - Allow version setting on podman and podman-compose packages #77.  Contributed by broadinstitute
+
 ## Release 0.7.2
   - Bugfix. Typos issue 87 as reported by pheeef
   - Create podman networks before containers. Issues 78 and 85. Contributed by jonesbrennan
