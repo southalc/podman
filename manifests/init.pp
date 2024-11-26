@@ -18,6 +18,9 @@
 # @param machinectl_pkg
 #   The name of the machinectl package (default 'systemd-container').
 #
+# @param podman_pkg_ensure
+#   The ensure value for the podman package (default 'installed')
+#
 # @param buildah_pkg_ensure
 #   The ensure value for the buildah package (default 'absent')
 #
@@ -112,31 +115,32 @@
 #         - Podman::Volume[jenkins]
 #
 class podman (
-  String                      $podman_pkg               = 'podman',
-  String                      $skopeo_pkg               = 'skopeo',
-  String                      $buildah_pkg              = 'buildah',
-  String                      $podman_docker_pkg        = 'podman-docker',
-  String                      $compose_pkg              = 'podman-compose',
-  String                      $machinectl_pkg           = 'systemd-container',
-  Enum['absent', 'installed'] $buildah_pkg_ensure       = 'absent',
-  Enum['absent', 'installed'] $podman_docker_pkg_ensure = 'installed',
-  Enum['absent', 'installed'] $compose_pkg_ensure       = 'absent',
-  Enum['absent', 'installed'] $machinectl_pkg_ensure    = 'installed',
-  Enum['absent', 'file']      $nodocker                 = 'absent',
-  Hash                        $storage_options          = {},
-  Hash                        $containers_options       = {},
-  Array                       $rootless_users           = [],
-  Boolean                     $enable_api_socket        = false,
-  Boolean                     $manage_subuid            = false,
-  Boolean                     $match_subuid_subgid      = true,
-  String                      $file_header              = '# FILE MANAGED BY PUPPET',
-  Hash                        $subid                    = {},
-  Hash                        $pods                     = {},
-  Hash                        $volumes                  = {},
-  Hash                        $images                   = {},
-  Hash                        $containers               = {},
-  Hash                        $networks                 = {},
-  Hash                        $quadlets                 = {},
+  String                                            $podman_pkg               = 'podman',
+  String                                            $skopeo_pkg               = 'skopeo',
+  String                                            $buildah_pkg              = 'buildah',
+  String                                            $podman_docker_pkg        = 'podman-docker',
+  String                                            $compose_pkg              = 'podman-compose',
+  String                                            $machinectl_pkg           = 'systemd-container',
+  Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/] $podman_pkg_ensure        = 'installed',
+  Enum['absent', 'installed']                       $buildah_pkg_ensure       = 'absent',
+  Enum['absent', 'installed']                       $podman_docker_pkg_ensure = 'installed',
+  Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/] $compose_pkg_ensure       = 'absent',
+  Enum['absent', 'installed']                       $machinectl_pkg_ensure    = 'installed',
+  Enum['absent', 'file']                            $nodocker                 = 'absent',
+  Hash                                              $storage_options          = {},
+  Hash                                              $containers_options       = {},
+  Array                                             $rootless_users           = [],
+  Boolean                                           $enable_api_socket        = false,
+  Boolean                                           $manage_subuid            = false,
+  Boolean                                           $match_subuid_subgid      = true,
+  String                                            $file_header              = '# FILE MANAGED BY PUPPET',
+  Hash                                              $subid                    = {},
+  Hash                                              $pods                     = {},
+  Hash                                              $volumes                  = {},
+  Hash                                              $images                   = {},
+  Hash                                              $containers               = {},
+  Hash                                              $networks                 = {},
+  Hash                                              $quadlets                 = {},
 ) {
   include podman::install
   include podman::options
