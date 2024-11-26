@@ -30,6 +30,7 @@ describe 'podman::rootless' do
       end
 
       it do
+        is_expected.to contain_file('/etc/containers/systemd').only_with({ 'ensure' => 'directory', })
         is_expected.to contain_file('/etc/containers/systemd/users').only_with({ 'ensure' => 'directory', })
         is_expected.to contain_file('/etc/containers/systemd/users/3333').only_with({ 'ensure' => 'directory', })
       end
