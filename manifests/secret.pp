@@ -71,7 +71,7 @@ define podman::secret (
   }
 
   # If a secret name is not set, use the Puppet resource name
-  $merged_flags = merge({ label => $label }, $no_label )
+  $merged_flags = stdlib::merge({ label => $label }, $no_label )
 
   # Convert $flags hash to command arguments
   $_flags = $merged_flags.reduce('') |$mem, $flag| {

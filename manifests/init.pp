@@ -154,7 +154,7 @@ class podman (
   $containers.each |$name, $properties| { Resource['Podman::Container'] { $name: * => $properties, } }
   $quadlets.each |$name, $properties| {
     Resource['Podman::Quadlet'] { $name:
-      * => merge({ defaults => lookup(podman::quadlet::defaults) }, $properties),
+      * => stdlib::merge({ defaults => lookup(podman::quadlet::defaults) }, $properties),
     }
   }
 

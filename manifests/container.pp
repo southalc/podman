@@ -98,7 +98,7 @@ define podman::container (
   }
 
   # If a container name is not set, use the Puppet resource name
-  $merged_flags = merge({ name => $title, label => $label }, $no_label )
+  $merged_flags = stdlib::merge({ name => $title, label => $label }, $no_label )
   $container_name = $merged_flags['name']
 
   # A rootless container will run as the defined user

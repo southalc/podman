@@ -29,7 +29,7 @@ define podman::pod (
 
   # The resource name will be the pod name by default
   $pod_name = $title
-  $name_flags = merge({ name => $title }, $flags )
+  $name_flags = stdlib::merge({ name => $title }, $flags )
 
   # Convert $flags hash to command arguments
   $_flags = $name_flags.reduce('') |$mem, $flag| {

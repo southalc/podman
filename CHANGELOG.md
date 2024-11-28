@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.4
+  - Bugfix. Replace deprecated merge() calls with stdlib::merge() - #68.  Reported by ZaxLofful
+
 ## Release 0.7.3
   - Allow version setting on podman and podman-compose packages #77.  Contributed by broadinstitute
 

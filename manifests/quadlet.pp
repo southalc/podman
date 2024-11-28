@@ -88,7 +88,7 @@ define podman::quadlet (
 
     file { $quadlet_file:
       ensure  => $ensure,
-      content => hash2ini(merge($defaults, $settings), $hash2ini_options),
+      content => hash2ini(stdlib::merge($defaults, $settings), $hash2ini_options),
       notify  => $notify_systemd,
       require => $requires,
     }
