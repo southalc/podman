@@ -715,12 +715,14 @@ podman::quadlet { 'jenkins':
     },
     Container => {
       Image       => 'docker.io/jenkins/jenkins:latest',
-      PublishPort => '8080:8080',
-      PublishPort => '50000:50000',
+      PublishPort => [
+        '5000:5000',
+        '8080:8080',
+      ],
       Volume      => 'jenkins:/var/jenkins_home',
     },
     Service => {
-      TimeoutStartSec => '180',
+      TimeoutStartSec => '300',
     },
   },
 }
@@ -791,6 +793,7 @@ Data type: `Hash`
 
 A hash of values that's merged with settings to simplify module
 usage.  This allows running a container with nothing but an image defined.
+See the "data/common.yaml" file for default values.
 
 Default value: `{}`
 
