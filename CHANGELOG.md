@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.5
+- Bugfix. Resolve image name to ID before fetching digest to resolve false drift #92. Contributed by optiz0r
+
 ## Release 0.7.4
   - Bugfix. Replace deprecated merge() calls with stdlib::merge() - #68.  Reported by ZaxLofful
 
