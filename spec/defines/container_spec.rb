@@ -50,7 +50,7 @@ describe 'podman::container' do
           |if podman container exists namevar
           |  then
           |  image_name=$(podman container inspect namevar --format '{{.ImageName}}')
-          |  running_digest=$(podman image inspect ${image_name} --format '{{.Digest}}')
+          |  running_digest=$(podman image inspect $(podman image inspect ${image_name} --format='{{.ID}}') --format '{{.Digest}}')
           |  latest_digest=$(skopeo inspect docker://registry:latest |     /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
           |  [[ $? -ne 0 ]] && latest_digest=$(skopeo inspect --no-creds docker://registry:latest |     /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
           |  test -z "${latest_digest}" && exit 0     # Do not update if unable to get latest digest
@@ -62,7 +62,7 @@ describe 'podman::container' do
           |if podman container exists namevar
           |  then
           |  image_name=$(podman container inspect namevar --format '{{.ImageName}}')
-          |  running_digest=$(podman image inspect ${image_name} --format '{{.Digest}}')
+          |  running_digest=$(podman image inspect $(podman image inspect ${image_name} --format='{{.ID}}') --format '{{.Digest}}')
           |  latest_digest=$(skopeo inspect docker://registry:latest |     /usr/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
           |  [[ $? -ne 0 ]] && latest_digest=$(skopeo inspect --no-creds docker://registry:latest |     /usr/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
           |  test -z "${latest_digest}" && exit 0     # Do not update if unable to get latest digest
@@ -203,7 +203,7 @@ describe 'podman::container' do
         |if podman container exists namevar
         |  then
         |  image_name=$(podman container inspect namevar --format '{{.ImageName}}')
-        |  running_digest=$(podman image inspect ${image_name} --format '{{.Digest}}')
+        |  running_digest=$(podman image inspect $(podman image inspect ${image_name} --format='{{.ID}}') --format '{{.Digest}}')
         |  latest_digest=$(skopeo inspect docker://testing:latest |     /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
         |  [[ $? -ne 0 ]] && latest_digest=$(skopeo inspect --no-creds docker://testing:latest |     /opt/puppetlabs/puppet/bin/ruby -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
         |  test -z "${latest_digest}" && exit 0     # Do not update if unable to get latest digest
@@ -796,7 +796,7 @@ describe 'podman::container' do
         |if podman container exists namevar
         |  then
         |  image_name=$(podman container inspect namevar --format '{{.ImageName}}')
-        |  running_digest=$(podman image inspect ${image_name} --format '{{.Digest}}')
+        |  running_digest=$(podman image inspect $(podman image inspect ${image_name} --format='{{.ID}}') --format '{{.Digest}}')
         |  latest_digest=$(skopeo inspect docker://mandatory:latest |     /test/ing -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
         |  [[ $? -ne 0 ]] && latest_digest=$(skopeo inspect --no-creds docker://mandatory:latest |     /test/ing -rjson -e 'puts (JSON.parse(STDIN.read))["Digest"]')
         |  test -z "${latest_digest}" && exit 0     # Do not update if unable to get latest digest
