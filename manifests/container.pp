@@ -249,7 +249,7 @@ define podman::container (
 
       $onlyif_prc = @("END"/L)
         test $(podman container inspect --format json ${container_name} |\
-        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = 
+        ${_ruby} -rjson -e 'puts (JSON.parse(STDIN.read))[0]["State"]["Running"]') = true
         | END
 
       # Try to stop the container service, then the container directly
