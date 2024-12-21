@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.6
+- Bugfix. fixing the onlyi_prc condition #94. Contributed by utkarsh079
+
 ## Release 0.7.5
 - Bugfix. Resolve image name to ID before fetching digest to resolve false drift #92. Contributed by optiz0r
 
