@@ -118,6 +118,7 @@ define podman::network (
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
+        "USER=$user",
       ],
     }
   } else {

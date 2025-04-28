@@ -119,6 +119,7 @@ define podman::container (
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$user]['uid']}/bus",
+        "USER=$user",
       ],
     }
 
@@ -130,7 +131,7 @@ define podman::container (
         path        => '/sbin:/usr/sbin:/bin:/usr/bin',
         command     => "${systemctl} daemon-reload",
         refreshonly => true,
-        environment => ["HOME=${User[$user]['home']}", "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}"],
+        environment => ["HOME=${User[$user]['home']}", "USER=$user",, "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}"],
         cwd         => User[$user]['home'],
         provider    => 'shell',
         user        => $user,

@@ -47,6 +47,7 @@ define podman::rootless {
         "HOME=${User[$name]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$name]['uid']}",
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${User[$name]['uid']}/bus",
+        "USER=$user",
       ],
       unless      => 'systemctl --user status podman.socket',
       require     => [

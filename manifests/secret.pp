@@ -96,6 +96,7 @@ define podman::secret (
       environment => [
         "HOME=${User[$user]['home']}",
         "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
+        "USER=$user",
       ],
       cwd         => User[$user]['home'],
       provider    => 'shell',
