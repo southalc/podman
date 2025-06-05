@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.7
+- Update module dependencies to support puppet/systemd version 8.x #100
+
 ## Release 0.7.6
 - Bugfix. fixing the onlyi_prc condition #94. Contributed by utkarsh079
 
