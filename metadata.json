@@ -1,6 +1,6 @@
 {
   "name": "southalc-podman",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "author": "Chris Southall",
   "summary": "Manage podman containers with puppet",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     },
     {
       "name": "puppet/systemd",
-      "version_requirement": ">= 7.0.0 <= 8.0.0"
+      "version_requirement": ">= 7.0.0 <= 9.0.0"
     },
     {
       "name": "southalc/hashfile",
