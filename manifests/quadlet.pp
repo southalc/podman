@@ -73,8 +73,8 @@ define podman::quadlet (
     # A rootless container will run as the defined user
     if $user == 'root' {
       $quadlet_file = "/etc/containers/systemd/${title}.${quadlet_type}"
-      ensure_resource('Systemd::Daemon_reload', 'podman', {})
-      $notify_systemd = Systemd::Daemon_reload['podman']
+      ensure_resource('Systemd::Daemon_reload', $title, {})
+      $notify_systemd = Systemd::Daemon_reload[$title]
       $requires = []
     } else {
       $quadlet_file = "/etc/containers/systemd/users/${User[$user]['uid']}/${title}.${quadlet_type}"
