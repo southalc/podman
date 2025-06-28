@@ -18,13 +18,13 @@ describe 'podman::quadlet' do
         is_expected.to contain_file('/etc/containers/systemd/container1.container').with(
           {
             'ensure' => 'present',
-            'notify' => 'Systemd::Daemon_reload[podman]',
+            'notify' => 'Systemd::Daemon_reload[container1]',
           },
         )
-        is_expected.to contain_systemd__daemon_reload('podman')
+        is_expected.to contain_systemd__daemon_reload('container1')
         is_expected.to contain_service('container1').only_with(
           'ensure' => 'running',
-          'require' => 'Systemd::Daemon_reload[podman]',
+          'require' => 'Systemd::Daemon_reload[container1]',
           'subscribe' => 'File[/etc/containers/systemd/container1.container]',
         )
       end
@@ -75,7 +75,7 @@ describe 'podman::quadlet' do
         is_expected.to contain_file('/etc/containers/systemd/container1.container').with(
           {
             'ensure' => 'absent',
-            'notify' => 'Systemd::Daemon_reload[podman]',
+            'notify' => 'Systemd::Daemon_reload[container1]',
           },
         )
       end

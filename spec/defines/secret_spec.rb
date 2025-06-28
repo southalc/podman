@@ -64,7 +64,7 @@ describe 'podman::secret' do
 
         it {
           is_expected.to contain_exec('create_secret_root_password')
-            .with_command(sensitive("printf 'tiptop' | podman secret create --label 'puppet_resource_flags=e30=' root_password -\n"))
+            .with_command(sensitive("podman secret create --label 'puppet_resource_flags=e30=' root_password - <<'EOF'\ntiptop\nEOF\n"))
             .with_unless("test \"\$(podman secret inspect root_password  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"e30=\"")
         }
       end
