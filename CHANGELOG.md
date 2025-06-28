@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.7.8
+- Bugfix. Use heredoc when creating a secret #102. Contributed by ehelms
+- Use the quadlet resource title with Systemd::Daemon_reload to allow ordering resources.  Contributed by ehelms
+
 ## Release 0.7.7
 - Update module dependencies to support puppet/systemd version 8.x #100
 
