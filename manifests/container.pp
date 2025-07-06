@@ -50,6 +50,12 @@
 #   '/opt/puppetlabs/puppet/bin/ruby' for Puppetlabs packaged puppet, and
 #   '/usr/bin/ruby' for all others. 
 #
+# @param create_timeout
+#   The timeout value for the container create command.
+#   This is used to override the default timeout of 300 seconds. 
+#   This is needed when deploying containers that take longer to create.
+#   The value can be set to 0 to disable the timeout.
+# 
 # @example
 #   podman::container { 'jenkins':
 #     image         => 'docker.io/jenkins/jenkins',
@@ -65,15 +71,16 @@
 #   }
 #
 define podman::container (
-  Optional[String]           $image         = undef,
-  Optional[String]           $user          = undef,
-  Hash                       $flags         = {},
-  Hash                       $service_flags = {},
-  Optional[String]           $command       = undef,
-  Enum['present', 'absent']  $ensure        = 'present',
-  Boolean                    $enable        = true,
-  Boolean                    $update        = true,
-  Optional[Stdlib::Unixpath] $ruby          = undef,
+  Optional[String]                $image          = undef,
+  Optional[String]                $user           = undef,
+  Hash                            $flags          = {},
+  Hash                            $service_flags  = {},
+  Optional[String]                $command        = undef,
+  Enum['present', 'absent']       $ensure         = 'present',
+  Boolean                         $enable         = true,
+  Boolean                         $update         = true,
+  Optional[Stdlib::Unixpath]      $ruby           = undef,
+  Variant[Undef, Integer, String] $create_timeout = undef,
 ) {
   require podman::install
 
@@ -302,6 +309,7 @@ define podman::container (
         notify  => Exec["podman_generate_service_${handle}"],
         require => $requires,
         path    => '/sbin:/usr/sbin:/bin:/usr/bin',
+        timeout => $create_timeout,
         *       => $exec_defaults,
       }
 
