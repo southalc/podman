@@ -23,6 +23,10 @@
 #   usage.  This allows running a container with nothing but an image defined.
 #   See the "data/common.yaml" file for default values.
 #
+# @param service_ensure
+#   The desired state of the systemd service. Valid values are 'running' or 'stopped'.
+#   Default is 'running'.
+#
 # @example
 #   podman::quadlet { 'jenkins':
 #     user     => 'jenkins',
@@ -44,6 +48,25 @@
 #     },
 #   }
 #
+# @example Timer-controlled service
+#   podman::quadlet { 'backup-job':
+#     service_ensure => 'stopped',
+#     settings => {
+#       Unit => {
+#         Description => "Backup job container",
+#       },
+#       Container => {
+#         Image => 'backup:latest',
+#       },
+#       Service => {
+#         Type => 'oneshot',
+#       },
+#       Install => {
+#         WantedBy => [],
+#       },
+#     },
+#   }
+#
 define podman::quadlet (
   Enum['present', 'absent'] $ensure = 'present',
   Enum['container',
@@ -56,6 +79,7 @@ define podman::quadlet (
   String $user                      = 'root',
   Hash $defaults                    = {}, # Values in module hiera
   Hash $settings                    = {},
+  Enum['running', 'stopped'] $service_ensure = 'running',
 ) {
   $podman_version = fact('podman.version')
 
@@ -104,7 +128,7 @@ define podman::quadlet (
         }
       } else {
         service { $service:
-          ensure    => running,
+          ensure    => $service_ensure,
           require   => $notify_systemd,
           subscribe => File[$quadlet_file],
         }
@@ -119,8 +143,13 @@ define podman::quadlet (
           notify => File[$quadlet_file],
         }
       } else {
+        $user_service_ensure = $service_ensure ? {
+          'running' => true,
+          'stopped' => false,
+        }
+
         systemd::user_service { $service:
-          ensure    => true,
+          ensure    => $user_service_ensure,
           enable    => true,
           user      => $user,
           unit      => "${service}.service",
