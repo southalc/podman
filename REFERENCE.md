@@ -728,6 +728,28 @@ podman::quadlet { 'jenkins':
 }
 ```
 
+##### Timer-controlled service
+
+```puppet
+podman::quadlet { 'backup-job':
+  service_ensure => 'stopped',
+  settings => {
+    Unit => {
+      Description => "Backup job container",
+    },
+    Container => {
+      Image => 'backup:latest',
+    },
+    Service => {
+      Type => 'oneshot',
+    },
+    Install => {
+      WantedBy => [],
+    },
+  },
+}
+```
+
 #### Parameters
 
 The following parameters are available in the `podman::quadlet` defined type:
@@ -737,6 +759,7 @@ The following parameters are available in the `podman::quadlet` defined type:
 * [`quadlet_type`](#-podman--quadlet--quadlet_type)
 * [`settings`](#-podman--quadlet--settings)
 * [`defaults`](#-podman--quadlet--defaults)
+* [`service_ensure`](#-podman--quadlet--service_ensure)
 
 ##### <a name="-podman--quadlet--ensure"></a>`ensure`
 
@@ -796,6 +819,15 @@ usage.  This allows running a container with nothing but an image defined.
 See the "data/common.yaml" file for default values.
 
 Default value: `{}`
+
+##### <a name="-podman--quadlet--service_ensure"></a>`service_ensure`
+
+Data type: `Enum['running', 'stopped']`
+
+The desired state of the systemd service. Valid values are 'running' or 'stopped'.
+Default is 'running'.
+
+Default value: `'running'`
 
 ### <a name="podman--rootless"></a>`podman::rootless`
 
