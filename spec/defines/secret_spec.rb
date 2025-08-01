@@ -42,13 +42,13 @@ describe 'podman::secret' do
     context "on #{os}" do
       let(:facts) { os_facts }
 
-      it { is_expected.to compile.and_raise_error(%r{One of the parameters path or secret}) }
+      it { is_expected.to compile.and_raise_error(%r{Either secret or path must be specified}) }
       context 'with secret and path parameter set' do
         let(:params) do
           super().merge(secret: sensitive('tiptop'), path: '/bin/fail')
         end
 
-        it { is_expected.to compile.and_raise_error(%r{Only one of the parameters path or secret}) }
+        it { is_expected.to compile.and_raise_error(%r{Only one of secret or path can be specified}) }
       end
       context 'with secret parameter set' do
         let(:params) do
@@ -60,12 +60,13 @@ describe 'podman::secret' do
         it { is_expected.to contain_podman__subgid('testuser') }
         it { is_expected.to contain_concat__fragment('subuid_fragment_testuser') }
         it { is_expected.to contain_concat__fragment('subgid_fragment_testuser') }
-        it { is_expected.to contain_exec('create_secret_root_password') }
+        it { is_expected.to contain_podman_secret('root_password') }
 
         it {
-          is_expected.to contain_exec('create_secret_root_password')
-            .with_command(sensitive("podman secret create --label 'puppet_resource_flags=e30=' root_password - <<'EOF'\ntiptop\nEOF\n"))
-            .with_unless("test \"\$(podman secret inspect root_password  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"e30=\"")
+          is_expected.to contain_podman_secret('root_password')
+            .with_ensure('present')
+            .with_secret(sensitive('tiptop'))
+            .with_flags({ 'label' => 'puppet_resource_flags=e30=' })
         }
       end
       context 'with path parameter set' do
@@ -75,8 +76,10 @@ describe 'podman::secret' do
 
         it { is_expected.to compile }
         it {
-          is_expected.to contain_exec('create_secret_root_password')
-            .with_command("podman secret create --label 'puppet_resource_flags=e30=' root_password /tmp/my_root")
+          is_expected.to contain_podman_secret('root_password')
+            .with_ensure('present')
+            .with_path('/tmp/my_root')
+            .with_flags({ 'label' => 'puppet_resource_flags=e30=' })
         }
         context 'with a label set' do
           let(:params) do
@@ -84,9 +87,10 @@ describe 'podman::secret' do
           end
 
           it {
-            is_expected.to contain_exec('create_secret_root_password')
-              .with_command("podman secret create  --label 'trust=this' --label 'puppet_resource_flags=eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119' root_password /tmp/my_root")
-              .with_unless("test \"\$(podman secret inspect root_password  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119\"")
+            is_expected.to contain_podman_secret('root_password')
+              .with_ensure('present')
+              .with_path('/tmp/my_root')
+              .with_flags({ 'label' => ['trust=this', 'puppet_resource_flags=eydsYWJlbCcgPT4gWyd0cnVzdD10aGlzJ119'] })
           }
         end
       end
