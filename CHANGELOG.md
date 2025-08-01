@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.9
+- Add quadlet parameter to create with disabled service #105.  Contributed by ehelms
+
 ## Release 0.7.8
 - Bugfix. Use heredoc when creating a secret #102. Contributed by ehelms
 - Use the quadlet resource title with Systemd::Daemon_reload to allow ordering resources.  Contributed by ehelms
