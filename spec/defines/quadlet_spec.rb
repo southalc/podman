@@ -9,10 +9,6 @@ describe 'podman::quadlet' do
     let(:facts) { os_facts }
 
     context "with root container on #{os} with minimal parameters" do
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4' } })
-      end
-
       it do
         is_expected.to compile
         is_expected.to contain_file('/etc/containers/systemd/container1.container').with(
@@ -31,9 +27,6 @@ describe 'podman::quadlet' do
     end
 
     context "with root container on #{os} with service_ensure => 'running'" do
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4' } })
-      end
       let(:params) { { 'service_ensure' => 'running', 'settings' => { 'Container' => { 'Image' => 'example.com/container1:latest', 'PublishPort' => '8080:8080', } } } }
 
       it do
@@ -54,9 +47,6 @@ describe 'podman::quadlet' do
     end
 
     context "with root container on #{os} with service_ensure => 'stopped'" do
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4' } })
-      end
       let(:params) { { 'service_ensure' => 'stopped', 'settings' => { 'Container' => { 'Image' => 'example.com/container1:latest', 'PublishPort' => '8080:8080', } } } }
 
       it do
@@ -76,16 +66,23 @@ describe 'podman::quadlet' do
       end
     end
 
-    context 'with unsupported podman version on #{os}' do
+    context 'with unsupported OS version on #{os}' do
       let(:facts) do
-        super().merge({ 'podman' => { 'version' => '3.4.4' } })
+        super().merge({
+                        'os' => {
+                          'name' => 'Ubuntu',
+                          'family' => 'Debian',
+                          'release' => { 'full' => '20.04', 'major' => '20' },
+                          'selinux' => { 'enabled' => false }
+                        }
+                      })
       end
 
       it do
         is_expected.to compile
         is_expected.to contain_notify('quadlet_container1')
         is_expected.to contain_notify('quadlet_container1').only_with(
-          'message' => 'This version of podman (3.4.4) does not support quadlets.',
+          'message' => 'Quadlets are not supported on Ubuntu 20.04. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.',
         )
       end
     end
@@ -106,9 +103,6 @@ describe 'podman::quadlet' do
 
     context 'root container with ensure set to absent' do
       let(:params) { { ensure: 'absent' } }
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4.0' } })
-      end
 
       it do
         is_expected.to compile
@@ -139,9 +133,6 @@ describe 'podman::quadlet' do
          }
          file { "/home/testing": }
         '
-      end
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4.0' } })
       end
       let(:params) do
         super().merge({ 'user' => 'testing' })
@@ -185,9 +176,6 @@ describe 'podman::quadlet' do
          file { "/home/testing": }
         '
       end
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4.0' } })
-      end
       let(:params) do
         super().merge({ 'user' => 'testing', 'service_ensure' => 'running' })
       end
@@ -229,9 +217,6 @@ describe 'podman::quadlet' do
          }
          file { "/home/testing": }
         '
-      end
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4.0' } })
       end
       let(:params) do
         super().merge({ 'user' => 'testing', 'service_ensure' => 'stopped' })
@@ -275,9 +260,6 @@ describe 'podman::quadlet' do
          file { "/home/testing": }
         '
       end
-      let(:facts) do
-        super().merge({ 'podman' => { 'version' => '4.4.0' } })
-      end
       let(:params) do
         super().merge({ 'user' => 'testing', 'ensure' => 'absent' })
       end
@@ -302,6 +284,120 @@ describe 'podman::quadlet' do
             'unit' => 'container1.service',
             'notify' => 'File[/etc/containers/systemd/users/3333/container1.container]',
           },
+        )
+      end
+    end
+
+    context 'with supported Ubuntu version' do
+      let(:pre_condition) do
+        'include podman
+         # user & file needed by podman::rootless
+         user { "testing":
+           ensure  => "present",
+           gid     => 1111,
+           home    => "/home/testing",
+           uid     => 3333,
+         }
+         file { "/home/testing": }
+        '
+      end
+      let(:facts) do
+        super().merge({
+                        'os' => {
+                          'name' => 'Ubuntu',
+                          'family' => 'Debian',
+                          'release' => { 'full' => '24.04', 'major' => '24' },
+                          'selinux' => { 'enabled' => false }
+                        }
+                      })
+      end
+      let(:params) do
+        super().merge({ 'user' => 'testing' })
+      end
+
+      it do
+        is_expected.to compile
+        is_expected.to contain_podman__rootless('testing')
+        is_expected.to contain_file('/etc/containers/systemd/users/3333/container1.container')
+      end
+    end
+
+    context 'with unsupported Debian version' do
+      let(:facts) do
+        super().merge({
+                        'os' => {
+                          'name' => 'Debian',
+                          'family' => 'Debian',
+                          'release' => { 'full' => '12.0', 'major' => '12' },
+                          'selinux' => { 'enabled' => false }
+                        }
+                      })
+      end
+
+      it do
+        is_expected.to compile
+        is_expected.to contain_notify('quadlet_container1')
+        is_expected.to contain_notify('quadlet_container1').only_with(
+          'message' => 'Quadlets are not supported on Debian 12.0. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.',
+        )
+      end
+    end
+
+    context 'with supported Fedora' do
+      let(:facts) do
+        super().merge({
+                        'os' => {
+                          'name' => 'Fedora',
+                          'family' => 'RedHat',
+                          'release' => { 'full' => '39', 'major' => '39' },
+                          'selinux' => { 'enabled' => true }
+                        }
+                      })
+      end
+
+      it do
+        is_expected.to compile
+        is_expected.to contain_file('/etc/containers/systemd/container1.container')
+        is_expected.to contain_service('container1')
+      end
+    end
+
+    context 'with supported EL8' do
+      let(:facts) do
+        super().merge({
+                        'os' => {
+                          'name' => 'RedHat',
+                          'family' => 'RedHat',
+                          'release' => { 'full' => '8.9', 'major' => '8' },
+                          'selinux' => { 'enabled' => true }
+                        }
+                      })
+      end
+
+      it do
+        is_expected.to compile
+        is_expected.to contain_file('/etc/containers/systemd/container1.container')
+        is_expected.to contain_service('container1')
+      end
+    end
+
+    context 'with unsupported EL7' do
+      let(:facts) do
+        super().merge({
+                        'os' => {
+                          'name' => 'CentOS',
+                          'family' => 'RedHat',
+                          'release' => { 'full' => '7.9', 'major' => '7' },
+                          'selinux' => { 'enabled' => true }
+                        }
+                      })
+      end
+
+      it do
+        is_expected.to compile
+        is_expected.to contain_notify('quadlet_container1')
+        is_expected.to contain_notify('quadlet_container1').only_with(
+          'message' => 'Quadlets are not supported on CentOS 7.9. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.',
         )
       end
     end

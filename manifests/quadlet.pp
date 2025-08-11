@@ -81,9 +81,31 @@ define podman::quadlet (
   Hash $settings                    = {},
   Enum['running', 'stopped'] $service_ensure = 'running',
 ) {
-  $podman_version = fact('podman.version')
+  $podman_supports_quadlets = case $facts['os']['family'] {
+    'RedHat': {
+      case $facts['os']['name'] {
+        'Fedora': { true }
+        default: {
+          versioncmp($facts['os']['release']['major'], '8') >= 0
+        }
+      }
+    }
+    'Debian': {
+      case $facts['os']['name'] {
+        'Ubuntu': {
+          versioncmp($facts['os']['release']['full'], '24.04') >= 0
+        }
+        'Debian': {
+          versioncmp($facts['os']['release']['major'], '13') >= 0
+        }
+        default: { false }
+      }
+    }
+    'Archlinux': { true }
+    default: { false }
+  }
 
-  if $podman_version and versioncmp($podman_version, '4.4', true) >= 0 {
+  if $podman_supports_quadlets {
     require podman::install
 
     $service_suffix = $quadlet_type ? {
@@ -160,7 +182,7 @@ define podman::quadlet (
     }
   } else {
     notify { "quadlet_${title}":
-      message => "This version of podman (${podman_version}) does not support quadlets.",
+      message => "Quadlets are not supported on ${facts['os']['name']} ${facts['os']['release']['full']}. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.",
     }
   }
 }
