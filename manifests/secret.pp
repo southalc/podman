@@ -58,7 +58,7 @@ define podman::secret (
 ) {
   require podman::install
 
-  # Do not encode and store the secret
+  # Add a puppet resource flags label for resource tracking
   $flags_base64 = base64('encode',String($flags.delete('secret')),'strict')
 
   # Add the default name and a custom label using the base64 encoded flags
@@ -70,74 +70,18 @@ define podman::secret (
     $no_label = $flags
   }
 
-  # If a secret name is not set, use the Puppet resource name
   $merged_flags = stdlib::merge({ label => $label }, $no_label )
-
-  # Convert $flags hash to command arguments
-  $_flags = $merged_flags.reduce('') |$mem, $flag| {
-    if $flag[1] =~ String {
-      "${mem} --${flag[0]} '${flag[1]}'"
-    } elsif $flag[1] =~ Undef {
-      "${mem} --${flag[0]}"
-    } else {
-      $dup = $flag[1].reduce('') |$mem2, $value| {
-        "${mem2} --${flag[0]} '${value}'"
-      }
-      "${mem} ${dup}"
-    }
-  }
 
   if $user {
     ensure_resource('podman::rootless', $user, {})
-
-    # Set execution environment for the rootless user
-    $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-      environment => [
-        "HOME=${User[$user]['home']}",
-        "XDG_RUNTIME_DIR=/run/user/${User[$user]['uid']}",
-      ],
-      cwd         => User[$user]['home'],
-      provider    => 'shell',
-      user        => $user,
-      require     => Podman::Rootless[$user],
-    }
-  } else {
-    $exec_defaults = {
-      path        => '/sbin:/usr/sbin:/bin:/usr/bin',
-      provider    => 'shell',
-    }
   }
 
-  if $secret and $path {
-    fail('Only one of the parameters path or secret to podman::secret must be set')
-  } elsif $secret {
-    $_command = Sensitive(stdlib::deferrable_epp('podman/set_secret_from_stdin.epp', {
-          'secret' => $secret ,
-          'title'  => $title,
-          'flags'  => $_flags,
-    }))
-  } elsif $path {
-    $_command = "podman secret create${_flags} ${title} ${path}"
-  } else {
-    fail('One of the parameters path or secret to podman::secret must be set')
-  }
-
-  case $ensure {
-    'present': {
-      Exec { "create_secret_${title}":
-        command => $_command,
-        unless  => "test \"$(podman secret inspect ${title}  --format ''{{.Spec.Labels.puppet_resource_flags}}'')\" = \"${flags_base64}\"",
-        *       => $exec_defaults,
-      }
-    }
-    default: {
-      Exec { "create_secret_${title}":
-        command => $_command,
-        unless  => "podman secret rm ${title}",
-        onlyif  => "podman secret inspect ${title}",
-        *       => $exec_defaults,
-      }
-    }
+  # Use the custom podman_secret resource type
+  podman_secret { $title:
+    ensure => $ensure,
+    secret => $secret,
+    path   => $path,
+    flags  => $merged_flags,
+    user   => $user,
   }
 }
