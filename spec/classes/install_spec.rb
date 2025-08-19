@@ -8,16 +8,16 @@ describe 'podman::install' do
       let(:facts) { os_facts }
 
       it { is_expected.to compile }
-      it { is_expected.to contain_package('buildah').with_ensure('absent') }
-      it { is_expected.to contain_package('podman-compose').with_ensure('absent') }
-      it { is_expected.to contain_package('podman-docker').with_ensure('installed') }
+      it { is_expected.not_to contain_package('buildah') }
+      it { is_expected.not_to contain_package('podman-compose') }
+      it { is_expected.not_to contain_package('podman-docker') }
       it { is_expected.to contain_package('podman').with_ensure('installed') }
       it { is_expected.to contain_package('skopeo').with_ensure('installed') }
 
       if os_facts[:os]['family'] == 'Archlinux'
-        it { is_expected.to contain_package('systemd').with_ensure('installed') }
+        it { is_expected.not_to contain_package('systemd') }
       else
-        it { is_expected.to contain_package('systemd-container').with_ensure('installed') }
+        it { is_expected.not_to contain_package('systemd-container') }
       end
 
       if os_facts[:os]['selinux']['enabled'] == true
@@ -78,7 +78,7 @@ describe 'podman::install' do
     end
 
     context 'when podman::buildah_pkg is set to valid testing' do
-      let(:pre_condition) { 'class { "podman": buildah_pkg => "testing" }' }
+      let(:pre_condition) { 'class { "podman": buildah_pkg => "testing", buildah_pkg_ensure => "installed" }' }
 
       it { is_expected.to contain_package('testing') }
     end
@@ -90,7 +90,7 @@ describe 'podman::install' do
     end
 
     context 'when podman::podman_docker_pkg is set to valid testing' do
-      let(:pre_condition) { 'class { "podman": podman_docker_pkg => "testing" }' }
+      let(:pre_condition) { 'class { "podman": podman_docker_pkg => "testing", podman_docker_pkg_ensure => "installed" }' }
 
       it { is_expected.to contain_package('testing') }
     end
@@ -102,7 +102,7 @@ describe 'podman::install' do
     end
 
     context 'when podman::compose_pkg is set to valid testing' do
-      let(:pre_condition) { 'class { "podman": compose_pkg => "testing" }' }
+      let(:pre_condition) { 'class { "podman": compose_pkg => "testing", compose_pkg_ensure => "installed" }' }
 
       it { is_expected.to contain_package('testing') }
     end
@@ -114,7 +114,7 @@ describe 'podman::install' do
     end
 
     context 'when podman::machinectl_pkg is set to valid testing' do
-      let(:pre_condition) { 'class { "podman": machinectl_pkg => "testing" }' }
+      let(:pre_condition) { 'class { "podman": machinectl_pkg => "testing", machinectl_pkg_ensure => "installed" }' }
 
       it { is_expected.to contain_package('testing') }
     end
