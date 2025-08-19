@@ -159,35 +159,35 @@ Default value: `'installed'`
 
 ##### <a name="-podman--buildah_pkg_ensure"></a>`buildah_pkg_ensure`
 
-Data type: `Enum['absent', 'installed']`
+Data type: `Optional[Enum['absent', 'installed']]`
 
 The ensure value for the buildah package (default 'absent')
 
-Default value: `'absent'`
+Default value: `undef`
 
 ##### <a name="-podman--podman_docker_pkg_ensure"></a>`podman_docker_pkg_ensure`
 
-Data type: `Enum['absent', 'installed']`
+Data type: `Optional[Enum['absent', 'installed']]`
 
 The ensure value for the podman docker package (default 'installed')
 
-Default value: `'installed'`
+Default value: `undef`
 
 ##### <a name="-podman--compose_pkg_ensure"></a>`compose_pkg_ensure`
 
-Data type: `Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]`
+Data type: `Optional[Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/]]`
 
 The ensure value for the podman-compose package (default 'absent')
 
-Default value: `'absent'`
+Default value: `undef`
 
 ##### <a name="-podman--machinectl_pkg_ensure"></a>`machinectl_pkg_ensure`
 
-Data type: `Enum['absent', 'installed']`
+Data type: `Optional[Enum['absent', 'installed']]`
 
 The ensure value for the machinectl package (default 'installed')
 
-Default value: `'installed'`
+Default value: `undef`
 
 ##### <a name="-podman--nodocker"></a>`nodocker`
 
