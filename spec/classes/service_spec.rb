@@ -23,8 +23,6 @@ describe 'podman::service' do
       it { is_expected.to contain_class('podman') }                         # from pre_condition
       it { is_expected.to contain_class('podman::options') }                # from podman
       it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman::install
-      it { is_expected.to contain_package('buildah') }                      # from podman::install
-      it { is_expected.to contain_package('podman-compose') }               # from podman::install
       it { is_expected.to contain_package('podman-docker') }                # from podman::install
       it { is_expected.to contain_package('podman') }                       # from podman::install
       it { is_expected.to contain_package('skopeo') }                       # from podman::install

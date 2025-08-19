@@ -4,10 +4,18 @@
 class podman::install {
   ensure_resource('Package', $podman::podman_pkg, { 'ensure' => $podman::podman_pkg_ensure })
   ensure_resource('Package', $podman::skopeo_pkg, { 'ensure' => 'installed' })
-  ensure_resource('Package', $podman::buildah_pkg, { 'ensure' => $podman::buildah_pkg_ensure })
-  ensure_resource('Package', $podman::podman_docker_pkg, { 'ensure' => $podman::podman_docker_pkg_ensure })
-  ensure_resource('Package', $podman::compose_pkg, { 'ensure' => $podman::compose_pkg_ensure })
-  ensure_resource('Package', $podman::machinectl_pkg, { 'ensure' => $podman::machinectl_pkg_ensure })
+  unless $podman::buildah_pkg_ensure =~ Undef {
+    ensure_resource('Package', $podman::buildah_pkg, { 'ensure' => $podman::buildah_pkg_ensure })
+  }
+  unless $podman::podman_docker_pkg_ensure =~ Undef {
+    ensure_resource('Package', $podman::podman_docker_pkg, { 'ensure' => $podman::podman_docker_pkg_ensure })
+  }
+  unless $podman::compose_pkg_ensure =~ Undef {
+    ensure_resource('Package', $podman::compose_pkg, { 'ensure' => $podman::compose_pkg_ensure })
+  }
+  unless $podman::machinectl_pkg_ensure =~ Undef {
+    ensure_resource('Package', $podman::machinectl_pkg, { 'ensure' => $podman::machinectl_pkg_ensure })
+  }
 
   if $podman::manage_subuid {
     concat { ['/etc/subuid', '/etc/subgid']:

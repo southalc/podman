@@ -9,7 +9,7 @@ describe 'podman' do
       it { is_expected.to contain_class('podman::install') }
       it { is_expected.to contain_class('podman::options') }
       it { is_expected.to contain_class('podman::service') }
-      it { is_expected.to have_package_resource_count(6) }
+      it { is_expected.to have_package_resource_count(4) }
       it { is_expected.to have_podman__pod_resource_count(0) }
       it { is_expected.to have_podman__volume_resource_count(0) }
       it { is_expected.to have_podman__image_resource_count(0) }
@@ -19,8 +19,6 @@ describe 'podman' do
 
       # only here to reach 100% resource coverage
       it { is_expected.to contain_file('/etc/containers/nodocker') }        # from podman::install
-      it { is_expected.to contain_package('buildah') }                      # from podman::install
-      it { is_expected.to contain_package('podman-compose') }               # from podman::install
       it { is_expected.to contain_package('podman-docker') }                # from podman::install
       it { is_expected.to contain_package('podman') }                       # from podman::install
       it { is_expected.to contain_package('skopeo') }                       # from podman::install
@@ -62,7 +60,7 @@ describe 'podman' do
     end
 
     context 'with buildah_pkg set to valid testing' do
-      let(:params) { { buildah_pkg: 'testing' } } # parameter used in podman::install
+      let(:params) { { buildah_pkg: 'testing', buildah_pkg_ensure: 'installed' } } # parameters used in podman::install
 
       it { is_expected.to contain_package('testing') }
     end
@@ -74,7 +72,7 @@ describe 'podman' do
     end
 
     context 'with compose_pkg set to valid testing' do
-      let(:params) { { compose_pkg: 'testing' } } # parameter used in podman::install
+      let(:params) { { compose_pkg: 'testing', compose_pkg_ensure: 'installed' } } # parameters used in podman::install
 
       it { is_expected.to contain_package('testing') }
     end
