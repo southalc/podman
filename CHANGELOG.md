@@ -1,5 +1,11 @@
 # Changelog
 
+## Release 0.7.10
+- Update container.pp Add timeout param for create container exec #103. Contributed by zipkid
+- Fix race condition with podman install #107. Contributed by ehelms
+- don't manage additional packages by default #108. Contributed by evgeni
+- Introduce a custom resource to manage podman secrets #106. Contributed by ehelms
+
 ## Release 0.7.9
 - Add quadlet parameter to create with disabled service #105.  Contributed by ehelms
 
@@ -27,7 +33,7 @@
   - Create podman networks before containers. Issues 78 and 85. Contributed by jonesbrennan
 
 ## Release 0.7.1
-  - Include inifiles in module fixtures as required by unit tests 
+  - Include inifiles in module fixtures as required by unit tests
   - Explicit lookup for defaults when calling the quadlet defined type from the main class
   - Add management of /etc/containers/containers.conf #89.  Contributed by fasrc
 
@@ -43,7 +49,7 @@
  - Bugfix. Update install.pp due to false positive on selinux check #60. Contributed by magarvo
  - Support ArchLinux #61. Contributed by traylenator
  - Update supported OS list to drop specific versioned releases.
- 
+
 ## Release 0.6.5
 
  - Bugfix for issue #55, Typo in network manifest. Identified by CyberLine
