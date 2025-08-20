@@ -182,7 +182,7 @@ define podman::quadlet (
     }
   } else {
     notify { "quadlet_${title}":
-      message => "Quadlets are not supported on ${facts['os']['name']} ${facts['os']['release']['full']}. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.",
+      message => "Quadlets are not supported on ${facts['os']['name']} ${facts['os']['release']['full']}. Supported: Fedora (all), EL 8+, Ubuntu 24.04+, Debian 13+, Archlinux.", # lint:ignore:140chars
     }
   }
 }
