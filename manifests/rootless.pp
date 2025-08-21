@@ -14,7 +14,6 @@ define podman::rootless {
       owner   => $name,
       group   => "${User[$name]['gid']}",
       mode    => '0700',
-      require => File["${User[$name]['home']}"],
     }
   )
 
