@@ -1,6 +1,5 @@
 require 'tempfile'
 require 'base64'
-require 'json'
 
 Puppet::Type.type(:podman_secret).provide(:podman) do
   desc 'Podman secret provider'
@@ -8,35 +7,37 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   commands podman: 'podman'
 
   def exists?
-    podman('secret', 'inspect', resource[:name])
-    true
+    execute_podman_command('secret', 'inspect', resource[:name])
+
+    if resource[:secret]
+      secret == resource[:secret]
+    elsif resource[:path]
+      new_secret = File.read(resource[:path])
+      secret == new_secret
+    end
   rescue Puppet::ExecutionFailure
     false
   end
 
   def secret
-    return nil unless exists?
+    output = execute_podman_command(
+      'secret',
+      'inspect',
+      resource[:name],
+      '--showsecret',
+      '--format',
+      '{{.SecretData}}',
+    )
 
-    begin
-      output = execute_podman_command(['secret', 'inspect', '--showsecret', resource[:name]], capture_output: true)
-      secret_data = JSON.parse(output)
-      secret_data.first['SecretData']
-    rescue StandardError => e
-      Puppet.debug("Failed to retrieve secret content: #{e.message}")
-      nil
-    end
-  end
-
-  def secret=(_value)
-    # Podman doesn't support updating secrets in place
-    # We need to remove and recreate the secret
-    if exists?
-      destroy
-    end
-    create
+    output.chomp
+  rescue StandardError => e
+    Puppet.debug("Failed to retrieve secret content: #{e.message}")
+    nil
   end
 
   def create
+    destroy if exists?
+
     args = ['secret', 'create']
 
     # Process flags
@@ -68,7 +69,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   end
 
   def destroy
-    podman('secret', 'rm', resource[:name])
+    execute_podman_command('secret', 'rm', resource[:name])
   end
 
   private
@@ -86,7 +87,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
     end
   end
 
-  def execute_podman_command(args, capture_output: false)
+  def execute_podman_command(*args)
     if resource[:user]
       # Set up environment for rootless user
       user_info = Etc.getpwnam(resource[:user])
@@ -95,20 +96,33 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
         'XDG_RUNTIME_DIR' => "/run/user/#{user_info.uid}",
       }
 
-      result = Puppet::Util::Execution.execute(
+      Puppet::Util::Execution.execute(
         [command(:podman)] + args,
         uid: user_info.uid,
         gid: user_info.gid,
         custom_environment: env,
         cwd: user_info.dir,
         failonfail: true,
+        combine: false,
       )
-      capture_output ? result : nil
-    elsif capture_output
-      podman(*args)
     else
-      podman(*args)
-      nil
+      # This intentionally avoids commands: podman usage in order to define
+      # the command ourselves and pass combine => false. This prevents stdout
+      # and stderr from being combined and breaking the output from podman.
+      # For example, secrets are printed as JSON, but if stderr is present,
+      # such as a warning, the JSON will not be parseable.
+      podman = Puppet::Provider::Command.new(
+        'podman',
+        command(:podman),
+        Puppet::Util,
+        Puppet::Util::Execution,
+        {
+          failonfail: true,
+          combine: false,
+        },
+      )
+
+      podman.execute(args)
     end
   end
 end
