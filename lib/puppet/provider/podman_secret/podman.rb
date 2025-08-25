@@ -1,6 +1,5 @@
 require 'tempfile'
 require 'base64'
-require 'json'
 
 Puppet::Type.type(:podman_secret).provide(:podman) do
   desc 'Podman secret provider'
@@ -9,34 +8,30 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
 
   def exists?
     podman('secret', 'inspect', resource[:name])
-    true
+    secret == resource[:secret]
   rescue Puppet::ExecutionFailure
     false
   end
 
   def secret
-    return nil unless exists?
+    output = execute_podman_command([
+                                      'secret',
+                                      'inspect',
+                                      resource[:name],
+                                      '--showsecret',
+                                      '--format',
+                                      '{{.SecretData}}',
+                                    ])
 
-    begin
-      output = execute_podman_command(['secret', 'inspect', '--showsecret', resource[:name]], capture_output: true)
-      secret_data = JSON.parse(output)
-      secret_data.first['SecretData']
-    rescue StandardError => e
-      Puppet.debug("Failed to retrieve secret content: #{e.message}")
-      nil
-    end
-  end
-
-  def secret=(_value)
-    # Podman doesn't support updating secrets in place
-    # We need to remove and recreate the secret
-    if exists?
-      destroy
-    end
-    create
+    output.chomp
+  rescue StandardError => e
+    Puppet.debug("Failed to retrieve secret content: #{e.message}")
+    nil
   end
 
   def create
+    destroy if exists?
+
     args = ['secret', 'create']
 
     # Process flags
@@ -86,7 +81,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
     end
   end
 
-  def execute_podman_command(args, capture_output: false)
+  def execute_podman_command(args)
     if resource[:user]
       # Set up environment for rootless user
       user_info = Etc.getpwnam(resource[:user])
@@ -95,7 +90,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
         'XDG_RUNTIME_DIR' => "/run/user/#{user_info.uid}",
       }
 
-      result = Puppet::Util::Execution.execute(
+      Puppet::Util::Execution.execute(
         [command(:podman)] + args,
         uid: user_info.uid,
         gid: user_info.gid,
@@ -103,12 +98,9 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
         cwd: user_info.dir,
         failonfail: true,
       )
-      capture_output ? result : nil
-    elsif capture_output
-      podman(*args)
     else
+      ::ENV['PODMAN_IGNORE_CGROUPSV1_WARNING'] = 'true'
       podman(*args)
-      nil
     end
   end
 end
