@@ -2,6 +2,7 @@ Puppet::Type.newtype(:podman_secret) do
   desc 'Manage podman secrets'
 
   ensurable do
+    desc 'Manage the state of the secret'
     defaultvalues
     defaultto :present
   end
