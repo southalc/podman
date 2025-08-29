@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.7.11
+- Fix `uninitialized constant Puppet::Parameter::Boolean` #112. Contributed by stdietrich
+- Bugfix. Ensure existing secret value is correctly evaluated #109. Contributed by ehelms
+
 ## Release 0.7.10
 - Update container.pp Add timeout param for create container exec #103. Contributed by zipkid
 - Fix race condition with podman install #107. Contributed by ehelms
