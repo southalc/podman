@@ -1,3 +1,5 @@
+require 'puppet/parameter/boolean'
+
 Puppet::Type.newtype(:podman_secret) do
   desc 'Manage podman secrets'
 
