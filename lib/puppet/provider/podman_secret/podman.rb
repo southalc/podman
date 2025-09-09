@@ -7,16 +7,23 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   commands podman: 'podman'
 
   def exists?
-    execute_podman_command('secret', 'inspect', resource[:name])
+    secret_exists?
+    !secret_value_changed?
+  end
 
-    if resource[:secret]
-      secret == resource[:secret]
-    elsif resource[:path]
-      new_secret = File.read(resource[:path])
-      secret == new_secret
-    end
+  def secret_exists?
+    execute_podman_command('secret', 'inspect', resource[:name])
   rescue Puppet::ExecutionFailure
     false
+  end
+
+  def secret_value_changed?
+    if resource[:secret]
+      secret != resource[:secret]
+    elsif resource[:path]
+      new_secret = File.read(resource[:path]) if File.exist?(resource[:path])
+      secret != new_secret
+    end
   end
 
   def secret
@@ -36,7 +43,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   end
 
   def create
-    destroy if exists?
+    destroy
 
     args = ['secret', 'create']
 
@@ -69,6 +76,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   end
 
   def destroy
+    return unless secret_exists?
     execute_podman_command('secret', 'rm', resource[:name])
   end
 
