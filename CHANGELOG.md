@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.12
+- Use replace when creating and secret exists #115. Contributed by ehelms
+
 ## Release 0.7.11
 - Fix `uninitialized constant Puppet::Parameter::Boolean` #112. Contributed by stdietrich
 - Bugfix. Ensure existing secret value is correctly evaluated #109. Contributed by ehelms
