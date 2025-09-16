@@ -1,5 +1,8 @@
 # Changelog
 
+## Release 0.7.13
+- Only compare secret value if the resource exists #116. Contributed by ehelms
+
 ## Release 0.7.12
 - Use replace when creating and secret exists #115. Contributed by ehelms
 
