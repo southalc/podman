@@ -7,8 +7,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   commands podman: 'podman'
 
   def exists?
-    secret_exists?
-    !secret_value_changed?
+    secret_exists? && !secret_value_changed?
   end
 
   def secret_exists?
@@ -21,8 +20,12 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
     if resource[:secret]
       secret != resource[:secret]
     elsif resource[:path]
-      new_secret = File.read(resource[:path]) if File.exist?(resource[:path])
-      secret != new_secret
+      if File.exist?(resource[:path])
+        new_secret = File.read(resource[:path])
+        secret != new_secret
+      else
+        false
+      end
     end
   end
 
