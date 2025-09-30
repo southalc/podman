@@ -73,22 +73,19 @@ define podman::image (
     }
   }
 
-  case $ensure {
-    'present': {
-      exec { "pull_image_${title}":
-        command => "podman image pull ${_flags} ${image}",
-        unless  => "podman image exists ${image}",
-        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
-        *       => $exec_defaults,
-      }
+  if $ensure == 'present' {
+    exec { "pull_image_${title}":
+      command => "podman image pull ${_flags} ${image}",
+      unless  => "podman image exists ${image}",
+      path    => '/sbin:/usr/sbin:/bin:/usr/bin',
+      *       => $exec_defaults,
     }
-    default: {
-      exec { "pull_image_${title}":
-        command => "podman image pull ${_flags} ${image}",
-        unless  => "podman rmi ${image}",
-        path    => '/sbin:/usr/sbin:/bin:/usr/bin',
-        *       => $exec_defaults,
-      }
+  } elsif $ensure == 'absent' {
+    exec { "remove_image_${title}":
+      command => "podman rmi ${image}",
+      onlyif  => "podman image exists ${image}",
+      path    => '/sbin:/usr/sbin:/bin:/usr/bin',
+      *       => $exec_defaults,
     }
   }
 }

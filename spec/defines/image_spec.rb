@@ -55,10 +55,10 @@ describe 'podman::image' do
       let(:params) { { ensure: 'absent', image: 'image:test' } }
 
       it do
-        is_expected.to contain_exec('pull_image_title').only_with(
+        is_expected.to contain_exec('remove_image_title').only_with(
           {
-            'command'     => 'podman image pull  image:test',
-            'unless'      => 'podman rmi image:test',
+            'command'     => 'podman rmi image:test',
+            'onlyif'      => 'podman image exists image:test',
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'environment' => [],
           },
@@ -84,10 +84,10 @@ describe 'podman::image' do
       it { is_expected.to contain_podman__rootless('dummy').only_with({}) }
 
       it do
-        is_expected.to contain_exec('pull_image_title').only_with(
+        is_expected.to contain_exec('remove_image_title').only_with(
           {
-            'command'     => 'podman image pull  image:test',
-            'unless'      => 'podman rmi image:test',
+            'command'     => 'podman rmi image:test',
+            'onlyif'      => 'podman image exists image:test',
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'environment' => ['HOME=/home/dummy', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'cwd'         => '/home/dummy',
@@ -156,9 +156,9 @@ describe 'podman::image' do
       let(:params) { { flags: { publish: ['242:242'], volume: 'jenkins:/test/ing' }, ensure: 'absent', image: 'image:test' } }
 
       it do
-        is_expected.to contain_exec('pull_image_title').with(
+        is_expected.to contain_exec('remove_image_title').with(
           {
-            'command' => "podman image pull   --publish '242:242' --volume 'jenkins:/test/ing' image:test",
+            'command' => 'podman rmi image:test',
           },
         )
       end
@@ -223,10 +223,10 @@ describe 'podman::image' do
       it { is_expected.to contain_podman__rootless('testing').only_with({}) }
 
       it do
-        is_expected.to contain_exec('pull_image_title').only_with(
+        is_expected.to contain_exec('remove_image_title').only_with(
           {
-            'command'     => 'podman image pull  image:test',
-            'unless'      => 'podman rmi image:test',
+            'command'     => 'podman rmi image:test',
+            'onlyif'      => 'podman image exists image:test',
             'path'        => '/sbin:/usr/sbin:/bin:/usr/bin',
             'environment' => ['HOME=/home/testing', 'XDG_RUNTIME_DIR=/run/user/3333', 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/3333/bus'],
             'cwd'         => '/home/testing',
