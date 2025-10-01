@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 0.7.14
+- Properly handle idempotently removing image. Contributed by ehelms
+- Allow puppet/systemd 9.x. Contributed by evgeni
+
 ## Release 0.7.13
 - Only compare secret value if the resource exists #116. Contributed by ehelms
 
