@@ -103,8 +103,8 @@ systemctl --user status podman-<container_name>
 ### containerd configuration
 
 This module also contains minimal support for editing the `containerd` configuration files that control some of the lower level
-settings for how containers are created. Currently, the only supported configuration files are `/etc/containers/storage.conf` and `/etc/containers/containers.conf`. You
-should be able to set any of the settings with those files using the `$podman::storage_options` and `$podman::containers_options` parameters respectively. For example (if using Hiera):
+settings for how containers are created. Currently, the only supported configuration files are `/etc/containers/storage.conf`, `/etc/containers/containers.conf`, and `/etc/containers/registries.conf`. You
+should be able to set any of the settings with those files using the `$podman::storage_options`, `$podman::containers_options`, and `$podman::registries_options` parameters respectively. For example (if using Hiera):
 
 ```yaml
 podman::storage_options:
@@ -119,7 +119,22 @@ podman::containers_options:
     cgroup_manager: '"cgroupfs"'
 ```
 
-**Note the use of double quotes inside single quotes above.** This is due to the way the [puppetlabs/inifile](https://github.com/puppetlabs/puppetlabs-inifile/) module works currently.
+```yaml
+podman::registries_options:
+  'unqualified-search-registries': '["registry.access.redhat.com", "registry.redhat.io", "docker.io"]'
+```
+
+**Note the use of double quotes inside single quotes above.** This will create the following in `/etc/containers/registries.conf`:
+
+```toml
+unqualified-search-registries = ["registry.access.redhat.com", "registry.redhat.io", "docker.io"]
+```
+
+The `registries_options` parameter allows you to configure any global or sectioned options in `/etc/containers/registries.conf`. The hash supports arbitrary key-value pairs:
+- **String/number values** become global TOML key-value pairs
+- **Hash values** become TOML sections (e.g., `[[registry]]`)
+
+A common use case is to set `unqualified-search-registries` to search specific registries for images. For example, setting it to `["docker.io"]` will mimic the default Docker daemon behavior, ensuring that `podman pull nginx` searches `docker.io` for the image, just like Docker does by default.
 
 ## Examples
 

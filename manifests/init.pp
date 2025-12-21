@@ -43,6 +43,9 @@
 # @param containers_options
 #   A hash containing any containers options you wish to set in /etc/containers/containers.conf
 #
+# @param registries_options
+#   A hash containing any registries options you wish to set in /etc/containers/registries.conf
+#
 # @param rootless_users
 #   An array of users to manage using [`podman::rootless`](#podmanrootless)
 #
@@ -90,6 +93,13 @@
 # @example Basic usage
 #   include podman
 #
+# @example Configure container registries to mimic docker daemon behavior
+#   class { 'podman':
+#     registries_options => {
+#       'unqualified-search-registries' => '["docker.io"]'
+#     }
+#   }
+#
 # @example A rootless Jenkins deployment using hiera
 #   podman::subid:
 #     jenkins:
@@ -129,6 +139,7 @@ class podman (
   Enum['absent', 'file']                            $nodocker                 = 'absent',
   Hash                                              $storage_options          = {},
   Hash                                              $containers_options       = {},
+  Hash                                              $registries_options     = {},
   Array                                             $rootless_users           = [],
   Boolean                                           $enable_api_socket        = false,
   Boolean                                           $manage_subuid            = false,

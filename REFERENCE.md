@@ -88,6 +88,7 @@ The following parameters are available in the `podman` class:
 * [`nodocker`](#-podman--nodocker)
 * [`storage_options`](#-podman--storage_options)
 * [`containers_options`](#-podman--containers_options)
+* [`registries_options`](#-podman--registries_options)
 * [`rootless_users`](#-podman--rootless_users)
 * [`enable_api_socket`](#-podman--enable_api_socket)
 * [`manage_subuid`](#-podman--manage_subuid)
@@ -211,6 +212,43 @@ Default value: `{}`
 Data type: `Hash`
 
 A hash containing any containers options you wish to set in /etc/containers/containers.conf
+
+Default value: `{}`
+
+##### <a name="-podman--registries_options"></a>`registries_options`
+
+Data type: `Hash`
+
+A hash containing any registries options you wish to set in /etc/containers/registries.conf.
+Supports both global key-value pairs (string/number values) and sectioned configurations (hash values).
+
+**Global key-value pairs** - Any key with a non-Hash value becomes a global TOML option:
+```
+podman::registries_options:
+  'unqualified-search-registries': '["docker.io"]'
+  'short-name-mode': '"permissive"'
+```
+
+Generates:
+```toml
+unqualified-search-registries = ["docker.io"]
+short-name-mode = "permissive"
+```
+
+**Sectioned configurations** - Any key with a Hash value becomes a `[[section]]`:
+```
+podman::registries_options:
+  'registry':
+    location: '"registry.example.com"'
+    insecure: 'false'
+```
+
+Generates:
+```toml
+[[registry]]
+location = "registry.example.com"
+insecure = false
+```
 
 Default value: `{}`
 

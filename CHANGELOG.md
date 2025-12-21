@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Add `registries_options` parameter to manage `/etc/containers/registries.conf`. Contributed by fasrc.
+
 ## Release 0.7.14
 - Properly handle idempotently removing image. Contributed by ehelms
 - Allow puppet/systemd 9.x. Contributed by evgeni

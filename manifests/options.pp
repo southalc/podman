@@ -19,4 +19,12 @@ class podman::options {
     }
     inifile::create_ini_settings($podman::containers_options, $containers_defaults)
   }
+
+  unless $podman::registries_options.empty {
+    file { '/etc/containers/registries.conf':
+      ensure  => file,
+      content => epp('podman/registries.conf.epp', { 'registries_options' => $podman::registries_options }),
+      mode    => '0644',
+    }
+  }
 }

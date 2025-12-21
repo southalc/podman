@@ -1,0 +1,18 @@
+<%- | Hash $registries_options | -%>
+# Managed by Puppet
+<%# Output global key-value pairs (non-Hash values) first -%>
+<% $registries_options.each |$key, $value| { -%>
+<% if $value !~ Hash { -%>
+<%= $key %> = <%= $value %>
+<% } -%>
+<% } -%>
+<%# Output sectioned configurations (Hash values) after global options -%>
+<% $registries_options.each |$key, $value| { -%>
+<% if $value =~ Hash { -%>
+
+[[<%= $key %>]]
+<% $value.each |$k, $v| { -%>
+<%= $k %> = <%= $v %>
+<% } -%>
+<% } -%>
+<% } -%>
