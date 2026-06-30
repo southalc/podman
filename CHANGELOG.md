@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 0.7.16
+- Bump puppetlabs-concat upper bound to < 11.0.0
+- Add dns_servers and ipam_driver options for podman network. Contributed by Rocco83
+- Add systemd_version fact for rootless quadlet tests
+
 ## Release 0.7.15
   - Dependecy update - allow puppetlabs/selinux_code 2.x #122 
   - Remove Bashism and update from private registry #97. Contributed by niklas
