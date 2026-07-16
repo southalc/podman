@@ -122,7 +122,7 @@ class podman (
   String                                                                $compose_pkg              = 'podman-compose',
   String                                                                $machinectl_pkg           = 'systemd-container',
   Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/, /latest/]           $podman_pkg_ensure        = 'installed',
-  Optional[Enum['absent', 'installed', 'latest']                        $skopeo_pkg_ensure        = 'installed',
+  Optional[Enum['absent', 'installed', 'latest']]                        $skopeo_pkg_ensure        = 'installed',
   Optional[Enum['absent', 'installed', 'latest']]                       $buildah_pkg_ensure       = undef,
   Optional[Enum['absent', 'installed', 'latest']]                       $podman_docker_pkg_ensure = undef,
   Optional[Pattern[/^(\d+\.){2}\d+$/, /absent/, /installed/, /latest/]] $compose_pkg_ensure       = undef,
