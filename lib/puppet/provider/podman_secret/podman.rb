@@ -92,6 +92,13 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
       tempfile.write(secret_content.to_s)
       tempfile.flush
 
+      # The tempfile is created as root with mode 0600, so it must be chowned
+      # to the target user or podman will get a permission denied" trying to open it.
+      if resource[:user] and resource[:user] != 'root'
+        user_info = Etc.getpwnam(resource[:user])
+        File.chown(user_info.uid, user_info.gid, tempfile.path)
+      end
+
       # Add the tempfile path to args and execute
       final_args = args + [tempfile.path]
       execute_podman_command(final_args)
