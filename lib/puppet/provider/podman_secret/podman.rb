@@ -11,7 +11,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
   end
 
   def secret_exists?
-    execute_podman_command('secret', 'inspect', resource[:name])
+    execute_podman_command('secret', 'inspect', resource[:id])
   rescue Puppet::ExecutionFailure
     false
   end
@@ -33,7 +33,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
     output = execute_podman_command(
       'secret',
       'inspect',
-      resource[:name],
+      resource[:id],
       '--showsecret',
       '--format',
       '{{.SecretData}}',
@@ -66,7 +66,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
       end
     end
 
-    args << resource[:name]
+    args << resource[:id]
 
     if resource[:path]
       # Use file path directly
@@ -80,7 +80,7 @@ Puppet::Type.type(:podman_secret).provide(:podman) do
 
   def destroy
     return unless secret_exists?
-    execute_podman_command('secret', 'rm', resource[:name])
+    execute_podman_command('secret', 'rm', resource[:id])
   end
 
   private

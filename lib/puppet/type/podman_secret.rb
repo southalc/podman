@@ -16,6 +16,17 @@ Puppet::Type.newtype(:podman_secret) do
     end
   end
 
+  newparam(:id) do
+    desc 'The identifier of the secret. Defaults to name.'
+    validate do |value|
+      raise ArgumentError, 'Secret id cannot be empty' if value.to_s.empty?
+    end
+
+    defaultto do
+      @resource[:name]
+    end
+  end
+
   newproperty(:secret) do
     desc 'The secret content'
     validate do |value|
