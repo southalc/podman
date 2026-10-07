@@ -7,7 +7,7 @@ Facter.add(:podman_version) do
   confine { Facter::Core::Execution.which('podman') }
 
   setcode do
-    JSON.parse(Facter::Core::Execution.exec("podman version --format '{{json .}}'"))
+    JSON.parse(Facter::Core::Execution.execute("podman version --format '{{json .}}'"))
   rescue
     nil
   end
